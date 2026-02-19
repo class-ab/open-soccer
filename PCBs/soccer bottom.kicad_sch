@@ -978,6 +978,130 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Sensor_Proximity:QRE1113GR"
 			(pin_names
 				(offset 0.0254)
@@ -1678,6 +1802,18 @@
 		)
 	)
 	(junction
+		(at 166.37 62.23)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d30cc92d-62fe-4979-9f76-be639a81461c")
+	)
+	(junction
+		(at 166.37 82.55)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d3496252-85d2-4f74-90bb-49ea1a7c851f")
+	)
+	(junction
 		(at 120.65 127)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1695,6 +1831,26 @@
 	)
 	(wire
 		(pts
+			(xy 166.37 82.55) (xy 166.37 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0f2f5232-fdd0-4f40-a850-e136d08d5f82")
+	)
+	(wire
+		(pts
+			(xy 181.61 82.55) (xy 166.37 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "137ce73f-f429-455c-b546-38ffbe557f81")
+	)
+	(wire
+		(pts
 			(xy 102.87 78.74) (xy 102.87 76.2)
 		)
 		(stroke
@@ -1702,6 +1858,16 @@
 			(type default)
 		)
 		(uuid "14c84070-9f9d-4b63-8fba-b332b78cdaec")
+	)
+	(wire
+		(pts
+			(xy 166.37 82.55) (xy 166.37 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1b2b81fe-729a-4b78-9d65-384fe2d511d9")
 	)
 	(wire
 		(pts
@@ -1725,6 +1891,36 @@
 	)
 	(wire
 		(pts
+			(xy 166.37 60.96) (xy 166.37 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "42661b46-e73b-454c-aef9-68dc3079ce29")
+	)
+	(wire
+		(pts
+			(xy 166.37 62.23) (xy 181.61 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "50983e26-ab9d-41e3-b1f2-fa2ee3a60c94")
+	)
+	(wire
+		(pts
+			(xy 181.61 69.85) (xy 181.61 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "51e2295b-5133-4358-947a-f093aa6242b8")
+	)
+	(wire
+		(pts
 			(xy 97.79 81.28) (xy 107.95 81.28)
 		)
 		(stroke
@@ -1732,6 +1928,16 @@
 			(type default)
 		)
 		(uuid "7036b0e1-a628-4116-9445-2eb3910cb4c0")
+	)
+	(wire
+		(pts
+			(xy 166.37 69.85) (xy 166.37 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7941feb9-2f83-483d-931f-018f551612a2")
 	)
 	(wire
 		(pts
@@ -1762,6 +1968,16 @@
 			(type default)
 		)
 		(uuid "a637d763-68e6-4c2d-a252-eddcc1db86af")
+	)
+	(wire
+		(pts
+			(xy 181.61 78.74) (xy 181.61 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b03c0447-a5dc-4182-ad88-a24194d4bd0d")
 	)
 	(wire
 		(pts
@@ -1812,6 +2028,16 @@
 			(type default)
 		)
 		(uuid "fe772b1f-88e6-4226-b884-908b22dc3fc4")
+	)
+	(label "ir_0"
+		(at 133.35 78.74 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fbff2e0e-b7d1-45d4-8975-dbfe1c58411a")
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x04_Socket")
@@ -1950,80 +2176,6 @@
 			(project "soccer bottom"
 				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
 					(reference "#PWR04")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Sensor_Proximity:QRE1113GR")
-		(at 156.21 81.28 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "2cf3aa79-04cb-4f4c-8a6a-b5a8b73e4bee")
-		(property "Reference" "U3"
-			(at 156.21 72.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "QRE1113GR"
-			(at 156.21 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "OptoDevice:OnSemi_CASE100CY"
-			(at 156.21 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.onsemi.com/pub/Collateral/QRE1113-D.PDF"
-			(at 156.21 78.74 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Miniature Reflective Optical Object Sensor, SMD-4"
-			(at 156.21 81.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "801a871d-e6a2-4c3c-b50a-1e13027ecc78")
-		)
-		(pin "1"
-			(uuid "de188355-6b93-4cff-a685-d2e497b2df05")
-		)
-		(pin "2"
-			(uuid "9088079f-96a2-48b6-8d1b-4b0d0409aadd")
-		)
-		(pin "3"
-			(uuid "5d227495-4df6-4678-9240-fcccdb6f3cb7")
-		)
-		(instances
-			(project "soccer bottom"
-				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
-					(reference "U3")
 					(unit 1)
 				)
 			)
@@ -2233,16 +2385,16 @@
 	)
 	(symbol
 		(lib_id "Sensor_Proximity:QRE1113GR")
-		(at 156.21 66.04 0)
+		(at 173.99 76.2 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "6fe51f6a-27cf-4192-980e-ef20ca66ed88")
 		(property "Reference" "U2"
-			(at 156.21 57.15 0)
+			(at 173.99 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2250,7 +2402,7 @@
 			)
 		)
 		(property "Value" "QRE1113GR"
-			(at 156.21 59.69 0)
+			(at 173.99 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2258,7 +2410,7 @@
 			)
 		)
 		(property "Footprint" "OptoDevice:OnSemi_CASE100CY"
-			(at 156.21 71.12 0)
+			(at 173.99 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2267,7 +2419,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.onsemi.com/pub/Collateral/QRE1113-D.PDF"
-			(at 156.21 63.5 0)
+			(at 173.99 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2276,7 +2428,7 @@
 			)
 		)
 		(property "Description" "Miniature Reflective Optical Object Sensor, SMD-4"
-			(at 156.21 66.04 0)
+			(at 173.99 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2300,6 +2452,76 @@
 			(project ""
 				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
 					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 181.61 66.04 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7125631f-8009-4509-a3ce-0a7b6843c606")
+		(property "Reference" "R2"
+			(at 184.15 64.7699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 184.15 67.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 179.832 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 181.61 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 181.61 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fde9bd46-75ca-4443-bab7-d192c5316a43")
+		)
+		(pin "2"
+			(uuid "156fb2f0-55fe-4aec-99ff-98c56b0018c1")
+		)
+		(instances
+			(project ""
+				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
+					(reference "R2")
 					(unit 1)
 				)
 			)
@@ -2438,6 +2660,206 @@
 			(project ""
 				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
 					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 166.37 83.82 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "9e4c20f8-35d4-42df-abe1-9242b91b0410")
+		(property "Reference" "#PWR07"
+			(at 166.37 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 170.434 84.836 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 166.37 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 166.37 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 166.37 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c440ef6b-4aa8-4e61-9de9-7842e0180440")
+		)
+		(instances
+			(project "soccer bottom"
+				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
+					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 166.37 60.96 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c17325db-5bd6-473b-aed3-f23bd6ac4307")
+		(property "Reference" "#PWR06"
+			(at 166.37 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 169.164 59.944 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 166.37 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 166.37 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 166.37 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "66567d1a-46d0-4dbe-a42d-5a826e5beb0e")
+		)
+		(instances
+			(project "soccer bottom"
+				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
+					(reference "#PWR06")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 166.37 66.04 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d32bf0a7-8ad2-4fab-8b3e-601ec6bc192c")
+		(property "Reference" "R1"
+			(at 168.91 64.7699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100"
+			(at 168.91 67.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
+			(at 164.592 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 166.37 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 166.37 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "95165974-0189-4a8c-a5bd-071b6dfef09f")
+		)
+		(pin "1"
+			(uuid "6ec5c047-f71a-4852-8391-566e13542059")
+		)
+		(instances
+			(project ""
+				(path "/40c37e40-8c5c-45d5-b32b-d7ae6e1f50f2"
+					(reference "R1")
 					(unit 1)
 				)
 			)
