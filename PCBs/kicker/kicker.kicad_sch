@@ -1332,10 +1332,28 @@
 		(uuid "0fc7a4d5-9d4d-4158-9f60-b604c3fee9ef")
 	)
 	(junction
+		(at 176.53 74.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "156c4c9c-ff08-496a-afa6-cc9f51d224c0")
+	)
+	(junction
+		(at 168.91 67.31)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "167daa20-dd3e-4477-9c73-fe6233e46c79")
+	)
+	(junction
 		(at 105.41 101.6)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "27ae2636-d61c-4c59-9196-5e4f6dab8e77")
+	)
+	(junction
+		(at 168.91 74.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "28954d23-a443-4d3e-b3ae-bf529a1ee6c4")
 	)
 	(junction
 		(at 88.9 156.21)
@@ -1385,6 +1403,12 @@
 		(color 0 0 0 0)
 		(uuid "f9e20fd7-48ee-4e59-881b-c3c160664ca8")
 	)
+	(junction
+		(at 176.53 67.31)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "fcd12b70-c0e5-4358-8d7b-f310b0b5caa9")
+	)
 	(no_connect
 		(at 120.65 120.65)
 		(uuid "d0ad33ee-86c7-4936-9359-6024001af795")
@@ -1408,6 +1432,16 @@
 			(type default)
 		)
 		(uuid "01b5ed1d-8774-48eb-ae73-ff1a00b892ae")
+	)
+	(wire
+		(pts
+			(xy 176.53 74.93) (xy 184.15 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "05b1d4ab-8f4b-4910-a171-18f8705b6a7d")
 	)
 	(wire
 		(pts
@@ -1478,6 +1512,26 @@
 			(type default)
 		)
 		(uuid "36333f50-1465-449f-91cc-d5d72cf726fe")
+	)
+	(wire
+		(pts
+			(xy 161.29 74.93) (xy 168.91 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4baab6d9-3c85-4ecf-96c0-5fadf29ba022")
+	)
+	(wire
+		(pts
+			(xy 168.91 67.31) (xy 176.53 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c16c36b-3998-4b9c-875f-39d2dec56cff")
 	)
 	(wire
 		(pts
@@ -1781,6 +1835,16 @@
 	)
 	(wire
 		(pts
+			(xy 168.91 74.93) (xy 176.53 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ea7b7883-9670-431c-9690-a0b131fab3ec")
+	)
+	(wire
+		(pts
 			(xy 87.63 101.6) (xy 87.63 118.11)
 		)
 		(stroke
@@ -1788,6 +1852,26 @@
 			(type default)
 		)
 		(uuid "f341cbcf-6bf7-49c5-8574-f3f62686dfc4")
+	)
+	(wire
+		(pts
+			(xy 176.53 67.31) (xy 184.15 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f701afd5-6352-46c0-a758-1a1e3cc0ee73")
+	)
+	(wire
+		(pts
+			(xy 161.29 67.31) (xy 168.91 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f97aa084-3c9a-4e62-85c8-b254caee3752")
 	)
 	(wire
 		(pts
@@ -1810,7 +1894,7 @@
 		(uuid "fe7cfe88-52e8-4cae-ab50-7b779b4b0041")
 	)
 	(label "48V+"
-		(at 111.76 36.83 180)
+		(at 142.24 67.31 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1931,7 +2015,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
-		(at 153.67 40.64 0)
+		(at 184.15 71.12 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -1939,7 +2023,7 @@
 		(dnp no)
 		(uuid "0cfcfb34-cab9-4977-a3ef-a0338f71544e")
 		(property "Reference" "C6"
-			(at 151.384 31.242 0)
+			(at 181.864 61.722 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1948,7 +2032,7 @@
 			)
 		)
 		(property "Value" "3300u"
-			(at 151.384 33.528 0)
+			(at 181.864 64.008 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1957,7 +2041,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_THT:CP_Radial_D18.0mm_P7.50mm"
-			(at 154.6352 44.45 0)
+			(at 185.1152 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1966,7 +2050,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 153.67 40.64 0)
+			(at 184.15 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1975,7 +2059,7 @@
 			)
 		)
 		(property "Description" "Polarized capacitor"
-			(at 153.67 40.64 0)
+			(at 184.15 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2066,7 +2150,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
-		(at 130.81 40.64 0)
+		(at 161.29 71.12 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -2074,7 +2158,7 @@
 		(dnp no)
 		(uuid "25b3f419-0982-43bc-9e07-cb53f8f5b25c")
 		(property "Reference" "C3"
-			(at 128.524 31.242 0)
+			(at 159.004 61.722 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2083,7 +2167,7 @@
 			)
 		)
 		(property "Value" "3300u"
-			(at 128.524 33.528 0)
+			(at 159.004 64.008 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2092,7 +2176,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_THT:CP_Radial_D18.0mm_P7.50mm"
-			(at 131.7752 44.45 0)
+			(at 162.2552 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2101,7 +2185,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 130.81 40.64 0)
+			(at 161.29 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2110,7 +2194,7 @@
 			)
 		)
 		(property "Description" "Polarized capacitor"
-			(at 130.81 40.64 0)
+			(at 161.29 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2225,7 +2309,7 @@
 				)
 			)
 		)
-		(property "Footprint" "UCC27624DR:SOIC127P599X175-8N"
+		(property "Footprint" "SOIC127P599X175-8N"
 			(at 105.41 123.19 0)
 			(effects
 				(font
@@ -2408,7 +2492,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
-		(at 146.05 40.64 0)
+		(at 176.53 71.12 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -2416,7 +2500,7 @@
 		(dnp no)
 		(uuid "56b11e97-a6a0-49da-8f47-bf36217b8b51")
 		(property "Reference" "C5"
-			(at 143.764 31.242 0)
+			(at 174.244 61.722 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2425,7 +2509,7 @@
 			)
 		)
 		(property "Value" "3300u"
-			(at 143.764 33.528 0)
+			(at 174.244 64.008 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2434,7 +2518,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_THT:CP_Radial_D18.0mm_P7.50mm"
-			(at 147.0152 44.45 0)
+			(at 177.4952 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2443,7 +2527,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 146.05 40.64 0)
+			(at 176.53 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2452,7 +2536,7 @@
 			)
 		)
 		(property "Description" "Polarized capacitor"
-			(at 146.05 40.64 0)
+			(at 176.53 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2477,7 +2561,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 111.76 44.45 0)
+		(at 142.24 74.93 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2486,7 +2570,7 @@
 		(fields_autoplaced yes)
 		(uuid "9cc507ff-5347-4991-b021-8a6904518f1c")
 		(property "Reference" "#PWR05"
-			(at 111.76 50.8 0)
+			(at 142.24 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2495,7 +2579,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 111.76 49.53 0)
+			(at 142.24 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2503,7 +2587,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 111.76 44.45 0)
+			(at 142.24 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2512,7 +2596,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 111.76 44.45 0)
+			(at 142.24 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2521,7 +2605,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 111.76 44.45 0)
+			(at 142.24 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3103,7 +3187,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
-		(at 138.43 40.64 0)
+		(at 168.91 71.12 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -3111,7 +3195,7 @@
 		(dnp no)
 		(uuid "ee1d2d1d-8db8-4ff1-9a76-69185bf3ea2a")
 		(property "Reference" "C4"
-			(at 136.144 31.242 0)
+			(at 166.624 61.722 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3120,7 +3204,7 @@
 			)
 		)
 		(property "Value" "3300u"
-			(at 136.144 33.528 0)
+			(at 166.624 64.008 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3129,7 +3213,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_THT:CP_Radial_D18.0mm_P7.50mm"
-			(at 139.3952 44.45 0)
+			(at 169.8752 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3138,7 +3222,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 138.43 40.64 0)
+			(at 168.91 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3147,7 +3231,7 @@
 			)
 		)
 		(property "Description" "Polarized capacitor"
-			(at 138.43 40.64 0)
+			(at 168.91 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
