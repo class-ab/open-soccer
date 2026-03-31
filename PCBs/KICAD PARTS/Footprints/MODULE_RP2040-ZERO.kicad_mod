@@ -538,7 +538,7 @@
 		(uuid "cd8708d8-b2d2-4380-a204-ab6d4033cbcf")
 	)
 	(embedded_fonts no)
-	(model "C:/Users/aiden/Documents/KiCad/LIBRARIES/RP2040-ZERO/RP2040-ZERO.step"
+	(model "C:/Users/aiden/Documents/GitHub/open-soccer/PCBs/KICAD PARTS/Footprints/RP2040-ZERO.step"
 		(offset
 			(xyz 0 0 0)
 		)
