@@ -1,4 +1,4 @@
-28086551278076430
+28093657507589426
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -62418,6 +62418,34 @@ emi filter
 0
 5
 5
+Footprints
+MODULE_DEV-15583
+
+
+0
+33
+33
+Footprints
+MODULE_DEV-16771
+
+
+0
+65
+65
+Footprints
+MODULE_RP2040-ZERO
+
+
+0
+23
+23
+Footprints
+SOIC127P599X175-8N
+
+
+0
+8
+8
 Fuse
 FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165
 Littelfuse fuse holder for ATO/FKS blade fuses, 80V, vertical, 20 x 6mm, PCB thickness up to 1.5mm, http://www.littelfuse.com/~/media/commercial-vehicle/datasheets/automotive-fuse-holders/ato/littelfuse-fuse-holder-ato-flr-pcb-datasheet.pdf
@@ -71830,6 +71858,13 @@ LED_THT
 LED_VCCLite_5381H7_6.35x6.35mm
 Yellow 5381 Series LED VCCLite https://vcclite.com/wp-content/uploads/wpallimport/files/files/5381Series.pdf http://static.vcclite.com/pdf/Mounting%20Hole%20Pattern%202.pdf
 Yellow 5381 Series LED
+0
+2
+2
+Library
+L_YSPI1365
+Choke, SMD, 12x12mm 6mm height
+Choke SMD
 0
 2
 2
@@ -96431,13 +96466,6 @@ WiFi IEEE802.11 b/g/n
 0
 44
 44
-RP2040-ZERO
-MODULE_RP2040-ZERO
-
-
-0
-23
-23
 Relay_SMD
 Relay_2P2T_10x6mm_TE_IMxxG
 Signal Relay, 10x6mm, 2 Form C, Gull Wings, https://www.te.com/commerce/DocumentDelivery/DDEController?Action=showdoc&DocId=Data+Sheet%7F108-98001%7FZ.1%7Fpdf%7FEnglish%7FENG_DS_108-98001_Z.1.pdf
