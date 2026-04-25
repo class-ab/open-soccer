@@ -3466,16 +3466,6 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 64.77) (xy 92.71 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "27d04bfc-bbe2-4b27-8d22-ddcb6ea3d1b6")
-	)
-	(wire
-		(pts
 			(xy 101.6 43.18) (xy 106.68 43.18)
 		)
 		(stroke
@@ -4066,7 +4056,7 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 63.5) (xy 87.63 63.5)
+			(xy 87.63 63.5) (xy 93.98 63.5)
 		)
 		(stroke
 			(width 0)
@@ -4143,16 +4133,6 @@
 			(type default)
 		)
 		(uuid "cdcca77e-1ece-4901-8b21-97d1d620db5c")
-	)
-	(wire
-		(pts
-			(xy 92.71 64.77) (xy 93.98 64.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ce45d1df-ac0f-4a96-a62b-2259eee14e1e")
 	)
 	(wire
 		(pts
@@ -4455,7 +4435,7 @@
 		(uuid "6e8d28c8-1313-4a61-863f-e4fc6b7fe067")
 	)
 	(label "capEN"
-		(at 93.98 64.77 0)
+		(at 93.98 63.5 0)
 		(effects
 			(font
 				(size 1.27 1.27)
