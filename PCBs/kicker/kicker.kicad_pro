@@ -545,7 +545,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "./",
+      "plot": "v1 review/",
       "pos_files": "./",
       "specctra_dsn": "",
       "step": "kicker.step",
