@@ -6448,7 +6448,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "2"
+		(property "Value" "10"
 			(at 106.172 114.3 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6933,7 +6933,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "2"
+		(property "Value" "10"
 			(at 106.172 109.22 90)
 			(show_name no)
 			(do_not_autoplace no)

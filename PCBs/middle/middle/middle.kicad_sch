@@ -3255,9 +3255,9 @@
 		)
 		(uuid "588e027c-e041-4d95-b802-fde52ac8ce44")
 	)
-	(text "OpenMV rt1062"
+	(text "OpenMV RT1062"
 		(exclude_from_sim no)
-		(at 174.752 101.6 0)
+		(at 175.26 101.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
