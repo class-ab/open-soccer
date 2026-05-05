@@ -3123,10 +3123,16 @@
 		(uuid "2d4f5bad-333d-4bd3-85c0-687b5f928552")
 	)
 	(junction
-		(at 144.78 43.18)
+		(at 130.81 43.18)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "3d538a2a-ae0f-4dcb-8b74-bb1cc6cf5e35")
+		(uuid "36438d97-37e8-4848-adfa-89dde62c3ed3")
+	)
+	(junction
+		(at 134.62 43.18)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "448194d8-390d-4819-8f6f-f3ecf6de531a")
 	)
 	(junction
 		(at 180.34 93.98)
@@ -3229,12 +3235,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e0d87f72-3f81-4a6f-8a00-262887d96aa4")
-	)
-	(junction
-		(at 130.81 43.18)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e7e46f99-37a4-497f-a5b3-8481001fa303")
 	)
 	(junction
 		(at 149.86 93.98)
@@ -3366,6 +3366,16 @@
 	)
 	(wire
 		(pts
+			(xy 134.62 43.18) (xy 130.81 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "12fc38fe-4077-4695-94ad-cc6c19162e94")
+	)
+	(wire
+		(pts
 			(xy 71.12 59.69) (xy 71.12 53.34)
 		)
 		(stroke
@@ -3406,16 +3416,6 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 38.1) (xy 144.78 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "18ab9da9-b9a8-4a99-9c45-2811ff6f6845")
-	)
-	(wire
-		(pts
 			(xy 110.49 59.69) (xy 106.68 59.69)
 		)
 		(stroke
@@ -3453,6 +3453,16 @@
 			(type default)
 		)
 		(uuid "24dcc4ec-1336-408d-9e27-091d0431b62e")
+	)
+	(wire
+		(pts
+			(xy 130.81 43.18) (xy 130.81 49.53)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "263a9984-5819-434c-a71b-1228f6ef6f5f")
 	)
 	(wire
 		(pts
@@ -3566,6 +3576,16 @@
 	)
 	(wire
 		(pts
+			(xy 134.62 43.18) (xy 137.16 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "42b4b116-9527-4e28-abe2-71ab2d03ccbb")
+	)
+	(wire
+		(pts
 			(xy 134.62 93.98) (xy 135.89 93.98)
 		)
 		(stroke
@@ -3673,16 +3693,6 @@
 			(type default)
 		)
 		(uuid "647a405b-eab0-4bc0-9686-d3d32e1e2991")
-	)
-	(wire
-		(pts
-			(xy 130.81 43.18) (xy 134.62 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "655862b1-908e-4531-85e2-5eb45ffdcc2f")
 	)
 	(wire
 		(pts
@@ -3833,6 +3843,16 @@
 			(type default)
 		)
 		(uuid "7d497306-2b1b-43d4-b067-53cc61511c59")
+	)
+	(wire
+		(pts
+			(xy 134.62 38.1) (xy 134.62 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7f0dbab0-5dcb-4b92-86cd-8e33edeff60c")
 	)
 	(wire
 		(pts
@@ -4036,16 +4056,6 @@
 	)
 	(wire
 		(pts
-			(xy 130.81 49.53) (xy 130.81 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bb4c9b5c-99ff-489e-bc09-c81e84bdb852")
-	)
-	(wire
-		(pts
 			(xy 59.69 149.86) (xy 67.31 149.86)
 		)
 		(stroke
@@ -4063,16 +4073,6 @@
 			(type default)
 		)
 		(uuid "c3406a60-1795-4533-a0c7-8e838a708baf")
-	)
-	(wire
-		(pts
-			(xy 144.78 43.18) (xy 146.05 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c45e1aa7-a208-40dc-90b3-929eedcfc413")
 	)
 	(wire
 		(pts
@@ -4246,16 +4246,6 @@
 	)
 	(wire
 		(pts
-			(xy 142.24 43.18) (xy 144.78 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f3518ae5-fb1b-4ed7-9454-c5e95394ef88")
-	)
-	(wire
-		(pts
 			(xy 67.31 132.08) (xy 67.31 149.86)
 		)
 		(stroke
@@ -4425,7 +4415,7 @@
 		(uuid "5b37ab3d-4bb6-4b08-a068-29a56359f66e")
 	)
 	(label "48V+"
-		(at 146.05 43.18 0)
+		(at 137.16 43.18 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5529,86 +5519,6 @@
 			(project "kicker"
 				(path "/6b690c8d-b1b2-43bd-b6c1-471fc1941926"
 					(reference "#PWR01")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:D_Schottky")
-		(at 138.43 43.18 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "4297e53c-1143-4104-b83c-22f77f457deb")
-		(property "Reference" "D2"
-			(at 138.7475 36.83 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "SS210"
-			(at 138.7475 39.37 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Diode_SMD:D_SMA"
-			(at 138.43 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 138.43 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Schottky diode"
-			(at 138.43 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "0de8b123-c7db-4a05-a7fe-ccabb1b458c6")
-		)
-		(pin "2"
-			(uuid "4ca25e83-c36b-4c90-8612-8c818bfb066d")
-		)
-		(instances
-			(project "kicker"
-				(path "/6b690c8d-b1b2-43bd-b6c1-471fc1941926"
-					(reference "D2")
 					(unit 1)
 				)
 			)
@@ -7887,7 +7797,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint_Probe")
-		(at 144.78 38.1 0)
+		(at 134.62 38.1 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -7898,7 +7808,7 @@
 		(fields_autoplaced yes)
 		(uuid "fb308bd6-f5f9-4d37-aedd-9c1d04c8dd12")
 		(property "Reference" "TP1"
-			(at 148.59 35.2424 0)
+			(at 138.43 35.2424 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7909,7 +7819,7 @@
 			)
 		)
 		(property "Value" "48V probe"
-			(at 148.59 37.7824 0)
+			(at 138.43 37.7824 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7920,7 +7830,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm"
-			(at 149.86 38.1 0)
+			(at 139.7 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7931,7 +7841,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 149.86 38.1 0)
+			(at 139.7 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7942,7 +7852,7 @@
 			)
 		)
 		(property "Description" "test point (alternative probe-style design)"
-			(at 144.78 38.1 0)
+			(at 134.62 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
