@@ -5357,7 +5357,7 @@
 		(uuid "07e4a4ae-6122-412c-8617-ecdcf86c61be")
 	)
 	(label "CHARGE"
-		(at 180.34 44.45 180)
+		(at 180.34 46.99 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5592,7 +5592,7 @@
 		(uuid "8b58689e-2f47-459f-96ee-dda85a9dc07f")
 	)
 	(label "KICK"
-		(at 180.34 46.99 180)
+		(at 180.34 44.45 180)
 		(effects
 			(font
 				(size 1.27 1.27)
