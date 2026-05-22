@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 5,
+    "active_layer": 0,
     "active_layer_preset": "",
     "auto_track_width": false,
     "hidden_netclasses": [],
@@ -41,6 +41,7 @@
       "footprint_references",
       "tracks",
       "drc_errors",
+      "drawing_sheet",
       "bitmaps",
       "pads",
       "zones",
@@ -49,9 +50,10 @@
       "locked_item_shadows",
       "conflict_shadows",
       "shapes",
+      "board_outline_area",
       "ly_points"
     ],
-    "visible_layers": "ffffffff_ffffffff_fffffff5_ffffff7f",
+    "visible_layers": "ffffffff_ffffffff_fffffff5_ffffffff",
     "zone_display_mode": 0
   },
   "git": {

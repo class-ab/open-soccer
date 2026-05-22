@@ -146,7 +146,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector:Conn_01x04_Socket"
+		(symbol "Connector:Screw_Terminal_01x02"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -157,7 +157,7 @@
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "J"
-				(at 0 5.08 0)
+				(at 0 2.54 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -166,8 +166,8 @@
 					)
 				)
 			)
-			(property "Value" "Conn_01x04_Socket"
-				(at 0 -7.62 0)
+			(property "Value" "Screw_Terminal_01x02"
+				(at 0 -5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -198,7 +198,7 @@
 					)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x04, script generated"
+			(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -209,17 +209,7 @@
 					)
 				)
 			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "connector"
+			(property "ki_keywords" "screw terminal"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -230,7 +220,7 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
+			(property "ki_fp_filters" "TerminalBlock*:*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -241,34 +231,21 @@
 					)
 				)
 			)
-			(symbol "Conn_01x04_Socket_1_1"
-				(polyline
-					(pts
-						(xy -1.27 2.54) (xy -0.508 2.54)
-					)
+			(symbol "Screw_Terminal_01x02_1_1"
+				(rectangle
+					(start -1.27 1.27)
+					(end 1.27 -3.81)
 					(stroke
-						(width 0.1524)
+						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type background)
 					)
 				)
 				(polyline
 					(pts
-						(xy -1.27 0) (xy -0.508 0)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.27 -2.54) (xy -0.508 -2.54)
+						(xy -0.5334 0.3302) (xy 0.3302 -0.508)
 					)
 					(stroke
 						(width 0.1524)
@@ -280,7 +257,7 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 -5.08) (xy -0.508 -5.08)
+						(xy -0.5334 -2.2098) (xy 0.3302 -3.048)
 					)
 					(stroke
 						(width 0.1524)
@@ -290,10 +267,10 @@
 						(type none)
 					)
 				)
-				(arc
-					(start 0 2.032)
-					(mid -0.5058 2.54)
-					(end 0 3.048)
+				(polyline
+					(pts
+						(xy -0.3556 0.508) (xy 0.508 -0.3302)
+					)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -302,10 +279,10 @@
 						(type none)
 					)
 				)
-				(arc
-					(start 0 -0.508)
-					(mid -0.5058 0)
-					(end 0 0.508)
+				(polyline
+					(pts
+						(xy -0.3556 -2.032) (xy 0.508 -2.8702)
+					)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -314,10 +291,9 @@
 						(type none)
 					)
 				)
-				(arc
-					(start 0 -3.048)
-					(mid -0.5058 -2.54)
-					(end 0 -2.032)
+				(circle
+					(center 0 0)
+					(radius 0.635)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -326,10 +302,9 @@
 						(type none)
 					)
 				)
-				(arc
-					(start 0 -5.588)
-					(mid -0.5058 -5.08)
-					(end 0 -4.572)
+				(circle
+					(center 0 -2.54)
+					(radius 0.635)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -339,7 +314,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 2.54 0)
+					(at -5.08 0 0)
 					(length 3.81)
 					(name "Pin_1"
 						(effects
@@ -357,7 +332,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 0 0)
+					(at -5.08 -2.54 0)
 					(length 3.81)
 					(name "Pin_2"
 						(effects
@@ -367,42 +342,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -5.08 0)
-					(length 3.81)
-					(name "Pin_4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2968,7 +2907,7 @@
 	)
 	(rectangle
 		(start 207.01 33.02)
-		(end 251.46 59.69)
+		(end 233.68 59.69)
 		(stroke
 			(width 0)
 			(type default)
@@ -3306,7 +3245,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 38.1) (xy 237.49 38.1)
+			(xy 217.17 38.1) (xy 219.71 38.1)
 		)
 		(stroke
 			(width 0)
@@ -3446,7 +3385,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 50.8) (xy 236.22 50.8)
+			(xy 217.17 50.8) (xy 218.44 50.8)
 		)
 		(stroke
 			(width 0)
@@ -3466,7 +3405,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 48.26) (xy 236.22 48.26)
+			(xy 217.17 48.26) (xy 218.44 48.26)
 		)
 		(stroke
 			(width 0)
@@ -3636,7 +3575,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 55.88) (xy 237.49 55.88)
+			(xy 217.17 55.88) (xy 219.71 55.88)
 		)
 		(stroke
 			(width 0)
@@ -3886,7 +3825,7 @@
 	)
 	(wire
 		(pts
-			(xy 247.65 52.07) (xy 247.65 53.34)
+			(xy 229.87 52.07) (xy 229.87 53.34)
 		)
 		(stroke
 			(width 0)
@@ -3996,7 +3935,7 @@
 	)
 	(wire
 		(pts
-			(xy 247.65 53.34) (xy 234.95 53.34)
+			(xy 229.87 53.34) (xy 217.17 53.34)
 		)
 		(stroke
 			(width 0)
@@ -4256,7 +4195,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 43.18) (xy 237.49 43.18)
+			(xy 217.17 43.18) (xy 219.71 43.18)
 		)
 		(stroke
 			(width 0)
@@ -4345,7 +4284,7 @@
 		(uuid "2168a543-906a-4b92-aeb1-204b946fa89e")
 	)
 	(label "mcuKick"
-		(at 236.22 50.8 0)
+		(at 218.44 50.8 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4395,7 +4334,7 @@
 		(uuid "539ecf78-6260-41e3-b51d-00327d5c7f8f")
 	)
 	(label "SOLin"
-		(at 237.49 38.1 0)
+		(at 219.71 38.1 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4435,7 +4374,7 @@
 		(uuid "86372077-649f-4363-9942-eaab6cc20db9")
 	)
 	(label "SOLout"
-		(at 237.49 43.18 0)
+		(at 219.71 43.18 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4445,7 +4384,7 @@
 		(uuid "9910ae53-7f0b-421a-a8f2-ae3497b5a2cf")
 	)
 	(label "mcuCap"
-		(at 236.22 48.26 0)
+		(at 218.44 48.26 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4970,7 +4909,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 237.49 55.88 0)
+		(at 219.71 55.88 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4980,7 +4919,7 @@
 		(dnp no)
 		(uuid "0e8366d9-f8e8-42c7-8fb8-0ba1f0278dfb")
 		(property "Reference" "#PWR08"
-			(at 237.49 62.23 0)
+			(at 219.71 62.23 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4991,7 +4930,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 241.554 57.15 0)
+			(at 223.774 57.15 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5001,7 +4940,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 237.49 55.88 0)
+			(at 219.71 55.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5012,7 +4951,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 237.49 55.88 0)
+			(at 219.71 55.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5023,7 +4962,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 237.49 55.88 0)
+			(at 219.71 55.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5850,7 +5789,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x01_Socket")
-		(at 229.87 43.18 0)
+		(at 212.09 43.18 0)
 		(mirror y)
 		(unit 1)
 		(body_style 1)
@@ -5859,10 +5798,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "577846cd-a742-441f-a36a-b58e7de8e540")
 		(property "Reference" "J3"
-			(at 228.6 41.9099 0)
+			(at 211.582 42.926 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5873,7 +5811,8 @@
 			)
 		)
 		(property "Value" "Conn_01x01_Socket"
-			(at 228.6 44.4499 0)
+			(at 210.82 44.4499 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5884,7 +5823,7 @@
 			)
 		)
 		(property "Footprint" "Connector_Wire:SolderWirePad_1x01_SMD_3x6mm"
-			(at 229.87 43.18 0)
+			(at 212.09 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5895,7 +5834,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 229.87 43.18 0)
+			(at 212.09 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5906,7 +5845,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x01, script generated"
-			(at 229.87 43.18 0)
+			(at 212.09 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6004,94 +5943,6 @@
 			(project "kicker"
 				(path "/6b690c8d-b1b2-43bd-b6c1-471fc1941926"
 					(reference "R5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x04_Socket")
-		(at 229.87 50.8 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp yes)
-		(uuid "76ac0c73-88d6-4372-bd15-37eddd7882ac")
-		(property "Reference" "J2"
-			(at 228.6 50.7999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "Conn_01x04_Socket"
-			(at 228.6 53.3399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical"
-			(at 229.87 50.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 229.87 50.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
-			(at 229.87 50.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "25d16832-c709-4eeb-b31d-7601e70c57fc")
-		)
-		(pin "1"
-			(uuid "b01e8ba7-1fff-4704-9dbe-d6cd090261ef")
-		)
-		(pin "3"
-			(uuid "5c092398-0026-4775-bc72-da5f8860a978")
-		)
-		(pin "4"
-			(uuid "15f0acbd-86a0-4157-8652-02d7ad35f579")
-		)
-		(instances
-			(project "kicker"
-				(path "/6b690c8d-b1b2-43bd-b6c1-471fc1941926"
-					(reference "J2")
 					(unit 1)
 				)
 			)
@@ -6337,6 +6188,89 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:Screw_Terminal_01x02")
+		(at 212.09 53.34 0)
+		(mirror y)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a74d65bb-c987-4e34-8f66-8ba769aa4a31")
+		(property "Reference" "J2"
+			(at 209.55 53.3399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Screw_Terminal_01x02"
+			(at 209.55 55.8799 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2_1x02_P5.00mm_Horizontal"
+			(at 212.09 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 212.09 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 212.09 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "baeaffed-da67-49c4-809f-a98a178dd5b5")
+		)
+		(pin "2"
+			(uuid "bfd01bb9-12ad-4109-a846-55f687da1b41")
+		)
+		(instances
+			(project "kicker"
+				(path "/6b690c8d-b1b2-43bd-b6c1-471fc1941926"
+					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 105.41 116.84 90)
 		(unit 1)
@@ -6504,7 +6438,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 247.65 52.07 0)
+		(at 229.87 52.07 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -6514,7 +6448,7 @@
 		(dnp no)
 		(uuid "ade64db4-f874-4c76-adf5-88a969e96d48")
 		(property "Reference" "#PWR07"
-			(at 247.65 55.88 0)
+			(at 229.87 55.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6525,7 +6459,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 247.65 47.752 0)
+			(at 229.87 47.752 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6535,7 +6469,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 247.65 52.07 0)
+			(at 229.87 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6546,7 +6480,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 247.65 52.07 0)
+			(at 229.87 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6557,7 +6491,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VCC\""
-			(at 247.65 52.07 0)
+			(at 229.87 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7233,6 +7167,89 @@
 			(project "kicker"
 				(path "/6b690c8d-b1b2-43bd-b6c1-471fc1941926"
 					(reference "R12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Screw_Terminal_01x02")
+		(at 212.09 48.26 0)
+		(mirror y)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d5ce15db-89c1-4629-b056-9b3eb4950e52")
+		(property "Reference" "J1"
+			(at 209.55 48.2599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Screw_Terminal_01x02"
+			(at 209.55 50.7999 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2_1x02_P5.00mm_Horizontal"
+			(at 212.09 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 212.09 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 212.09 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8c1a7479-7582-4386-9eed-265a904ebff0")
+		)
+		(pin "2"
+			(uuid "17ecc761-4b64-4648-afaf-8dbf24d8bfd3")
+		)
+		(instances
+			(project "kicker"
+				(path "/6b690c8d-b1b2-43bd-b6c1-471fc1941926"
+					(reference "J1")
 					(unit 1)
 				)
 			)
@@ -7958,7 +7975,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x01_Socket")
-		(at 229.87 38.1 0)
+		(at 212.09 38.1 0)
 		(mirror y)
 		(unit 1)
 		(body_style 1)
@@ -7967,10 +7984,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "fce1dbcc-05c5-4ec4-8728-298c5b9e78dd")
 		(property "Reference" "J4"
-			(at 228.6 36.8299 0)
+			(at 211.582 38.1 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7981,7 +7997,7 @@
 			)
 		)
 		(property "Value" "Conn_01x01_Socket"
-			(at 228.6 39.3699 0)
+			(at 227.076 34.798 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7992,7 +8008,7 @@
 			)
 		)
 		(property "Footprint" "Connector_Wire:SolderWirePad_1x01_SMD_3x6mm"
-			(at 229.87 38.1 0)
+			(at 212.09 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8003,7 +8019,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 229.87 38.1 0)
+			(at 212.09 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8014,7 +8030,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x01, script generated"
-			(at 229.87 38.1 0)
+			(at 212.09 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
