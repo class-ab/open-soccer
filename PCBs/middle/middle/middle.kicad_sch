@@ -5447,7 +5447,7 @@
 		)
 		(uuid "3fefb9c3-bf3d-4e38-a797-76971f6a265b")
 	)
-	(label "CE"
+	(label "IRQ"
 		(at 224.79 146.05 180)
 		(effects
 			(font
@@ -5519,7 +5519,7 @@
 		)
 		(uuid "4b9a61c4-5a3f-4bc0-9480-90898f621c7c")
 	)
-	(label "IRQ"
+	(label "CE"
 		(at 224.79 143.51 180)
 		(effects
 			(font
@@ -5661,7 +5661,7 @@
 		)
 		(uuid "9abd5e8d-d6c1-4dfb-b725-47c7da5ed1aa")
 	)
-	(label "IRQ"
+	(label "CE"
 		(at 87.63 80.01 180)
 		(effects
 			(font
@@ -5814,7 +5814,7 @@
 		)
 		(uuid "ec1ea620-9242-49ef-a43d-6e32149f576a")
 	)
-	(label "CE"
+	(label "IRQ"
 		(at 87.63 82.55 180)
 		(effects
 			(font
@@ -6446,7 +6446,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 155.702 134.62 90)
 			(hide yes)
 			(show_name no)
@@ -8364,7 +8364,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Fuse:Fuseholder_Clip-5x20mm_Schurter_OG_Lateral_P15.00x5.00mm_D1.3mm_Horizontal"
+		(property "Footprint" "Fuse:Fuseholder_Clip-5x20mm_Littelfuse_520_Inline_P20.50x5.80mm_D1.30mm_Horizontal"
 			(at 156.21 64.008 90)
 			(hide yes)
 			(show_name no)
@@ -8848,7 +8848,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 155.702 144.78 90)
 			(hide yes)
 			(show_name no)

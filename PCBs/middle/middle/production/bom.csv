@@ -1,0 +1,12 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+C1,CP_Radial_D6.3mm_P2.50mm,1,100u,
+F1,Fuseholder_Clip-5x20mm_Littelfuse_520_Inline_P20.50x5.80mm_D1.30mm_Horizontal,1,Fuse,
+"J15, J16, J17, J18, J19, J21","TerminalBlock_Phoenix_MKDS-1,5-2_1x02_P5.00mm_Horizontal",6,Screw_Terminal_01x02,
+"J2, J3, J4, J5","TerminalBlock_Phoenix_MKDS-1,5-3_1x03_P5.00mm_Horizontal",4,Screw_Terminal_01x03,
+R1,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,1,4.7k,
+R2,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,1,1k,
+"R4, R5, R6",R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal,3,10k,
+"SW1, SW2, SW3",SW_PUSH_6mm_H5mm,3,SW_Push,
+U1,MODULE_DEV-16771,1,DEV-16771,
+U2,MODULE_4754,1,4754,
+U3,nRF24L01_Breakout,1,NRF24L01_Breakout,
