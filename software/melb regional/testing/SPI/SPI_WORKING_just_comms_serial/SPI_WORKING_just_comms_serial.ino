@@ -59,6 +59,7 @@ void setup() {
 }
 
 void loop() {
+  onCSChange();
   if (packetReady) {
     packetReady = false;
 

@@ -43,9 +43,9 @@ from machine import SPI
 from machine import Pin
 
 # Index into `thresholds` for each of the two colors being tracked.
-COLOR_A_INDEX = 2  # ball
-COLOR_B_INDEX = 1  # yellow goal
-COLOR_C_INDEX = 0  # blue goal
+COLOR_A_INDEX = 2  # ball 2
+COLOR_B_INDEX = 3  # yellow goal 1
+COLOR_C_INDEX = 3  # blue goal 0
 
 CAMERA_ROTATION_OFFSET_DEG = 90
 

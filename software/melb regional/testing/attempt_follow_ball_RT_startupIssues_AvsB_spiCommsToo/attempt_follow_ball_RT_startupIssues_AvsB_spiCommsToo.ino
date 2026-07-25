@@ -165,6 +165,7 @@ const int BALL_SPI_CS_PIN   = 10; // frames each 8-byte packet
 const uint8_t BALL_PACKET_LEN = 8;
 const uint8_t BALL_SYNC_A = 0xAA;
 const uint8_t BALL_SYNC_B = 0xAB;
+const uint8_t BALL_SYNC_C = 0xAC;
 
 struct BallPacket {
   bool detected;
@@ -254,7 +255,8 @@ const float ADC_REF_VOLTAGE = 3.3f; // Teensy 4.x ADC reference
 // At the shutdown threshold (14.7V), the divider node sits at
 // 14.7 / 5.7 = 2.58V - comfortably under the 3.3V Teensy ADC max even
 // well above the cutoff (e.g. a full 4S charge at ~16.8V -> ~2.95V).
-const float BATTERY_SHUTDOWN_VOLTAGE = 14.7f;
+// const float BATTERY_SHUTDOWN_VOLTAGE = 14.7f;
+const float BATTERY_SHUTDOWN_VOLTAGE = 0.0f;
 const unsigned long BATTERY_CHECK_INTERVAL_MS = 5000;
 const int BATTERY_SAMPLE_COUNT = 8; // oversampled per reading, for stability
 
