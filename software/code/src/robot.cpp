@@ -64,30 +64,6 @@ void loop() {
 
   updateIMU();
 
-  if (digitalRead(button1) == HIGH) {
-    delay(100);
-
-    updateIMU();
-
-    float startHeading = currentYawDeg;
-
-    Serial.print("Starting Heading: ");
-    Serial.println(startHeading);
-
-    robotCurrentlyRunning = true;
-    lastRunStateChangeMs = millis();
-
-    move(startHeading + 0,   1500, startHeading + 90.0f,  ROBOT_MAX_SPEED);
-    move(startHeading + 90,  1500, startHeading + 180.0f, ROBOT_MAX_SPEED);
-    move(startHeading + 180, 1500, startHeading + 270.0f, ROBOT_MAX_SPEED);
-    move(startHeading + 270, 1500, startHeading,          ROBOT_MAX_SPEED);
-
-    stopAllMotors();
-
-    robotCurrentlyRunning = false;
-    lastRunStateChangeMs = millis();
-  }
-
   chaseTick();
 }
 
