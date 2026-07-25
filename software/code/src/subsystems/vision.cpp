@@ -84,8 +84,6 @@ void getLatestBallData(BallPacket &out) {
 }
 
 void chaseTick() {
-  updateIMU();
-
   BallPacket ball;
   getLatestBallData(ball);
 
