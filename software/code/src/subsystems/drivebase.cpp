@@ -153,59 +153,6 @@ float angleAtTime(const RotationProfile &profile, float t_sec) {
   return sign * mag;
 }
 
-void move(
-  float direction_deg,
-  unsigned long duration_ms,
-  float targetRotation_deg,
-  float maxSpeed) {
-
-  if (duration_ms == 0) {
-    stopAllMotors();
-    return;
-  }
-
-  updateIMU();
-
-  float startYaw = currentYawDeg;
-  float rotationDelta = angleError(targetRotation_deg, startYaw);
-  float totalTime_sec = duration_ms / 1000.0f;
-
-  MoveProfile profile =
-    computeMoveProfile(maxSpeed, totalTime_sec, ACCEL_LIMIT);
-
-  RotationProfile rotationProfile =
-    computeRotationProfile(rotationDelta, ROTATION_ACCEL_LIMIT, ROTATION_MAX_SPEED);
-
-  resetHeadingPID();
-
-  unsigned long moveStart = millis();
-
-  while (true) {
-    unsigned long elapsed_ms = millis() - moveStart;
-
-    if (elapsed_ms >= duration_ms) {
-      break;
-    }
-
-    systemTick();
-    updateIMU();
-
-    float t_sec = elapsed_ms / 1000.0f;
-    float speed = speedAtTime(profile, t_sec, totalTime_sec, ACCEL_LIMIT);
-
-    desiredHeadingDeg =
-      startYaw + angleAtTime(rotationProfile, t_sec);
-
-    float rotation = headingCorrection();
-
-    drive(direction_deg, speed, rotation);
-
-    delay(5);
-  }
-
-  stopAllMotors();
-}
-
 void drive(float direction_deg, float speed, float rotation) {
   speed = constrain(speed, 0.0f, ROBOT_MAX_SPEED);
 
