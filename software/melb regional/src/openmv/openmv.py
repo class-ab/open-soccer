@@ -43,9 +43,9 @@ import sensor
 from machine import UART
 
 # Index into `thresholds` for each of the three colors being tracked.
-COLOR_A_INDEX = 1  # ball 1
-COLOR_B_INDEX = 2  # yellow goal 2
-COLOR_C_INDEX = 3  # blue goal 3
+COLOR_A_INDEX = 2  # ball 2
+COLOR_B_INDEX = 3  # yellow goal 1
+COLOR_C_INDEX = 3  # blue goal 0
 
 CAMERA_ROTATION_OFFSET_DEG = 90
 
@@ -55,10 +55,10 @@ MIN_TOTAL_PIXELS = 10
 # The below thresholds track in general red/green/blue things. You will
 # want to re-tune these for your actual target colors.
 thresholds = [
-    (0, 0, 0, 0, 0, 0),  # nothing
-    (30, 65, 10, 45, 25, 50),  # ball
-    (55, 75, -20, 10, 30, 50),  # yellow goal
     (17, 27, -25, -10, -12, 5),  # blue goal
+    (55, 75, -20, 10, 30, 50),  # yellow goal
+    (30, 65, 10, 45, 25, 50),  # ball
+    (0, 0, 0, 0, 0, 0),  # nothing
 ]
 
 csi0 = csi.CSI()
@@ -118,6 +118,8 @@ def send_ball_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
         checksum ^= b
     packet[7] = checksum
 
+    # No CS/framing signal on UART - the sync byte + checksum are what
+    # let the Teensy find packet boundaries in the raw byte stream.
     uart.write(packet)
 
 
@@ -146,8 +148,22 @@ def track_color(img, threshold):
     if last_biggest < MIN_TOTAL_PIXELS:
         return False, 0.0, 0.0, 0
 
-    angle_deg = math.degrees(math.atan2(biggest_x, biggest_y)) + CAMERA_ROTATION_OFFSET_DEG
-    radius_px = math.sqrt(biggest_x * biggest_x + biggest_y * biggest_y)
+    # flip so "up" in the image is positive, math-style
+    # Polar coordinates of the averaged blob, relative to the image
+    # center:
+    #   angle: 0 deg = straight up/ahead in-frame, +90 = right,
+    #          -90 = left, +-180 = straight down/behind.
+    #   radius: pixel distance of the blob from center. This is an
+    #           off-center distance, NOT a real-world distance to
+    #           the ball - a monocular camera can't get true
+    #           distance from centroid position alone. `pixel_count`
+    #           (sent separately, byte 6) is a rough proxy for how
+    #           close/big the ball looks and is what the Teensy uses
+    #           to judge "close enough, stop approaching."
+    dx = biggest_x - CENTER_X
+    dy = biggest_y - CENTER_Y
+    angle_deg = math.degrees(math.atan2(dx, dy)) + CAMERA_ROTATION_OFFSET_DEG
+    radius_px = math.sqrt(dx * dx + dy * dy)
 
     return True, angle_deg, radius_px, last_biggest
 
