@@ -92,7 +92,7 @@ constexpr int ADC_RESOLUTION_BITS = 12;
 constexpr int ADC_MAX_VALUE = (1 << ADC_RESOLUTION_BITS) - 1;
 constexpr float ADC_REF_VOLTAGE = 3.3f;
 
-constexpr float BATTERY_SHUTDOWN_VOLTAGE = 0.0f;
+constexpr float BATTERY_SHUTDOWN_VOLTAGE = 14.8f;
 constexpr unsigned long BATTERY_CHECK_INTERVAL_MS = 5000;
 constexpr int BATTERY_SAMPLE_COUNT = 8;
 
