@@ -8,7 +8,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#include "subsystems/ball_tracking.h"
+#include "subsystems/vision.h"
 #include "subsystems/battery.h"
 #include "subsystems/display.h"
 #include "subsystems/drivebase.h"
