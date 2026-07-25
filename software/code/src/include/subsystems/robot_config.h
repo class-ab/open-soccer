@@ -44,8 +44,8 @@ constexpr int M4b = 6;
 // Buttons
 // ============================================================
 
-constexpr int button1 = A6; // press: run the demo square sequence
-constexpr int button2 = A7; // press: chase the ball for 20 seconds (see loop())
+constexpr int button1 = A6;
+constexpr int button2 = A7;
 constexpr int button3 = A8;
 
 // ============================================================
@@ -67,9 +67,9 @@ constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 250;
 #define BALL_UART_BAUD 115200
 
 constexpr uint8_t BALL_PACKET_LEN = 8;
-constexpr uint8_t BALL_SYNC_A = 0xAA;
-constexpr uint8_t BALL_SYNC_B = 0xAB;
-constexpr uint8_t BALL_SYNC_C = 0xAC;
+constexpr uint8_t BALL_SYNC = 0xAA;
+constexpr uint8_t YELLOW_GOAL_SYNC = 0xAB;
+constexpr uint8_t BLUE_GOAL_SYNC = 0xAC;
 
 constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
 constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
@@ -113,6 +113,7 @@ constexpr float motorMult[5] = {
 // ============================================================
 
 constexpr float ROBOT_MAX_SPEED = 0.5f;
+constexpr float ROTATION_MAX_SPEED = 240.0f;
 
 // ============================================================
 // Move / Acceleration Settings
@@ -120,7 +121,6 @@ constexpr float ROBOT_MAX_SPEED = 0.5f;
 
 constexpr float ACCEL_LIMIT = 1.1f;
 constexpr float ROTATION_ACCEL_LIMIT = 720.0f;
-constexpr float ROTATION_MAX_SPEED = 240.0f;
 
 // ============================================================
 // Heading Hold Settings (PID)

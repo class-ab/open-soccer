@@ -5,44 +5,6 @@
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
 
-float angleAtTime(const RotationProfile &profile, float t_sec) {
-  float absDelta = fabs(profile.totalDelta);
-
-  if (profile.rotationTime <= 0.0001f || absDelta <= 0.0001f) {
-    return profile.totalDelta;
-  }
-
-  float sign = (profile.totalDelta >= 0.0f) ? 1.0f : -1.0f;
-
-  t_sec = constrain(t_sec, 0.0f, profile.rotationTime);
-
-  float mag;
-  float a = profile.effectiveAccelMag;
-
-  if (t_sec < profile.accelTime) {
-    mag = 0.5f * a * t_sec * t_sec;
-  } else {
-    float cruiseEnd = profile.accelTime + profile.cruiseTime;
-    float magAtAccelEnd = 0.5f * a * profile.accelTime * profile.accelTime;
-
-    if (t_sec < cruiseEnd) {
-      mag = magAtAccelEnd + (profile.peakOmegaMag * (t_sec - profile.accelTime));
-    } else {
-      float magAtCruiseEnd =
-        magAtAccelEnd + (profile.peakOmegaMag * profile.cruiseTime);
-      float tIntoDecel = t_sec - cruiseEnd;
-      mag =
-        magAtCruiseEnd +
-        (profile.peakOmegaMag * tIntoDecel) -
-        (0.5f * a * tIntoDecel * tIntoDecel);
-    }
-  }
-
-  mag = constrain(mag, 0.0f, absDelta);
-
-  return sign * mag;
-}
-
 void drive(float direction_deg, float speed, float rotation) {
   speed = constrain(speed, 0.0f, ROBOT_MAX_SPEED);
 

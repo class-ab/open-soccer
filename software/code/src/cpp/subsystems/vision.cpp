@@ -11,13 +11,13 @@ void initBallTracking() {
 }
 
 bool isBallSyncByte(uint8_t b) {
-  return (b == BALL_SYNC_A);
+  return (b == BALL_SYNC);
 }
 
 void decodeBallPacket(const uint8_t *p) {
   uint8_t sync = p[0];
 
-  if (sync != BALL_SYNC_A) {
+  if (sync != BALL_SYNC) {
 #ifdef DEBUG_BALL_LINK
     Serial.println("[BALL DROP] color not chased (or bad sync byte)");
 #endif
@@ -32,7 +32,7 @@ void decodeBallPacket(const uint8_t *p) {
 
 #ifdef DEBUG_BALL_LINK
   Serial.print("[BALL PKT OK] sync=");
-  Serial.print(sync == BALL_SYNC_A ? "A" : "B");
+  Serial.print(sync == BALL_SYNC ? "A" : "B");
   Serial.print("  detected=");
   Serial.print(latestBallPacket.detected ? "YES" : "no ");
   Serial.print("  angle=");
