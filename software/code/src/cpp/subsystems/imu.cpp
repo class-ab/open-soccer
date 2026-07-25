@@ -1,9 +1,9 @@
-#include "subsystems/imu.h"
+#include "include/subsystems/imu.h"
 
 #include <Wire.h>
 
-#include "subsystems/robot_config.h"
-#include "subsystems/robot_state.h"
+#include "include/subsystems/robot_config.h"
+#include "include/subsystems/robot_state.h"
 
 Adafruit_BNO08x bno08x(BNO08X_RESET);
 sh2_SensorValue_t sensorValue;

@@ -1,5 +1,5 @@
-#include "subsystems/robot_state.h"
-#include "subsystems/robot_config.h"
+#include "include/subsystems/robot_state.h"
+#include "include/subsystems/robot_config.h"
 
 BallPacket latestBallPacket = {false, 0.0f, 0.0f, 0};
 unsigned long lastBallPacketMs = 0;

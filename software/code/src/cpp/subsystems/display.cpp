@@ -1,9 +1,9 @@
-#include "subsystems/display.h"
+#include "include/subsystems/display.h"
 
 #include <Wire.h>
 
-#include "subsystems/robot_config.h"
-#include "subsystems/robot_state.h"
+#include "include/subsystems/robot_config.h"
+#include "include/subsystems/robot_state.h"
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire2, OLED_RESET_PIN);
 

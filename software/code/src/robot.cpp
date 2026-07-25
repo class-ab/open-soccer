@@ -8,14 +8,14 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#include "subsystems/vision.h"
-#include "subsystems/battery.h"
-#include "subsystems/display.h"
-#include "subsystems/drivebase.h"
-#include "subsystems/imu.h"
-#include "subsystems/robot_config.h"
-#include "subsystems/robot_state.h"
-#include "subsystems/robot_tick.h"
+#include "include/subsystems/vision.h"
+#include "include/subsystems/battery.h"
+#include "include/subsystems/display.h"
+#include "include/subsystems/drivebase.h"
+#include "include/subsystems/imu.h"
+#include "include/subsystems/robot_config.h"
+#include "include/subsystems/robot_state.h"
+#include "include/subsystems/robot_tick.h"
 
 void setup() {
   Serial.begin(115200);

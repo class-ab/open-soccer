@@ -1,9 +1,9 @@
-#include "subsystems/battery.h"
+#include "include/subsystems/battery.h"
 
-#include "subsystems/display.h"
-#include "subsystems/drivebase.h"
-#include "subsystems/robot_config.h"
-#include "subsystems/robot_state.h"
+#include "include/subsystems/display.h"
+#include "include/subsystems/drivebase.h"
+#include "include/subsystems/robot_config.h"
+#include "include/subsystems/robot_state.h"
 
 float readBatteryVoltage() {
   long sum = 0;
