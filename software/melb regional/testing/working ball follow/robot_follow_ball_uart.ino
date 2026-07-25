@@ -199,7 +199,7 @@ const unsigned long BALL_DATA_TIMEOUT_MS = 300;
 // Speed ceiling for ball-chasing - keep this well below move()'s usual
 // maxSpeed values. The whole point of chaseTick() is to approach the
 // ball SLOWLY and under control, not to charge at it.
-const float BALL_CHASE_MAX_SPEED = 0.3f;
+const float BALL_CHASE_MAX_SPEED = 0.5f;
 const float BALL_CHASE_MIN_SPEED = 0.20f; // don't bother creeping below this
 
 // Target radiusPx (packet bytes 4-5) the robot drives toward - the
@@ -1411,7 +1411,7 @@ void chaseTick() {
   // internal subtraction gets back to chassisRelativeBallAngle. This
   // keeps the robot strafing straight at the ball's last-known bearing
   // even while it's still rotating to face it.
-  float fieldDirection = effectiveYaw + chassisRelativeBallAngle;
+  float fieldDirection = effectiveYaw - chassisRelativeBallAngle;
 
   drive(fieldDirection, speed, rotation);
 
