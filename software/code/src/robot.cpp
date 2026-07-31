@@ -70,6 +70,27 @@ void loop() {
 void systemTick() {
   unsigned long now = millis();
 
+  static bool lastButton1State = LOW;
+  bool currentButton1State = digitalRead(button1);
+
+  if (currentButton1State == HIGH && lastButton1State == LOW) {
+    if (!robotCurrentlyRunning) {
+      robotCurrentlyRunning = true;
+      lastRunStateChangeMs = now;
+      Serial.println("Robot RUNNING");
+    }
+    if (robotCurrentlyRunning) {
+      robotCurrentlyRunning = false;
+      lastRunStateChangeMs = now;
+      Serial.println("Robot STOPPED");
+    }
+    lastButton1State = HIGH;
+  }
+
+  if(digitalRead(button1) == LOW) {
+    lastButton1State = LOW;
+  }
+
   processBallPacket();
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {
