@@ -72,6 +72,8 @@ void loop() {
 void systemTick() {
   now = millis();
 
+  checkEnabledButton();
+
   processBallPacket();
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {
