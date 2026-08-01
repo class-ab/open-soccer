@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "code",
+			"path": "software/code"
+		}
+	],
+	"settings": {
+		"workbench.colorTheme": "Dark Modern"
+	}
+}
