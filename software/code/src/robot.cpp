@@ -110,4 +110,5 @@ if ((now - lastDebounceMs) >= BUTTON_DEBOUNCE_MS) {
   stableLastState = currentButton1State;
   updateDisplay();
 }
+lastButton1State = currentButton1State;
 }
