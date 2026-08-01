@@ -100,6 +100,7 @@ void checkEnabledButton() {
       Serial.println("Robot STOPPED");
     }
     lastButton1State = HIGH;
+    delay(50); // debounce
   }
 
   if(currentButton1State == LOW) {
