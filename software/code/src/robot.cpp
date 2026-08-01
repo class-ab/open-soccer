@@ -17,7 +17,7 @@
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
 
-unsigned long now;
+void checkEnabledButton(unsigned long now);
 
 void setup() {
   Serial.begin(115200);
@@ -70,9 +70,9 @@ void loop() {
 }
 
 void systemTick() {
-  now = millis();
+  unsigned long now = millis();
 
-  checkEnabledButton();
+  checkEnabledButton(now);
 
   processBallPacket();
 
@@ -86,26 +86,28 @@ void systemTick() {
   }
 }
 
-void checkEnabledButton() {
-  static bool lastButton1State = LOW;
-  bool currentButton1State = digitalRead(button1);
+void checkEnabledButton(unsigned long now) {
+static bool lastButton1State = LOW;
+static unsigned long lastDebounceMs = 0;
+const unsigned long BUTTON_DEBOUNCE_MS = 50;
 
-  if (currentButton1State == HIGH && lastButton1State == LOW) {
-    if (!robotCurrentlyRunning) {
-      robotCurrentlyRunning = true;
-      lastRunStateChangeMs = now;
-      Serial.println("Robot RUNNING");
-    }
-    else {
-      robotCurrentlyRunning = false;
-      lastRunStateChangeMs = now;
-      Serial.println("Robot STOPPED");
-    }
-    lastButton1State = HIGH;
-    delay(50); // debounce
-  }
+bool currentButton1State = digitalRead(button1);
 
-  if(currentButton1State == LOW) {
-    lastButton1State = LOW;
+// If the reading changed, reset the debounce timer
+if (currentButton1State != lastButton1State) {
+lastDebounceMs = now;
+}
+
+// If enough time has passed since the last change and the state is stable...
+if ((now - lastDebounceMs) >= BUTTON_DEBOUNCE_MS) {
+  // Detect rising edge (LOW->HIGH).
+  static bool stableLastState = LOW;
+  if (currentButton1State == HIGH && stableLastState == LOW) {
+  robotCurrentlyRunning = !robotCurrentlyRunning;
+  lastRunStateChangeMs = now;
+  Serial.println(robotCurrentlyRunning ? "Robot RUNNING" : "Robot STOPPED");
   }
+  stableLastState = currentButton1State;
+  updateDisplay();
+}
 }
