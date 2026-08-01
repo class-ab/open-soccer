@@ -17,6 +17,8 @@
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
 
+unsigned long now;
+
 void setup() {
   Serial.begin(115200);
 
@@ -68,28 +70,7 @@ void loop() {
 }
 
 void systemTick() {
-  unsigned long now = millis();
-
-  static bool lastButton1State = LOW;
-  bool currentButton1State = digitalRead(button1);
-
-  if (currentButton1State == HIGH && lastButton1State == LOW) {
-    if (!robotCurrentlyRunning) {
-      robotCurrentlyRunning = true;
-      lastRunStateChangeMs = now;
-      Serial.println("Robot RUNNING");
-    }
-    if (robotCurrentlyRunning) {
-      robotCurrentlyRunning = false;
-      lastRunStateChangeMs = now;
-      Serial.println("Robot STOPPED");
-    }
-    lastButton1State = HIGH;
-  }
-
-  if(digitalRead(button1) == LOW) {
-    lastButton1State = LOW;
-  }
+  now = millis();
 
   processBallPacket();
 
@@ -100,5 +81,28 @@ void systemTick() {
   if (now - lastDisplayUpdateMs >= DISPLAY_UPDATE_INTERVAL_MS) {
     lastDisplayUpdateMs = now;
     updateDisplay();
+  }
+}
+
+void checkEnabledButton() {
+  static bool lastButton1State = LOW;
+  bool currentButton1State = digitalRead(button1);
+
+  if (currentButton1State == HIGH && lastButton1State == LOW) {
+    if (!robotCurrentlyRunning) {
+      robotCurrentlyRunning = true;
+      lastRunStateChangeMs = now;
+      Serial.println("Robot RUNNING");
+    }
+    else {
+      robotCurrentlyRunning = false;
+      lastRunStateChangeMs = now;
+      Serial.println("Robot STOPPED");
+    }
+    lastButton1State = HIGH;
+  }
+
+  if(currentButton1State == LOW) {
+    lastButton1State = LOW;
   }
 }
