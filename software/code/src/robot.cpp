@@ -66,7 +66,12 @@ void loop() {
 
   updateIMU();
 
-  chaseTick();
+  chaseTick();   
+
+  if(!robotCurrentlyRunning) {
+    stopAllMotors();
+  }
+
 }
 
 void systemTick() {
