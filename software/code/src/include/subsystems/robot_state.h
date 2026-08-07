@@ -39,6 +39,7 @@ extern bool robotCurrentlyRunning;
 extern unsigned long lastBatteryCheckMs;
 extern float lastBatteryVoltage;
 extern bool shutdownLatched;
+extern bool dribblerShouldRun;
 
 extern unsigned long lastDisplayUpdateMs;
 extern bool displayAvailable;

@@ -92,6 +92,7 @@ void chaseTick() {
   bool haveFreshBall = ball.detected && (age_ms <= BALL_DATA_TIMEOUT_MS);
 
   if (!haveFreshBall) {
+    dribblerShouldRun = false;
     float rotation = headingCorrection();
     drive(0.0f, 0.0f, rotation);
     stopAllDriveMotors();
@@ -127,6 +128,7 @@ void chaseTick() {
 
   float fieldDirection = effectiveYaw - chassisRelativeBallAngle;
 
+  dribblerShouldRun = robotCurrentlyRunning;
   drive(fieldDirection, speed, rotation);
 
 #ifdef DEBUG_BALL_CHASE

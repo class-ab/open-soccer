@@ -70,9 +70,13 @@ void loop() {
 
   updateIMU();
 
-  chaseTick();   
+  chaseTick();
 
-  setDribblerThrottle(1200);
+  if (robotCurrentlyRunning && dribblerShouldRun) {
+    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
+  } else {
+    stopDribbler();
+  }
 
   if(!robotCurrentlyRunning) {
     stopAllMotors();
