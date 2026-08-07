@@ -95,7 +95,6 @@ void chaseTick() {
     float rotation = headingCorrection();
     drive(0.0f, 0.0f, rotation);
     stopAllDriveMotors();
-    stopDribbler();
 
 #ifdef DEBUG_BALL_CHASE
     static unsigned long lastDebugMsA = 0;
