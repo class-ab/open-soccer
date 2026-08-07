@@ -8,6 +8,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "include/robot.h"
+
 #include "include/subsystems/vision.h"
 #include "include/subsystems/battery.h"
 #include "include/subsystems/display.h"
@@ -17,8 +19,6 @@
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
-
-void checkEnabledButton(unsigned long now);
 
 void setup() {
   Serial.begin(115200);
@@ -75,8 +75,7 @@ void loop() {
   setDribblerThrottle(1200);
 
   if(!robotCurrentlyRunning) {
-    stopAllDriveMotors();
-    stopDribbler();
+    stopAllMotors();
   }
 
 }
@@ -123,4 +122,9 @@ if ((now - lastDebounceMs) >= BUTTON_DEBOUNCE_MS) {
   updateDisplay();
 }
 lastButton1State = currentButton1State;
+}
+
+void stopAllMotors() {
+  stopAllDriveMotors();
+  stopDribbler();
 }
