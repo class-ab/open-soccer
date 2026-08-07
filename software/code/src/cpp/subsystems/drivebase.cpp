@@ -79,7 +79,7 @@ void drive(float direction_deg, float speed, float rotation) {
   SetSpeed(4, wheel_speeds[2] * 255);
 }
 
-void stopAllMotors() {
+void stopAllDriveMotors() {
   SetSpeed(1, 0);
   SetSpeed(2, 0);
   SetSpeed(3, 0);

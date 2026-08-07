@@ -12,6 +12,7 @@
 #include "include/subsystems/battery.h"
 #include "include/subsystems/display.h"
 #include "include/subsystems/drivebase.h"
+#include "include/subsystems/dribbler.h"
 #include "include/subsystems/imu.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
@@ -46,6 +47,9 @@ void setup() {
   initDisplay();
   initBallTracking();
 
+  initDribbler();
+  setDribblerDirectionReverse();
+
   analogReadResolution(ADC_RESOLUTION_BITS);
 
   lastBatteryCheckMs = millis();
@@ -68,8 +72,11 @@ void loop() {
 
   chaseTick();   
 
+  setDribblerThrottle(1200);
+
   if(!robotCurrentlyRunning) {
-    stopAllMotors();
+    stopAllDriveMotors();
+    stopDribbler();
   }
 
 }

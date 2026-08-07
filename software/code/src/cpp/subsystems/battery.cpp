@@ -2,6 +2,7 @@
 
 #include "include/subsystems/display.h"
 #include "include/subsystems/drivebase.h"
+#include "include/subsystems/dribbler.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 
@@ -29,7 +30,8 @@ void checkBattery() {
 }
 
 void emergencyShutdown() {
-  stopAllMotors();
+  stopAllDriveMotors();
+  stopDribbler();
   shutdownLatched = true;
 
   unsigned long uptimeMs = millis() - bootMillis;
@@ -59,7 +61,8 @@ void emergencyShutdown() {
   }
 
   while (true) {
-    stopAllMotors();
+    stopAllDriveMotors();
+    stopDribbler();
     delay(200);
   }
 }

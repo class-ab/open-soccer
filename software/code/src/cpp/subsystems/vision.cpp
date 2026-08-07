@@ -1,6 +1,7 @@
 #include "include/subsystems/vision.h"
 
 #include "include/subsystems/drivebase.h"
+#include "include/subsystems/dribbler.h"
 #include "include/subsystems/imu.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
@@ -93,7 +94,8 @@ void chaseTick() {
   if (!haveFreshBall) {
     float rotation = headingCorrection();
     drive(0.0f, 0.0f, rotation);
-    stopAllMotors();
+    stopAllDriveMotors();
+    stopDribbler();
 
 #ifdef DEBUG_BALL_CHASE
     static unsigned long lastDebugMsA = 0;
