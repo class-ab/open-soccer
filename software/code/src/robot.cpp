@@ -8,16 +8,17 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "include/robot.h"
+
 #include "include/subsystems/vision.h"
 #include "include/subsystems/battery.h"
 #include "include/subsystems/display.h"
 #include "include/subsystems/drivebase.h"
+#include "include/subsystems/dribbler.h"
 #include "include/subsystems/imu.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
-
-void checkEnabledButton(unsigned long now);
 
 void setup() {
   Serial.begin(115200);
@@ -46,6 +47,9 @@ void setup() {
   initDisplay();
   initBallTracking();
 
+  initDribbler();
+  setDribblerDirectionReverse();
+
   analogReadResolution(ADC_RESOLUTION_BITS);
 
   lastBatteryCheckMs = millis();
@@ -66,7 +70,13 @@ void loop() {
 
   updateIMU();
 
-  chaseTick();   
+  chaseTick();
+
+  if (robotCurrentlyRunning && dribblerShouldRun) {
+    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
+  } else {
+    stopDribbler();
+  }
 
   if(!robotCurrentlyRunning) {
     stopAllMotors();
@@ -116,4 +126,9 @@ if ((now - lastDebounceMs) >= BUTTON_DEBOUNCE_MS) {
   updateDisplay();
 }
 lastButton1State = currentButton1State;
+}
+
+void stopAllMotors() {
+  stopAllDriveMotors();
+  stopDribbler();
 }

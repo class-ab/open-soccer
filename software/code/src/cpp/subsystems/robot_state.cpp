@@ -14,6 +14,7 @@ bool robotCurrentlyRunning = false;
 unsigned long lastBatteryCheckMs = 0;
 float lastBatteryVoltage = 0.0f;
 bool shutdownLatched = false;
+bool dribblerShouldRun = false;
 
 unsigned long lastDisplayUpdateMs = 0;
 bool displayAvailable = false;

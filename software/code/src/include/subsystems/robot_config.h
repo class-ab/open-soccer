@@ -41,6 +41,24 @@ constexpr int M4a = 7; // BACK RIGHT
 constexpr int M4b = 6;
 
 // ============================================================
+// Dribbler ESC
+// ============================================================
+
+constexpr int DRIBBLER_THROTTLE_PIN = 23;
+constexpr int DRIBBLER_REVERSE_PIN = 17;
+
+constexpr int DRIBBLER_PULSE_MIN = 1000;
+constexpr int DRIBBLER_PULSE_NEUTRAL = 1500;
+constexpr int DRIBBLER_PULSE_MAX = 2000;
+
+constexpr int DRIBBLER_FORWARD_US = 1000;
+constexpr int DRIBBLER_REVERSE_US = 2000;
+
+constexpr int DRIBBLER_RUN_THROTTLE_US = 1200;
+constexpr unsigned long DRIBBLER_SPIN_TIME_MS = 3000;
+constexpr unsigned long DRIBBLER_PAUSE_MS = 1000;
+
+// ============================================================
 // Buttons
 // ============================================================
 

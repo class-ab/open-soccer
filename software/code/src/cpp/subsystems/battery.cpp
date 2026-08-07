@@ -2,8 +2,10 @@
 
 #include "include/subsystems/display.h"
 #include "include/subsystems/drivebase.h"
+#include "include/subsystems/dribbler.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
+#include "include/robot.h"
 
 float readBatteryVoltage() {
   long sum = 0;
@@ -59,7 +61,8 @@ void emergencyShutdown() {
   }
 
   while (true) {
-    stopAllMotors();
+    stopAllDriveMotors();
+    stopDribbler();
     delay(200);
   }
 }
