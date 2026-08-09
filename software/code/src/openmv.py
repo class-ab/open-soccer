@@ -54,10 +54,17 @@ MIN_TOTAL_PIXELS = 10
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green/blue things. You will
 # want to re-tune these for your actual target colors.
-thresholds = [
+# thresholds = [ #competition tuning
+#     (17, 27, -25, -10, -12, 5),  # blue goal
+#     (55, 75, -20, 10, 30, 50),  # yellow goal
+#     (30, 65, 10, 45, 25, 50),  # ball
+#     (0, 0, 0, 0, 0, 0),  # nothing
+# ]
+
+thresholds = [  # home tuning
     (17, 27, -25, -10, -12, 5),  # blue goal
     (55, 75, -20, 10, 30, 50),  # yellow goal
-    (30, 65, 10, 45, 25, 50),  # ball
+    (40, 75, 25, 45, 15, 45),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
 
@@ -72,8 +79,8 @@ clock = time.clock()
 
 IMG_W = sensor.width()
 IMG_H = sensor.height()
-CENTER_X = IMG_W / 2
-CENTER_Y = IMG_H / 2
+CENTER_X = 150
+CENTER_Y = 125
 # Only blobs with more pixels than "pixels_threshold" and more area than
 # "area_threshold" are returned by "find_blobs" below. Change these if you
 # change the camera resolution. "merge=True" merges all overlapping blobs.
@@ -123,14 +130,29 @@ def send_ball_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
     uart.write(packet)
 
 
+def pixels_to_cm_y(py):
+    """Vertical pixel-distance -> cm, using pre-rotation calibration."""
+    sign = 1.0 if py >= 0 else -1.0
+    x = abs(py)
+    cm = 0.0102221 * x * x - 0.252213 * x + 10.85662
+    return sign * cm
+
+
+def pixels_to_cm_x(px):
+    """Horizontal pixel-distance -> cm, using pre-rotation calibration."""
+    sign = 1.0 if px >= 0 else -1.0
+    x = abs(px)
+    cm = -0.00398991 * x * x + 1.73715 * x - 33.05303
+    return sign * cm
+
+
 def track_color(img, threshold):
     """Find all blobs matching `threshold`, draw debug overlays, and
-    return (detected, angle_deg, radius_px, total_pixels) for the
+    return (detected, angle_deg, radius_cm, total_pixels) for the
     pixel-weighted average of every matching blob in the frame."""
     last_biggest = 0
     biggest_x = 0.0
     biggest_y = 0.0
-
     for blob in img.find_blobs(
         [threshold],
         pixels_threshold=10,
@@ -144,28 +166,21 @@ def track_color(img, threshold):
             img.draw_detection(blob)
             biggest_x = blob.cx
             biggest_y = blob.cy
-
     if last_biggest < MIN_TOTAL_PIXELS:
         return False, 0.0, 0.0, 0
-
     # flip so "up" in the image is positive, math-style
-    # Polar coordinates of the averaged blob, relative to the image
-    # center:
-    #   angle: 0 deg = straight up/ahead in-frame, +90 = right,
-    #          -90 = left, +-180 = straight down/behind.
-    #   radius: pixel distance of the blob from center. This is an
-    #           off-center distance, NOT a real-world distance to
-    #           the ball - a monocular camera can't get true
-    #           distance from centroid position alone. `pixel_count`
-    #           (sent separately, byte 6) is a rough proxy for how
-    #           close/big the ball looks and is what the Teensy uses
-    #           to judge "close enough, stop approaching."
     dx = biggest_x - CENTER_X
     dy = biggest_y - CENTER_Y
-    angle_deg = math.degrees(math.atan2(dx, dy)) + CAMERA_ROTATION_OFFSET_DEG
-    radius_px = math.sqrt(dx * dx + dy * dy)
 
-    return True, angle_deg, radius_px, last_biggest
+    # Convert pixel offsets to real-world cm using axis-specific
+    # calibration curves, then combine with Pythagoras.
+    dx_cm = pixels_to_cm_x(dx)
+    dy_cm = pixels_to_cm_y(dy)
+
+    # angle is computed from pixel dx/dy (rotation-invariant), radius from cm
+    angle_deg = math.degrees(math.atan2(dx, dy)) + CAMERA_ROTATION_OFFSET_DEG
+    radius_cm = math.sqrt(dx_cm * dx_cm + dy_cm * dy_cm)
+    return True, angle_deg, radius_cm, last_biggest
 
 
 while True:
