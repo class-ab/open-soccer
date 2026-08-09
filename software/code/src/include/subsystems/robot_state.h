@@ -5,7 +5,7 @@
 struct BallPacket {
   bool detected;
   float angleDeg;
-  float radiusPx;
+  float distanceCM;
   uint8_t sizeByte;
 };
 

@@ -27,7 +27,7 @@ void decodeBallPacket(const uint8_t *p) {
 
   latestBallPacket.detected = p[1] != 0;
   latestBallPacket.angleDeg = ((int16_t)((p[2] << 8) | p[3])) / 100.0f;
-  latestBallPacket.radiusPx = (float)((uint16_t)((p[4] << 8) | p[5]));
+  latestBallPacket.distanceCM = (float)((uint16_t)((p[4] << 8) | p[5]));
   latestBallPacket.sizeByte = p[6];
   lastBallPacketMs = millis();
 
@@ -39,7 +39,7 @@ void decodeBallPacket(const uint8_t *p) {
   Serial.print("  angle=");
   Serial.print(latestBallPacket.angleDeg, 2);
   Serial.print("deg  radius=");
-  Serial.print(latestBallPacket.radiusPx, 0);
+  Serial.print(latestBallPacket.distanceCM, 0);
   Serial.print("px  size=");
   Serial.println(latestBallPacket.sizeByte);
 #endif
@@ -116,13 +116,13 @@ void chaseTick() {
 
   float rotation = -headingCorrection();
 
-  float radiusError = ball.radiusPx - BALL_TARGET_RADIUS_PX;
+  float radiusError = ball.distanceCM - BALL_TARGET_DISTANCE_CM;
   float speed;
 
   if (radiusError <= 0.0f) {
     speed = 0.0f;
   } else {
-    float t = constrain(radiusError / BALL_CHASE_RAMP_RANGE_PX, 0.0f, 1.0f);
+    float t = constrain(radiusError / BALL_CHASE_RAMP_RANGE_CM, 0.0f, 1.0f);
     speed = BALL_CHASE_MIN_SPEED + t * (BALL_CHASE_MAX_SPEED - BALL_CHASE_MIN_SPEED);
   }
 
@@ -138,8 +138,8 @@ void chaseTick() {
     lastDebugMsB = nowMsB;
     Serial.print("bearing(chassis)=");
     Serial.print(chassisRelativeBallAngle);
-    Serial.print(" radiusPx=");
-    Serial.print(ball.radiusPx);
+    Serial.print(" distanceCM=");
+    Serial.print(ball.distanceCM);
     Serial.print(" size=");
     Serial.print(ball.sizeByte);
     Serial.print(" speed=");

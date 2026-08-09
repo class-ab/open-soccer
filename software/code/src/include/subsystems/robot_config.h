@@ -9,8 +9,8 @@
 // Uncomment to print ball-chase diagnostics (bearing, radius, size,
 // computed speed, packet age) over Serial about 10x/sec while
 // chaseTick() runs - useful for calibrating CAMERA_ROTATION_OFFSET_DEG
-// (on the OpenMV side), CAMERA_MOUNT_OFFSET_DEG, BALL_TARGET_RADIUS_PX,
-// and BALL_CHASE_RAMP_RANGE_PX.
+// (on the OpenMV side), CAMERA_MOUNT_OFFSET_DEG, BALL_TARGET_DISTANCE_CM,
+// and BALL_CHASE_RAMP_RANGE_CM.
 #define DEBUG_BALL_CHASE
 
 // Uncomment to print raw ball-link diagnostics (per-packet decode
@@ -93,8 +93,8 @@ constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
 constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
 constexpr float BALL_CHASE_MAX_SPEED = 0.5f;
 constexpr float BALL_CHASE_MIN_SPEED = 0.20f;
-constexpr float BALL_TARGET_RADIUS_PX = 30.0f;
-constexpr float BALL_CHASE_RAMP_RANGE_PX = 80.0f;
+constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
+constexpr float BALL_CHASE_RAMP_RANGE_CM = 120.0f;
 
 // ============================================================
 // Battery Monitor
