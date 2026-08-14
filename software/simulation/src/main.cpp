@@ -143,7 +143,7 @@ int main() {
     sf::RectangleShape topGoal(sf::Vector2f(goalW_px, goalD_px));
     topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px)); // origin at bottom-center of goal rect
     topGoal.setPosition(sf::Vector2f(centerX_px, topGoalInnerY_px));
-    topGoal.setFillColor(sf::Color(230,230,230));
+    topGoal.setFillColor(sf::Color(255,255,0)); // CMYK Yellow -> RGB (255,255,0)
     topGoal.setOutlineThickness(2.0f);
     topGoal.setOutlineColor(sf::Color::Black);
 
@@ -153,7 +153,7 @@ int main() {
     sf::RectangleShape bottomGoal(sf::Vector2f(goalW_px, goalD_px));
     bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f)); // origin at top-center
     bottomGoal.setPosition(sf::Vector2f(centerX_px, bottomGoalInnerY_px));
-    bottomGoal.setFillColor(sf::Color(230,230,230));
+    bottomGoal.setFillColor(sf::Color(0,255,255)); // CMYK Cyan -> RGB (0,255,255)
     bottomGoal.setOutlineThickness(2.0f);
     bottomGoal.setOutlineColor(sf::Color::Black);
 
@@ -162,6 +162,8 @@ int main() {
     const float ROTATION_SPEED_DEG_S = 120.0f;
 
     sf::Clock clock;
+    bool dragging = false;
+    sf::Vector2f dragOffsetMm(0.f, 0.f);
 
     while (window.isOpen()) {
         // Event handling (SFML3 uses std::optional<Event>)
@@ -180,32 +182,46 @@ int main() {
                     }
                 }
             }
+
+            // Mouse: start dragging if left-click on robot
+            if (ev.is<sf::Event::MouseButtonPressed>()) {
+                const auto *mb = ev.getIf<sf::Event::MouseButtonPressed>();
+                if (mb && mb->button == sf::Mouse::Button::Left) {
+                    sf::Vector2i pix = mb->position;
+                    sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
+                    float r_px = mmToPx(robot.diameterMm) / 2.0f;
+                    sf::Vector2f robotPx(mmToPx(robot.pos.x) + WINDOW_MARGIN_PX, mmToPx(robot.pos.y) + WINDOW_MARGIN_PX);
+                    float dx = float(pix.x) - robotPx.x;
+                    float dy = float(pix.y) - robotPx.y;
+                    if (std::sqrt(dx*dx + dy*dy) <= r_px) {
+                        dragging = true;
+                        dragOffsetMm = robot.pos - mouseMm; // preserve relative offset
+                    }
+                }
+            }
+
+            if (ev.is<sf::Event::MouseButtonReleased>()) {
+                const auto *mb = ev.getIf<sf::Event::MouseButtonReleased>();
+                if (mb && mb->button == sf::Mouse::Button::Left) {
+                    dragging = false; // release control back to robot code
+                }
+            }
+
+            if (ev.is<sf::Event::MouseMoved>()) {
+                const auto *mmv = ev.getIf<sf::Event::MouseMoved>();
+                if (mmv && dragging) {
+                    sf::Vector2i pix = mmv->position;
+                    sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
+                    robot.pos = mouseMm + dragOffsetMm;
+                    // clamp to field bounds (keep center of robot within outer green area)
+                    float halfRobot = robot.diameterMm / 2.0f;
+                    robot.pos.x = std::max(halfRobot, std::min(FIELD_WIDTH_MM - halfRobot, robot.pos.x));
+                    robot.pos.y = std::max(halfRobot, std::min(FIELD_HEIGHT_MM - halfRobot, robot.pos.y));
+                }
+            }
         }
 
         float dt = clock.restart().asSeconds();
-
-        // Keyboard movement: Up/Down forward/back, Left/Right rotate
-        bool up = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up);
-        bool down = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down);
-        bool left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left);
-        bool right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right);
-
-        if (left) robot.headingDeg -= ROTATION_SPEED_DEG_S * dt;
-        if (right) robot.headingDeg += ROTATION_SPEED_DEG_S * dt;
-
-        float moveDir = 0.0f;
-        if (up) moveDir += 1.0f;
-        if (down) moveDir -= 1.0f;
-
-        if (moveDir != 0.0f) {
-            float angleRad = (robot.headingDeg - 90.0f) * 3.14159265f / 180.0f;
-            sf::Vector2f dir(std::cos(angleRad), std::sin(angleRad));
-            robot.pos += dir * (ROBOT_SPEED_MM_S * dt * moveDir);
-            // clamp to field bounds (keep center of robot within outer green area)
-            float halfRobot = robot.diameterMm/2.0f;
-            robot.pos.x = std::max(halfRobot, std::min(FIELD_WIDTH_MM - halfRobot, robot.pos.x));
-            robot.pos.y = std::max(halfRobot, std::min(FIELD_HEIGHT_MM - halfRobot, robot.pos.y));
-        }
 
         // Clear and draw
         window.clear(sf::Color(60,60,60)); // background outside field
