@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <string>
+#include <algorithm>
+#include <iostream>
 
 // Simple 2D RCJ Open Soccer simulation
 // - Units in this file are millimetres (mm) for field/robot constants
@@ -68,13 +70,27 @@ struct Robot {
 };
 
 int main() {
-    // Compute window size in pixels from field dims
+    // Compute an appropriate PX_PER_MM to maximize field size on the current screen while leaving a safety margin
+    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    unsigned int screenW = desktop.size.x;
+    unsigned int screenH = desktop.size.y;
+    const int EXTRA_MARGIN_W = 80; // extra safety margin beyond WINDOW_MARGIN_PX
+    const int EXTRA_MARGIN_H = 100;
+    float max_px_per_mm_w = float((int)screenW - 2*WINDOW_MARGIN_PX - EXTRA_MARGIN_W) / FIELD_WIDTH_MM;
+    float max_px_per_mm_h = float((int)screenH - 2*WINDOW_MARGIN_PX - EXTRA_MARGIN_H) / FIELD_HEIGHT_MM;
+    float chosen = std::min(max_px_per_mm_w, max_px_per_mm_h);
+    // clamp to reasonable range
+    PX_PER_MM = std::max(0.05f, std::min(chosen, 5.0f));
+
+    // Compute window size in pixels from field dims using chosen scale
     int winW = static_cast<int>(std::round(mmToPx(FIELD_WIDTH_MM))) + 2*WINDOW_MARGIN_PX;
     int winH = static_cast<int>(std::round(mmToPx(FIELD_HEIGHT_MM))) + 2*WINDOW_MARGIN_PX;
 
     sf::VideoMode mode(sf::Vector2u(static_cast<unsigned int>(winW), static_cast<unsigned int>(winH)), 32);
     sf::RenderWindow window(mode, sf::String("RCJ Open Soccer - 2D Simulation"));
     window.setFramerateLimit(60);
+
+    std::cout << "Screen: " << screenW << "x" << screenH << ", PX_PER_MM=" << PX_PER_MM << "\n";
 
     Robot robot;
 
@@ -161,12 +177,6 @@ int main() {
                     if (kp->code == sf::Keyboard::Key::R) {
                         robot.pos = sf::Vector2f(FIELD_WIDTH_MM/2.0f, FIELD_HEIGHT_MM/2.0f);
                         robot.headingDeg = 0.0f;
-                    }
-                    if (kp->code == sf::Keyboard::Key::Add || kp->code == sf::Keyboard::Key::Equal) {
-                        PX_PER_MM *= 1.05f; // zoom in
-                    }
-                    if (kp->code == sf::Keyboard::Key::Subtract || kp->code == sf::Keyboard::Key::Hyphen) {
-                        PX_PER_MM /= 1.05f; // zoom out
                     }
                 }
             }
