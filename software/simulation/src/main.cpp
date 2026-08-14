@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include "subsystems/robot_state.h"
+
 // Simple 2D RCJ Open Soccer simulation
 // - Units in this file are millimetres (mm) for field/robot constants
 // - The graphics scale converts mm -> pixels (PX_PER_MM)
@@ -24,6 +26,7 @@ constexpr float DRIBBLER_DEPTH_MM = 12.0f;  // how far it projects
 // Rendering
 float PX_PER_MM = 0.35f; // default scale (pixels per millimetre). Adjust for window size.
 const int WINDOW_MARGIN_PX = 40;
+const int HUD_PANEL_WIDTH_PX = 320; // fixed HUD panel width on the right side
 
 // Helper conversions
 inline float mmToPx(float mm) { return mm * PX_PER_MM; }
@@ -76,14 +79,17 @@ int main() {
     unsigned int screenH = desktop.size.y;
     const int EXTRA_MARGIN_W = 80; // extra safety margin beyond WINDOW_MARGIN_PX
     const int EXTRA_MARGIN_H = 100;
-    float max_px_per_mm_w = float((int)screenW - 2*WINDOW_MARGIN_PX - EXTRA_MARGIN_W) / FIELD_WIDTH_MM;
+    // Reserve space horizontally for the HUD panel + an extra inner margin
+    float reservedForHudPx = static_cast<float>(HUD_PANEL_WIDTH_PX + WINDOW_MARGIN_PX);
+    float max_px_per_mm_w = float((int)screenW - 2*WINDOW_MARGIN_PX - EXTRA_MARGIN_W - (int)reservedForHudPx) / FIELD_WIDTH_MM;
     float max_px_per_mm_h = float((int)screenH - 2*WINDOW_MARGIN_PX - EXTRA_MARGIN_H) / FIELD_HEIGHT_MM;
     float chosen = std::min(max_px_per_mm_w, max_px_per_mm_h);
     // clamp to reasonable range
     PX_PER_MM = std::max(0.05f, std::min(chosen, 5.0f));
 
-    // Compute window size in pixels from field dims using chosen scale
-    int winW = static_cast<int>(std::round(mmToPx(FIELD_WIDTH_MM))) + 2*WINDOW_MARGIN_PX;
+    // Compute window size in pixels from field dims using chosen scale.
+    // Layout: [ left margin | field px | inner margin | HUD panel | right margin ]
+    int winW = static_cast<int>(std::round(mmToPx(FIELD_WIDTH_MM))) + 3*WINDOW_MARGIN_PX + HUD_PANEL_WIDTH_PX;
     int winH = static_cast<int>(std::round(mmToPx(FIELD_HEIGHT_MM))) + 2*WINDOW_MARGIN_PX;
 
     sf::VideoMode mode(sf::Vector2u(static_cast<unsigned int>(winW), static_cast<unsigned int>(winH)), 32);
@@ -165,6 +171,36 @@ int main() {
     bool dragging = false;
     sf::Vector2f dragOffsetMm(0.f, 0.f);
 
+    // Robot/robotcode control
+    bool robotEnabled = true; // initial state
+    extern void robot_init();
+    extern void robot_stop();
+    extern void sim_set_millis(unsigned long ms);
+
+    // Start robot code thread (it will call setup() and then loop())
+    robot_init();
+    // set the robot_state flag so robot code can read whether it should be running
+    robotCurrentlyRunning = robotEnabled;
+
+    // Ball entity (40 mm diameter golf-ball sized)
+    const float BALL_DIAMETER_MM = 40.0f;
+    sf::Vector2f ballPosMm(FIELD_WIDTH_MM*0.25f, FIELD_HEIGHT_MM*0.5f);
+    bool draggingBall = false;
+    sf::Vector2f ballDragOffsetMm(0.f, 0.f);
+
+    unsigned long simMs = 0;
+    const unsigned long SIM_MS_PER_FRAME = 16; // ~60Hz sim time step (16ms)
+
+    // Movement scaling controls (HUD adjustable)
+    float moveSpeedScale = 1.0f;   // multiplier for linear speed
+    float rotSpeedScale = 1.0f;    // multiplier for rotation speed
+    const float MOVE_SCALE_STEP = 0.1f;
+    const float ROT_SCALE_STEP = 0.05f;
+
+    // Max physical speeds used by simulator (mm/s and deg/s)
+    const float SIM_MAX_LINEAR_MM_S = 220.0f; // base max linear speed
+    const float SIM_MAX_ROT_DEG_S = 120.0f;   // base max rotation speed
+
     while (window.isOpen()) {
         // Event handling (SFML3 uses std::optional<Event>)
         while (auto evOpt = window.pollEvent()) {
@@ -183,27 +219,95 @@ int main() {
                 }
             }
 
-            // Mouse: start dragging if left-click on robot
+            // Mouse: start dragging if left-click on robot or ball
             if (ev.is<sf::Event::MouseButtonPressed>()) {
                 const auto *mb = ev.getIf<sf::Event::MouseButtonPressed>();
                 if (mb && mb->button == sf::Mouse::Button::Left) {
                     sf::Vector2i pix = mb->position;
                     sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
+
+                    // check robot
                     float r_px = mmToPx(robot.diameterMm) / 2.0f;
                     sf::Vector2f robotPx(mmToPx(robot.pos.x) + WINDOW_MARGIN_PX, mmToPx(robot.pos.y) + WINDOW_MARGIN_PX);
-                    float dx = float(pix.x) - robotPx.x;
-                    float dy = float(pix.y) - robotPx.y;
-                    if (std::sqrt(dx*dx + dy*dy) <= r_px) {
+                    float rdx = float(pix.x) - robotPx.x;
+                    float rdy = float(pix.y) - robotPx.y;
+                    if (std::sqrt(rdx*rdx + rdy*rdy) <= r_px) {
                         dragging = true;
                         dragOffsetMm = robot.pos - mouseMm; // preserve relative offset
+                        continue;
+                    }
+
+                    // check ball
+                    float b_px = mmToPx(BALL_DIAMETER_MM) / 2.0f;
+                    sf::Vector2f ballPx(mmToPx(ballPosMm.x) + WINDOW_MARGIN_PX, mmToPx(ballPosMm.y) + WINDOW_MARGIN_PX);
+                    float bdx = float(pix.x) - ballPx.x;
+                    float bdy = float(pix.y) - ballPx.y;
+                    if (std::sqrt(bdx*bdx + bdy*bdy) <= b_px) {
+                        draggingBall = true;
+                        ballDragOffsetMm = ballPosMm - mouseMm;
+                            continue;
+                        }
+
+                        // HUD click area
+                        float hudX_click = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) + WINDOW_MARGIN_PX;
+                        float hudY_click = WINDOW_MARGIN_PX;
+                        const float pad_click = 10.0f;
+                        const float btnSize = 28.0f;
+
+                        // Scale control positions (match drawing below)
+                        float scaleRowY = hudY_click + pad_click + 40.0f;
+                        float moveLabelX = hudX_click + pad_click;
+                        float moveMinusX = moveLabelX + 160.0f; // position of - button
+                        float movePlusX = moveMinusX + 36.0f;
+
+                        float rotLabelX = hudX_click + pad_click;
+                        float rotRowY = scaleRowY + 40.0f;
+                        float rotMinusX = rotLabelX + 160.0f;
+                        float rotPlusX = rotMinusX + 36.0f;
+
+                        // Click on move scale -/+
+                        if (pix.x >= static_cast<int>(std::round(moveMinusX)) && pix.x <= static_cast<int>(std::round(moveMinusX + btnSize)) && pix.y >= static_cast<int>(std::round(scaleRowY)) && pix.y <= static_cast<int>(std::round(scaleRowY + btnSize))) {
+                            moveSpeedScale = std::max(0.1f, moveSpeedScale - MOVE_SCALE_STEP);
+                            continue;
+                        }
+                        if (pix.x >= static_cast<int>(std::round(movePlusX)) && pix.x <= static_cast<int>(std::round(movePlusX + btnSize)) && pix.y >= static_cast<int>(std::round(scaleRowY)) && pix.y <= static_cast<int>(std::round(scaleRowY + btnSize))) {
+                            moveSpeedScale = std::min(5.0f, moveSpeedScale + MOVE_SCALE_STEP);
+                            continue;
+                        }
+
+                        // Click on rot scale -/+
+                        if (pix.x >= static_cast<int>(std::round(rotMinusX)) && pix.x <= static_cast<int>(std::round(rotMinusX + btnSize)) && pix.y >= static_cast<int>(std::round(rotRowY)) && pix.y <= static_cast<int>(std::round(rotRowY + btnSize))) {
+                            rotSpeedScale = std::max(0.0f, rotSpeedScale - ROT_SCALE_STEP);
+                            continue;
+                        }
+                        if (pix.x >= static_cast<int>(std::round(rotPlusX)) && pix.x <= static_cast<int>(std::round(rotPlusX + btnSize)) && pix.y >= static_cast<int>(std::round(rotRowY)) && pix.y <= static_cast<int>(std::round(rotRowY + btnSize))) {
+                            rotSpeedScale = std::min(5.0f, rotSpeedScale + ROT_SCALE_STEP);
+                            continue;
+                        }
+
+                        // check HUD enable/disable buttons (top-left of HUD panel)
+                        const float ex = hudX_click + pad_click;
+                        const float ey = hudY_click + pad_click;
+                        const float dx = hudX_click + pad_click + 36.0f;
+                        const float dy = ey;
+                        if (pix.x >= static_cast<int>(std::round(ex)) && pix.x <= static_cast<int>(std::round(ex + btnSize)) && pix.y >= static_cast<int>(std::round(ey)) && pix.y <= static_cast<int>(std::round(ey + btnSize))) {
+                            robotEnabled = true;
+                            robotCurrentlyRunning = true;
+                            continue;
+                        }
+                        if (pix.x >= static_cast<int>(std::round(dx)) && pix.x <= static_cast<int>(std::round(dx + btnSize)) && pix.y >= static_cast<int>(std::round(dy)) && pix.y <= static_cast<int>(std::round(dy + btnSize))) {
+                            robotEnabled = false;
+                            robotCurrentlyRunning = false;
+                            continue;
+                        }
                     }
                 }
-            }
 
             if (ev.is<sf::Event::MouseButtonReleased>()) {
                 const auto *mb = ev.getIf<sf::Event::MouseButtonReleased>();
                 if (mb && mb->button == sf::Mouse::Button::Left) {
                     dragging = false; // release control back to robot code
+                    draggingBall = false;
                 }
             }
 
@@ -218,10 +322,23 @@ int main() {
                     robot.pos.x = std::max(halfRobot, std::min(FIELD_WIDTH_MM - halfRobot, robot.pos.x));
                     robot.pos.y = std::max(halfRobot, std::min(FIELD_HEIGHT_MM - halfRobot, robot.pos.y));
                 }
+                if (mmv && draggingBall) {
+                    sf::Vector2i pix = mmv->position;
+                    sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
+                    ballPosMm = mouseMm + ballDragOffsetMm;
+                    // clamp to field
+                    float halfBall = BALL_DIAMETER_MM / 2.0f;
+                    ballPosMm.x = std::max(halfBall, std::min(FIELD_WIDTH_MM - halfBall, ballPosMm.x));
+                    ballPosMm.y = std::max(halfBall, std::min(FIELD_HEIGHT_MM - halfBall, ballPosMm.y));
+                }
             }
         }
 
         float dt = clock.restart().asSeconds();
+
+        // Advance simulator time (fixed-step to keep deterministic behavior)
+        simMs += SIM_MS_PER_FRAME;
+        sim_set_millis(simMs);
 
         // Clear and draw
         window.clear(sf::Color(60,60,60)); // background outside field
@@ -263,20 +380,212 @@ int main() {
         window.draw(topGoal);
         window.draw(bottomGoal);
 
+        // Apply MoveProfile to simulated robot physics (if robot code is running and profile active)
+        float dt_s = float(SIM_MS_PER_FRAME) / 1000.0f;
+        if (robotCurrentlyRunning && currentMoveProfile.active) {
+            // linear speed (mm/s)
+            float linear_mm_s = currentMoveProfile.speed * SIM_MAX_LINEAR_MM_S * moveSpeedScale;
+            // rotation deg/s
+            float rot_deg_s = currentMoveProfile.rotationSpeed * SIM_MAX_ROT_DEG_S * rotSpeedScale;
+            // update heading
+            // Interpret rotationSpeed as: positive = counterclockwise. Convert to simulator heading which
+            // previously treated increasing heading as clockwise, so subtract to make positive -> CCW.
+            robot.headingDeg -= rot_deg_s * dt_s;
+            // compute world angle for movement: robot.headingDeg + movementDirectionDeg
+            float worldDeg = robot.headingDeg + currentMoveProfile.movementDirectionDeg;
+            float angleRad = (worldDeg - 90.0f) * 3.14159265f / 180.0f;
+            float dx = std::cos(angleRad) * linear_mm_s * dt_s;
+            float dy = std::sin(angleRad) * linear_mm_s * dt_s;
+            robot.pos.x += dx;
+            robot.pos.y += dy;
+            // clamp to field bounds
+            float halfRobot = robot.diameterMm / 2.0f;
+            robot.pos.x = std::max(halfRobot, std::min(FIELD_WIDTH_MM - halfRobot, robot.pos.x));
+            robot.pos.y = std::max(halfRobot, std::min(FIELD_HEIGHT_MM - halfRobot, robot.pos.y));
+        }
+
         // draw robot
         robot.draw(window);
 
-        // HUD text
-        sf::Font font;
-        static bool fontLoaded = false;
-        if (!fontLoaded) {
-            // use default SFML font fallback if available; otherwise skip
-            // (embedding a font is outside scope)
-            fontLoaded = true;
+        // draw ball
+        float ball_r_px = mmToPx(BALL_DIAMETER_MM) / 2.0f;
+        sf::CircleShape ballShape(ball_r_px);
+        ballShape.setOrigin(sf::Vector2f(ball_r_px, ball_r_px));
+        ballShape.setPosition(sf::Vector2f(mmToPx(ballPosMm.x) + WINDOW_MARGIN_PX, mmToPx(ballPosMm.y) + WINDOW_MARGIN_PX));
+        ballShape.setFillColor(sf::Color(255, 165, 0)); // orange
+        ballShape.setOutlineColor(sf::Color::Black);
+        ballShape.setOutlineThickness(1.0f);
+        window.draw(ballShape);
+ 
+        // Update BallPacket based on ball->robot geometry
+        // Compute vector from robot to ball in mm
+        float dx = ballPosMm.x - robot.pos.x;
+        float dy = ballPosMm.y - robot.pos.y;
+        float distMm = std::sqrt(dx*dx + dy*dy);
+        // Robot front direction (world frame) as unit vector
+        float angleRad = (robot.headingDeg - 90.0f) * 3.14159265f / 180.0f;
+        sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
+        // vector to ball
+        sf::Vector2f v(dx, dy);
+        // compute signed angle between frontVec and v
+        float dot = frontVec.x * v.x + frontVec.y * v.y;
+        float cross = frontVec.x * v.y - frontVec.y * v.x;
+        float bearingRad = std::atan2(cross, dot);
+        float bearingDeg = bearingRad * 180.0f / 3.14159265f;
+
+        latestBallPacket.detected = true;
+        latestBallPacket.angleDeg = bearingDeg; // angle relative to robot front
+        latestBallPacket.distanceCM = distMm / 10.0f;
+        latestBallPacket.sizeByte = static_cast<uint8_t>(std::min(255, static_cast<int>(BALL_DIAMETER_MM)));
+        // Use simulator-driven milliseconds (simMs) for the ball packet timestamp so
+        // the robot firmware (which reads millis()) sees a consistent epoch.
+        lastBallPacketMs = simMs;
+
+        // HUD panel area on the right side
+        float hudX = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) + WINDOW_MARGIN_PX;
+        float hudY = WINDOW_MARGIN_PX;
+        float hudW = static_cast<float>(HUD_PANEL_WIDTH_PX);
+        float hudH = mmToPx(FIELD_HEIGHT_MM);
+
+        // draw HUD background panel
+        sf::RectangleShape hudPanel(sf::Vector2f(hudW, hudH));
+        hudPanel.setPosition(sf::Vector2f(hudX, hudY));
+        hudPanel.setFillColor(sf::Color(30,30,30));
+        hudPanel.setOutlineColor(sf::Color::Black);
+        hudPanel.setOutlineThickness(2.0f);
+        window.draw(hudPanel);
+
+        // Ensure HUD font is available
+        static sf::Font hudFont;
+        static bool hudFontLoaded = false;
+        if (!hudFontLoaded) {
+           // Try common Windows fonts as a fallback so HUD works without bundling a font file
+           hudFontLoaded = hudFont.openFromFile("C:\\Windows\\Fonts\\arial.ttf")
+               || hudFont.openFromFile("C:\\Windows\\Fonts\\segoeui.ttf")
+               || hudFont.openFromFile("C:\\Windows\\Fonts\\tahoma.ttf");
+        }
+
+        // draw enable/disable buttons at top-left of HUD
+        const float pad = 10.0f;
+        sf::RectangleShape btnEnable(sf::Vector2f(28.0f, 28.0f));
+        btnEnable.setPosition(sf::Vector2f(hudX + pad, hudY + pad));
+        btnEnable.setFillColor(robotEnabled ? sf::Color(50,200,50) : sf::Color(80,80,80));
+        btnEnable.setOutlineThickness(1.0f);
+        btnEnable.setOutlineColor(sf::Color::Black);
+        window.draw(btnEnable);
+ 
+        sf::RectangleShape btnDisable(sf::Vector2f(28.0f, 28.0f));
+        btnDisable.setPosition(sf::Vector2f(hudX + pad + 36.0f, hudY + pad));
+        btnDisable.setFillColor(!robotEnabled ? sf::Color(220,50,50) : sf::Color(80,80,80));
+        btnDisable.setOutlineThickness(1.0f);
+        btnDisable.setOutlineColor(sf::Color::Black);
+        window.draw(btnDisable);
+
+        // Draw labels for robot state
+        if (hudFontLoaded) {
+            sf::Text stateLabel(hudFont, robotCurrentlyRunning ? "Robot: ENABLED" : "Robot: DISABLED", 14);
+            stateLabel.setFillColor(robotCurrentlyRunning ? sf::Color(180,255,180) : sf::Color(200,120,120));
+            stateLabel.setPosition(sf::Vector2f(hudX + pad + 72.0f, hudY + pad + 4.0f));
+            window.draw(stateLabel);
+        }
+
+        // Draw MoveProfile scaling controls
+        if (hudFontLoaded) {
+            float scaleBaseY = hudY + pad + 40.0f;
+            unsigned int fs = 14;
+            // Move scale label
+            sf::Text moveLabel(hudFont, std::string("Move scale: ") + std::to_string(moveSpeedScale), fs);
+            moveLabel.setFillColor(sf::Color::White);
+            moveLabel.setPosition(sf::Vector2f(hudX + pad, scaleBaseY));
+            window.draw(moveLabel);
+            // - button
+            sf::RectangleShape moveMinusBtn(sf::Vector2f(28.0f, 28.0f));
+            moveMinusBtn.setPosition(sf::Vector2f(hudX + pad + 160.0f, scaleBaseY));
+            moveMinusBtn.setFillColor(sf::Color(180,180,180));
+            moveMinusBtn.setOutlineColor(sf::Color::Black);
+            moveMinusBtn.setOutlineThickness(1.0f);
+            window.draw(moveMinusBtn);
+            sf::Text minusSign(hudFont, "-", fs);
+            minusSign.setFillColor(sf::Color::Black);
+            minusSign.setPosition(sf::Vector2f(hudX + pad + 166.0f, scaleBaseY));
+            window.draw(minusSign);
+            // + button
+            sf::RectangleShape movePlusBtn(sf::Vector2f(28.0f, 28.0f));
+            movePlusBtn.setPosition(sf::Vector2f(hudX + pad + 196.0f, scaleBaseY));
+            movePlusBtn.setFillColor(sf::Color(180,180,180));
+            movePlusBtn.setOutlineColor(sf::Color::Black);
+            movePlusBtn.setOutlineThickness(1.0f);
+            window.draw(movePlusBtn);
+            sf::Text plusSign(hudFont, "+", fs);
+            plusSign.setFillColor(sf::Color::Black);
+            plusSign.setPosition(sf::Vector2f(hudX + pad + 202.0f, scaleBaseY));
+            window.draw(plusSign);
+
+            // Rotation scale label
+            float rotY = scaleBaseY + 40.0f;
+            sf::Text rotLabel(hudFont, std::string("Rot scale:  ") + std::to_string(rotSpeedScale), fs);
+            rotLabel.setFillColor(sf::Color::White);
+            rotLabel.setPosition(sf::Vector2f(hudX + pad, rotY));
+            window.draw(rotLabel);
+            // rot - button
+            sf::RectangleShape rotMinusBtn(sf::Vector2f(28.0f, 28.0f));
+            rotMinusBtn.setPosition(sf::Vector2f(hudX + pad + 160.0f, rotY));
+            rotMinusBtn.setFillColor(sf::Color(180,180,180));
+            rotMinusBtn.setOutlineColor(sf::Color::Black);
+            rotMinusBtn.setOutlineThickness(1.0f);
+            window.draw(rotMinusBtn);
+            sf::Text rotMinusSign(hudFont, "-", fs);
+            rotMinusSign.setFillColor(sf::Color::Black);
+            rotMinusSign.setPosition(sf::Vector2f(hudX + pad + 166.0f, rotY));
+            window.draw(rotMinusSign);
+            // rot + button
+            sf::RectangleShape rotPlusBtn(sf::Vector2f(28.0f, 28.0f));
+            rotPlusBtn.setPosition(sf::Vector2f(hudX + pad + 196.0f, rotY));
+            rotPlusBtn.setFillColor(sf::Color(180,180,180));
+            rotPlusBtn.setOutlineColor(sf::Color::Black);
+            rotPlusBtn.setOutlineThickness(1.0f);
+            window.draw(rotPlusBtn);
+            sf::Text rotPlusSign(hudFont, "+", fs);
+            rotPlusSign.setFillColor(sf::Color::Black);
+            rotPlusSign.setPosition(sf::Vector2f(hudX + pad + 202.0f, rotY));
+            window.draw(rotPlusSign);
+        }
+
+        // HUD: render BallPacket and MoveProfile inside the panel
+
+        if (hudFontLoaded) {
+            std::string bp1 = std::string("BallPacket.detected: ") + (latestBallPacket.detected ? "true" : "false");
+            std::string bp2 = "angleDeg: " + std::to_string(latestBallPacket.angleDeg);
+            std::string bp3 = "distanceCM: " + std::to_string(latestBallPacket.distanceCM);
+            std::string bp4 = "size: " + std::to_string((int)latestBallPacket.sizeByte);
+
+            std::string mp1 = std::string("MoveProfile.active: ") + (currentMoveProfile.active ? "true" : "false");
+            std::string mp2 = "dirDeg: " + std::to_string(currentMoveProfile.movementDirectionDeg);
+            std::string mp3 = "speed: " + std::to_string(currentMoveProfile.speed);
+            std::string mp4 = "rot: " + std::to_string(currentMoveProfile.rotationSpeed);
+
+            const float pad = 10.0f;
+            float tx = hudX + pad;
+                        const float HUD_CONTROLS_HEIGHT = 120.0f; // space reserved for enable buttons and scale controls
+                        float ty = hudY + pad + HUD_CONTROLS_HEIGHT; // start text below controls
+            unsigned int fs = 16;
+
+            sf::Text t1(hudFont, bp1, fs); t1.setFillColor(sf::Color::White); t1.setPosition(sf::Vector2f(tx, ty)); window.draw(t1); ty += 22.0f;
+            sf::Text t2(hudFont, bp2, fs); t2.setFillColor(sf::Color::White); t2.setPosition(sf::Vector2f(tx, ty)); window.draw(t2); ty += 22.0f;
+            sf::Text t3(hudFont, bp3, fs); t3.setFillColor(sf::Color::White); t3.setPosition(sf::Vector2f(tx, ty)); window.draw(t3); ty += 22.0f;
+            sf::Text t4(hudFont, bp4, fs); t4.setFillColor(sf::Color::White); t4.setPosition(sf::Vector2f(tx, ty)); window.draw(t4); ty += 32.0f;
+
+            sf::Text m1(hudFont, mp1, fs); m1.setFillColor(sf::Color::White); m1.setPosition(sf::Vector2f(tx, ty)); window.draw(m1); ty += 22.0f;
+            sf::Text m2(hudFont, mp2, fs); m2.setFillColor(sf::Color::White); m2.setPosition(sf::Vector2f(tx, ty)); window.draw(m2); ty += 22.0f;
+            sf::Text m3(hudFont, mp3, fs); m3.setFillColor(sf::Color::White); m3.setPosition(sf::Vector2f(tx, ty)); window.draw(m3); ty += 22.0f;
+            sf::Text m4(hudFont, mp4, fs); m4.setFillColor(sf::Color::White); m4.setPosition(sf::Vector2f(tx, ty)); window.draw(m4); ty += 22.0f;
         }
 
         window.display();
     }
+
+    // Stop robot thread cleanly
+    robot_stop();
 
     return 0;
 }

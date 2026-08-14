@@ -131,7 +131,7 @@ constexpr float motorMult[5] = {
 // ============================================================
 
 constexpr float ROBOT_MAX_SPEED = 0.5f;
-constexpr float ROTATION_MAX_SPEED = 240.0f;
+constexpr float ROTATION_MAX_SPEED = 0.5f;
 
 // ============================================================
 // Move / Acceleration Settings

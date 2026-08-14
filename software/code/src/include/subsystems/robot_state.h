@@ -1,29 +1,29 @@
 #pragma once
 
+#ifdef ARDUINO
 #include <Arduino.h>
+#else
+// When compiling for the simulator (not Arduino), use the simulator HAL
+#include "sim_hal/Arduino.h"
+#include <cstdint>
+#include <cmath>
+using uint8_t = std::uint8_t;
+#endif
 
 struct BallPacket {
   bool detected;
-  float angleDeg;
-  float distanceCM;
+  float angleDeg;   // degrees (relative to robot front/dribbler direction)
+  float distanceCM; // centimeters
   uint8_t sizeByte;
 };
 
+// Simplified MoveProfile used by simulator and robot code
 struct MoveProfile {
-  float accelTime;
-  float cruiseTime;
-  float decelTime;
-  float peakSpeed;
-};
-
-struct RotationProfile {
-  float accelTime;
-  float cruiseTime;
-  float decelTime;
-  float peakOmegaMag;
-  float effectiveAccelMag;
-  float totalDelta;
-  float rotationTime;
+  bool active;                   // if true, simulator should use the profile
+  float movementDirectionDeg;    // degrees (0 = front/dribbler direction)
+  float speed;                   // speed (same units as drive() speed parameter)
+  float rotationSpeed;          // normalized rotation speed (signed, unitless)
+  unsigned long lastUpdateMs;    // millis() when last updated
 };
 
 extern BallPacket latestBallPacket;
@@ -31,6 +31,8 @@ extern unsigned long lastBallPacketMs;
 extern uint8_t ballPacketBuf[];
 extern uint8_t ballPacketIdx;
 extern bool ballSyncFound;
+
+extern MoveProfile currentMoveProfile;
 
 extern unsigned long bootMillis;
 extern unsigned long lastRunStateChangeMs;

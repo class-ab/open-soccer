@@ -7,6 +7,8 @@ uint8_t ballPacketBuf[BALL_PACKET_LEN];
 uint8_t ballPacketIdx = 0;
 bool ballSyncFound = false;
 
+MoveProfile currentMoveProfile = {false, 0.0f, 0.0f, 0.0f, 0};
+
 unsigned long bootMillis = 0;
 unsigned long lastRunStateChangeMs = 0;
 bool robotCurrentlyRunning = false;
