@@ -36,8 +36,8 @@ struct Robot {
     void draw(sf::RenderTarget& rt) const {
         float r_px = mmToPx(diameterMm) / 2.0f;
         sf::CircleShape body(r_px);
-        body.setOrigin(r_px, r_px);
-        body.setPosition(mmToPx(pos.x) + WINDOW_MARGIN_PX, mmToPx(pos.y) + WINDOW_MARGIN_PX);
+        body.setOrigin(sf::Vector2f(r_px, r_px));
+        body.setPosition(sf::Vector2f(mmToPx(pos.x) + WINDOW_MARGIN_PX, mmToPx(pos.y) + WINDOW_MARGIN_PX));
         body.setFillColor(sf::Color(200, 200, 220));
         body.setOutlineThickness(2.0f);
         body.setOutlineColor(sf::Color::Black);
@@ -46,21 +46,22 @@ struct Robot {
         // draw heading indicator
         float angleRad = (headingDeg - 90.0f) * 3.14159265f / 180.0f; // convert to screen angle
         sf::Vector2f dir(std::cos(angleRad), std::sin(angleRad));
-        sf::Vertex line[] = {
-            sf::Vertex(body.getPosition(), sf::Color::Black),
-            sf::Vertex(body.getPosition() + dir * (r_px * 1.1f), sf::Color::Red)
-        };
-        rt.draw(line, 2, sf::Lines);
+        sf::VertexArray line(sf::PrimitiveType::Lines, 2);
+        line[0].position = body.getPosition();
+        line[0].color = sf::Color::Black;
+        line[1].position = body.getPosition() + dir * (r_px * 1.1f);
+        line[1].color = sf::Color::Red;
+        rt.draw(line);
 
         // draw frontal dribbler as a small rectangle in front
         float dribblerW_px = mmToPx(DRIBBLER_WIDTH_MM);
         float dribblerD_px = mmToPx(DRIBBLER_DEPTH_MM);
         sf::RectangleShape drib(sf::Vector2f(dribblerW_px, dribblerD_px));
-        drib.setOrigin(dribblerW_px/2.0f, dribblerD_px);
+        drib.setOrigin(sf::Vector2f(dribblerW_px/2.0f, dribblerD_px));
         // position the dribbler at robot front
         sf::Vector2f front = body.getPosition() + dir * (r_px + dribblerD_px*0.5f + 1.0f);
         drib.setPosition(front);
-        drib.setRotation(headingDeg);
+        drib.setRotation(sf::degrees(headingDeg));
         drib.setFillColor(sf::Color(120,120,120));
         rt.draw(drib);
     }
@@ -71,7 +72,8 @@ int main() {
     int winW = static_cast<int>(std::round(mmToPx(FIELD_WIDTH_MM))) + 2*WINDOW_MARGIN_PX;
     int winH = static_cast<int>(std::round(mmToPx(FIELD_HEIGHT_MM))) + 2*WINDOW_MARGIN_PX;
 
-    sf::RenderWindow window(sf::VideoMode(winW, winH), "RCJ Open Soccer - 2D Simulation");
+    sf::VideoMode mode(sf::Vector2u(static_cast<unsigned int>(winW), static_cast<unsigned int>(winH)), 32);
+    sf::RenderWindow window(mode, sf::String("RCJ Open Soccer - 2D Simulation"));
     window.setFramerateLimit(60);
 
     Robot robot;
@@ -79,7 +81,7 @@ int main() {
     // Create static shapes
     // full green area
     sf::RectangleShape greenBg(sf::Vector2f(mmToPx(FIELD_WIDTH_MM), mmToPx(FIELD_HEIGHT_MM)));
-    greenBg.setPosition(WINDOW_MARGIN_PX, WINDOW_MARGIN_PX);
+    greenBg.setPosition(sf::Vector2f(WINDOW_MARGIN_PX, WINDOW_MARGIN_PX));
     greenBg.setFillColor(sf::Color(50, 140, 60)); // green carpet
     greenBg.setOutlineThickness(2.0f);
     greenBg.setOutlineColor(sf::Color::Black);
@@ -94,22 +96,22 @@ int main() {
 
     // top line rectangle
     sf::RectangleShape topLine(sf::Vector2f(outerW_px - 2*inset_px, lineThickness_px));
-    topLine.setPosition(WINDOW_MARGIN_PX + inset_px, WINDOW_MARGIN_PX + inset_px - lineThickness_px/2.0f);
+    topLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + inset_px, WINDOW_MARGIN_PX + inset_px - lineThickness_px/2.0f));
     topLine.setFillColor(sf::Color::White);
 
     // bottom line
     sf::RectangleShape bottomLine(sf::Vector2f(outerW_px - 2*inset_px, lineThickness_px));
-    bottomLine.setPosition(WINDOW_MARGIN_PX + inset_px, WINDOW_MARGIN_PX + outerH_px - inset_px - lineThickness_px/2.0f);
+    bottomLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + inset_px, WINDOW_MARGIN_PX + outerH_px - inset_px - lineThickness_px/2.0f));
     bottomLine.setFillColor(sf::Color::White);
 
     // left line
     sf::RectangleShape leftLine(sf::Vector2f(lineThickness_px, outerH_px - 2*inset_px));
-    leftLine.setPosition(WINDOW_MARGIN_PX + inset_px - lineThickness_px/2.0f, WINDOW_MARGIN_PX + inset_px);
+    leftLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + inset_px - lineThickness_px/2.0f, WINDOW_MARGIN_PX + inset_px));
     leftLine.setFillColor(sf::Color::White);
 
     // right line
     sf::RectangleShape rightLine(sf::Vector2f(lineThickness_px, outerH_px - 2*inset_px));
-    rightLine.setPosition(WINDOW_MARGIN_PX + outerW_px - inset_px - lineThickness_px/2.0f, WINDOW_MARGIN_PX + inset_px);
+    rightLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + outerW_px - inset_px - lineThickness_px/2.0f, WINDOW_MARGIN_PX + inset_px));
     rightLine.setFillColor(sf::Color::White);
 
     // Goals: centered on short sides (top and bottom). We'll draw simple goal rectangles (opening width GOAL_WIDTH_MM and depth GOAL_DEPTH_MM)
@@ -123,8 +125,8 @@ int main() {
     // Place goal so that its inner edge is GOAL_DEPTH_MM from that inner edge
     float topGoalInnerY_px = whiteTopInnerY_px + mmToPx(GOAL_DEPTH_MM);
     sf::RectangleShape topGoal(sf::Vector2f(goalW_px, goalD_px));
-    topGoal.setOrigin(goalW_px/2.0f, goalD_px); // origin at bottom-center of goal rect
-    topGoal.setPosition(centerX_px, topGoalInnerY_px);
+    topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px)); // origin at bottom-center of goal rect
+    topGoal.setPosition(sf::Vector2f(centerX_px, topGoalInnerY_px));
     topGoal.setFillColor(sf::Color(230,230,230));
     topGoal.setOutlineThickness(2.0f);
     topGoal.setOutlineColor(sf::Color::Black);
@@ -133,8 +135,8 @@ int main() {
     float whiteBottomInnerY_px = WINDOW_MARGIN_PX + outerH_px - inset_px - (lineThickness_px/2.0f);
     float bottomGoalInnerY_px = whiteBottomInnerY_px - mmToPx(GOAL_DEPTH_MM);
     sf::RectangleShape bottomGoal(sf::Vector2f(goalW_px, goalD_px));
-    bottomGoal.setOrigin(goalW_px/2.0f, 0.0f); // origin at top-center
-    bottomGoal.setPosition(centerX_px, bottomGoalInnerY_px);
+    bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f)); // origin at top-center
+    bottomGoal.setPosition(sf::Vector2f(centerX_px, bottomGoalInnerY_px));
     bottomGoal.setFillColor(sf::Color(230,230,230));
     bottomGoal.setOutlineThickness(2.0f);
     bottomGoal.setOutlineColor(sf::Color::Black);
@@ -146,20 +148,26 @@ int main() {
     sf::Clock clock;
 
     while (window.isOpen()) {
-        sf::Event ev;
-        while (window.pollEvent(ev)) {
-            if (ev.type == sf::Event::Closed) window.close();
-            if (ev.type == sf::Event::KeyPressed) {
-                if (ev.key.code == sf::Keyboard::Escape) window.close();
-                if (ev.key.code == sf::Keyboard::R) {
-                    robot.pos = sf::Vector2f(FIELD_WIDTH_MM/2.0f, FIELD_HEIGHT_MM/2.0f);
-                    robot.headingDeg = 0.0f;
-                }
-                if (ev.key.code == sf::Keyboard::Add || ev.key.code == sf::Keyboard::Equal) {
-                    PX_PER_MM *= 1.05f; // zoom in
-                }
-                if (ev.key.code == sf::Keyboard::Subtract || ev.key.code == sf::Keyboard::Hyphen) {
-                    PX_PER_MM /= 1.05f; // zoom out
+        // Event handling (SFML3 uses std::optional<Event>)
+        while (auto evOpt = window.pollEvent()) {
+            const auto &ev = *evOpt;
+            if (ev.is<sf::Event::Closed>()) {
+                window.close();
+            }
+            if (ev.is<sf::Event::KeyPressed>()) {
+                const auto *kp = ev.getIf<sf::Event::KeyPressed>();
+                if (kp) {
+                    if (kp->code == sf::Keyboard::Key::Escape) window.close();
+                    if (kp->code == sf::Keyboard::Key::R) {
+                        robot.pos = sf::Vector2f(FIELD_WIDTH_MM/2.0f, FIELD_HEIGHT_MM/2.0f);
+                        robot.headingDeg = 0.0f;
+                    }
+                    if (kp->code == sf::Keyboard::Key::Add || kp->code == sf::Keyboard::Key::Equal) {
+                        PX_PER_MM *= 1.05f; // zoom in
+                    }
+                    if (kp->code == sf::Keyboard::Key::Subtract || kp->code == sf::Keyboard::Key::Hyphen) {
+                        PX_PER_MM /= 1.05f; // zoom out
+                    }
                 }
             }
         }
@@ -167,10 +175,10 @@ int main() {
         float dt = clock.restart().asSeconds();
 
         // Keyboard movement: Up/Down forward/back, Left/Right rotate
-        bool up = sf::Keyboard::isKeyPressed(sf::Keyboard::Up);
-        bool down = sf::Keyboard::isKeyPressed(sf::Keyboard::Down);
-        bool left = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
-        bool right = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
+        bool up = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up);
+        bool down = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down);
+        bool left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left);
+        bool right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right);
 
         if (left) robot.headingDeg -= ROTATION_SPEED_DEG_S * dt;
         if (right) robot.headingDeg += ROTATION_SPEED_DEG_S * dt;
@@ -195,13 +203,13 @@ int main() {
         // Recompute shapes that depend on scaling (if user zoomed)
         greenBg.setSize(sf::Vector2f(mmToPx(FIELD_WIDTH_MM), mmToPx(FIELD_HEIGHT_MM)));
         topLine.setSize(sf::Vector2f(mmToPx(FIELD_WIDTH_MM) - 2*mmToPx(WHITE_LINE_INSET_FROM_WALL_MM), mmToPx(WHITE_LINE_THICKNESS_MM)));
-        topLine.setPosition(WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM), WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
+        topLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM), WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f));
         bottomLine.setSize(topLine.getSize());
-        bottomLine.setPosition(WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM), WINDOW_MARGIN_PX + mmToPx(FIELD_HEIGHT_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
+        bottomLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM), WINDOW_MARGIN_PX + mmToPx(FIELD_HEIGHT_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f));
         leftLine.setSize(sf::Vector2f(mmToPx(WHITE_LINE_THICKNESS_MM), mmToPx(FIELD_HEIGHT_MM) - 2*mmToPx(WHITE_LINE_INSET_FROM_WALL_MM)));
-        leftLine.setPosition(WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f, WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM));
+        leftLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f, WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM)));
         rightLine.setSize(leftLine.getSize());
-        rightLine.setPosition(WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f, WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM));
+        rightLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f, WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM)));
 
         // goals update
         goalW_px = mmToPx(GOAL_WIDTH_MM);
@@ -210,13 +218,13 @@ int main() {
         float whiteTopY = WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) + (mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
         float topGoalInnerY = whiteTopY + mmToPx(GOAL_DEPTH_MM);
         topGoal.setSize(sf::Vector2f(goalW_px, goalD_px));
-        topGoal.setOrigin(goalW_px/2.0f, goalD_px);
-        topGoal.setPosition(centerX_px, topGoalInnerY);
+        topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px));
+        topGoal.setPosition(sf::Vector2f(centerX_px, topGoalInnerY));
         float whiteBottomY = WINDOW_MARGIN_PX + mmToPx(FIELD_HEIGHT_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - (mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
         float bottomGoalInnerY = whiteBottomY - mmToPx(GOAL_DEPTH_MM);
         bottomGoal.setSize(sf::Vector2f(goalW_px, goalD_px));
-        bottomGoal.setOrigin(goalW_px/2.0f, 0.0f);
-        bottomGoal.setPosition(centerX_px, bottomGoalInnerY);
+        bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f));
+        bottomGoal.setPosition(sf::Vector2f(centerX_px, bottomGoalInnerY));
 
         // draw field
         window.draw(greenBg);

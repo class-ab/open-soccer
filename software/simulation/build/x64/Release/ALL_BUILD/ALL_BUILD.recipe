@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\build\x64\Release\ZERO_CHECK</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\build\Release\simulation.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\build\x64\Release\ALL_BUILD</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

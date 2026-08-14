@@ -1,0 +1,3 @@
+C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/build/CMakeFiles/simulation.dir
+C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/build/CMakeFiles/ZERO_CHECK.dir
