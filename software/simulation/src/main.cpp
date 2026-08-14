@@ -192,10 +192,12 @@ int main() {
     const unsigned long SIM_MS_PER_FRAME = 16; // ~60Hz sim time step (16ms)
 
     // Movement scaling controls (HUD adjustable)
-    float moveSpeedScale = 1.0f;   // multiplier for linear speed
-    float rotSpeedScale = 1.0f;    // multiplier for rotation speed
-    const float MOVE_SCALE_STEP = 0.1f;
-    const float ROT_SCALE_STEP = 0.05f;
+    float moveSpeedScale = 8.0f;   // user-editable multiplier for linear speed (default 8.0)
+    float rotSpeedScale = 8.0f;    // user-editable multiplier for rotation speed (default 8.0)
+    std::string moveSpeedStr = std::to_string(moveSpeedScale);
+    std::string rotSpeedStr = std::to_string(rotSpeedScale);
+    bool editMove = false;
+    bool editRot = false;
 
     // Max physical speeds used by simulator (mm/s and deg/s)
     const float SIM_MAX_LINEAR_MM_S = 220.0f; // base max linear speed
@@ -215,6 +217,42 @@ int main() {
                     if (kp->code == sf::Keyboard::Key::R) {
                         robot.pos = sf::Vector2f(FIELD_WIDTH_MM/2.0f, FIELD_HEIGHT_MM/2.0f);
                         robot.headingDeg = 0.0f;
+                    }
+                    // Handle input editing keys
+                    if (kp->code == sf::Keyboard::Key::Backspace) {
+                        if (editMove && !moveSpeedStr.empty()) moveSpeedStr.pop_back();
+                        if (editRot && !rotSpeedStr.empty()) rotSpeedStr.pop_back();
+                    }
+                    if (kp->code == sf::Keyboard::Key::Enter) {
+                        if (editMove) {
+                            try { moveSpeedScale = std::stof(moveSpeedStr); } catch(...) {}
+                            editMove = false;
+                        }
+                        if (editRot) {
+                            try { rotSpeedScale = std::stof(rotSpeedStr); } catch(...) {}
+                            editRot = false;
+                        }
+                    }
+                    if (kp->code == sf::Keyboard::Key::Escape) {
+                        // cancel editing
+                        if (editMove) { moveSpeedStr = std::to_string(moveSpeedScale); editMove = false; }
+                        if (editRot) { rotSpeedStr = std::to_string(rotSpeedScale); editRot = false; }
+                    }
+                }
+            }
+
+            if (ev.is<sf::Event::TextEntered>()) {
+                const auto *te = ev.getIf<sf::Event::TextEntered>();
+                if (te) {
+                    uint32_t uni = te->unicode;
+                    // allow digits, dot, minus
+                    if (uni == 8) { // backspace handled in KeyPressed, ignore
+                    } else if (uni < 128) {
+                        char c = static_cast<char>(uni);
+                        if ((c >= '0' && c <= '9') || c == '.' || c == '-') {
+                            if (editMove) moveSpeedStr.push_back(c);
+                            if (editRot) rotSpeedStr.push_back(c);
+                        }
                     }
                 }
             }
@@ -256,32 +294,29 @@ int main() {
 
                         // Scale control positions (match drawing below)
                         float scaleRowY = hudY_click + pad_click + 40.0f;
-                        float moveLabelX = hudX_click + pad_click;
-                        float moveMinusX = moveLabelX + 160.0f; // position of - button
-                        float movePlusX = moveMinusX + 36.0f;
+                        float moveInputX = hudX_click + pad_click + 160.0f; // x of input box
+                        float moveInputW = 80.0f;
+                        float moveInputH = 28.0f;
 
-                        float rotLabelX = hudX_click + pad_click;
+                        float rotInputX = hudX_click + pad_click + 160.0f;
                         float rotRowY = scaleRowY + 40.0f;
-                        float rotMinusX = rotLabelX + 160.0f;
-                        float rotPlusX = rotMinusX + 36.0f;
+                        float rotInputW = 80.0f;
+                        float rotInputH = 28.0f;
 
-                        // Click on move scale -/+
-                        if (pix.x >= static_cast<int>(std::round(moveMinusX)) && pix.x <= static_cast<int>(std::round(moveMinusX + btnSize)) && pix.y >= static_cast<int>(std::round(scaleRowY)) && pix.y <= static_cast<int>(std::round(scaleRowY + btnSize))) {
-                            moveSpeedScale = std::max(0.1f, moveSpeedScale - MOVE_SCALE_STEP);
-                            continue;
-                        }
-                        if (pix.x >= static_cast<int>(std::round(movePlusX)) && pix.x <= static_cast<int>(std::round(movePlusX + btnSize)) && pix.y >= static_cast<int>(std::round(scaleRowY)) && pix.y <= static_cast<int>(std::round(scaleRowY + btnSize))) {
-                            moveSpeedScale = std::min(5.0f, moveSpeedScale + MOVE_SCALE_STEP);
+                        // Click on move input box
+                        if (pix.x >= static_cast<int>(std::round(moveInputX)) && pix.x <= static_cast<int>(std::round(moveInputX + moveInputW)) && pix.y >= static_cast<int>(std::round(scaleRowY)) && pix.y <= static_cast<int>(std::round(scaleRowY + moveInputH))) {
+                            editMove = true;
+                            editRot = false;
+                            // store current string
+                            moveSpeedStr = std::to_string(moveSpeedScale);
                             continue;
                         }
 
-                        // Click on rot scale -/+
-                        if (pix.x >= static_cast<int>(std::round(rotMinusX)) && pix.x <= static_cast<int>(std::round(rotMinusX + btnSize)) && pix.y >= static_cast<int>(std::round(rotRowY)) && pix.y <= static_cast<int>(std::round(rotRowY + btnSize))) {
-                            rotSpeedScale = std::max(0.0f, rotSpeedScale - ROT_SCALE_STEP);
-                            continue;
-                        }
-                        if (pix.x >= static_cast<int>(std::round(rotPlusX)) && pix.x <= static_cast<int>(std::round(rotPlusX + btnSize)) && pix.y >= static_cast<int>(std::round(rotRowY)) && pix.y <= static_cast<int>(std::round(rotRowY + btnSize))) {
-                            rotSpeedScale = std::min(5.0f, rotSpeedScale + ROT_SCALE_STEP);
+                        // Click on rot input box
+                        if (pix.x >= static_cast<int>(std::round(rotInputX)) && pix.x <= static_cast<int>(std::round(rotInputX + rotInputW)) && pix.y >= static_cast<int>(std::round(rotRowY)) && pix.y <= static_cast<int>(std::round(rotRowY + rotInputH))) {
+                            editRot = true;
+                            editMove = false;
+                            rotSpeedStr = std::to_string(rotSpeedScale);
                             continue;
                         }
 
@@ -392,7 +427,7 @@ int main() {
             // previously treated increasing heading as clockwise, so subtract to make positive -> CCW.
             robot.headingDeg -= rot_deg_s * dt_s;
             // compute world angle for movement: robot.headingDeg + movementDirectionDeg
-            float worldDeg = robot.headingDeg + currentMoveProfile.movementDirectionDeg;
+            float worldDeg = robot.headingDeg + ( -currentMoveProfile.movementDirectionDeg );
             float angleRad = (worldDeg - 90.0f) * 3.14159265f / 180.0f;
             float dx = std::cos(angleRad) * linear_mm_s * dt_s;
             float dy = std::sin(angleRad) * linear_mm_s * dt_s;
@@ -493,62 +528,50 @@ int main() {
         if (hudFontLoaded) {
             float scaleBaseY = hudY + pad + 40.0f;
             unsigned int fs = 14;
-            // Move scale label
-            sf::Text moveLabel(hudFont, std::string("Move scale: ") + std::to_string(moveSpeedScale), fs);
+            // Move scale label and input box
+            sf::Text moveLabel(hudFont, std::string("Move scale:"), fs);
             moveLabel.setFillColor(sf::Color::White);
             moveLabel.setPosition(sf::Vector2f(hudX + pad, scaleBaseY));
             window.draw(moveLabel);
-            // - button
-            sf::RectangleShape moveMinusBtn(sf::Vector2f(28.0f, 28.0f));
-            moveMinusBtn.setPosition(sf::Vector2f(hudX + pad + 160.0f, scaleBaseY));
-            moveMinusBtn.setFillColor(sf::Color(180,180,180));
-            moveMinusBtn.setOutlineColor(sf::Color::Black);
-            moveMinusBtn.setOutlineThickness(1.0f);
-            window.draw(moveMinusBtn);
-            sf::Text minusSign(hudFont, "-", fs);
-            minusSign.setFillColor(sf::Color::Black);
-            minusSign.setPosition(sf::Vector2f(hudX + pad + 166.0f, scaleBaseY));
-            window.draw(minusSign);
-            // + button
-            sf::RectangleShape movePlusBtn(sf::Vector2f(28.0f, 28.0f));
-            movePlusBtn.setPosition(sf::Vector2f(hudX + pad + 196.0f, scaleBaseY));
-            movePlusBtn.setFillColor(sf::Color(180,180,180));
-            movePlusBtn.setOutlineColor(sf::Color::Black);
-            movePlusBtn.setOutlineThickness(1.0f);
-            window.draw(movePlusBtn);
-            sf::Text plusSign(hudFont, "+", fs);
-            plusSign.setFillColor(sf::Color::Black);
-            plusSign.setPosition(sf::Vector2f(hudX + pad + 202.0f, scaleBaseY));
-            window.draw(plusSign);
+            // input box for move scale
+            float moveInputX = hudX + pad + 160.0f;
+            float moveInputY = scaleBaseY;
+            float moveInputW = 80.0f;
+            float moveInputH = 28.0f;
+            sf::RectangleShape moveInputBox(sf::Vector2f(moveInputW, moveInputH));
+            moveInputBox.setPosition(sf::Vector2f(moveInputX, moveInputY));
+            moveInputBox.setFillColor(sf::Color(220,220,220));
+            moveInputBox.setOutlineColor(editMove ? sf::Color::Yellow : sf::Color::Black);
+            moveInputBox.setOutlineThickness(1.0f);
+            window.draw(moveInputBox);
+            std::string showMove = editMove ? moveSpeedStr : std::to_string(moveSpeedScale);
+            sf::Text moveText(hudFont, showMove, fs);
+            moveText.setFillColor(sf::Color::Black);
+            moveText.setPosition(sf::Vector2f(moveInputX + 6.0f, moveInputY));
+            window.draw(moveText);
 
-            // Rotation scale label
+            // Rotation scale label and input box
             float rotY = scaleBaseY + 40.0f;
-            sf::Text rotLabel(hudFont, std::string("Rot scale:  ") + std::to_string(rotSpeedScale), fs);
+            sf::Text rotLabel(hudFont, std::string("Rot scale:"), fs);
             rotLabel.setFillColor(sf::Color::White);
             rotLabel.setPosition(sf::Vector2f(hudX + pad, rotY));
             window.draw(rotLabel);
-            // rot - button
-            sf::RectangleShape rotMinusBtn(sf::Vector2f(28.0f, 28.0f));
-            rotMinusBtn.setPosition(sf::Vector2f(hudX + pad + 160.0f, rotY));
-            rotMinusBtn.setFillColor(sf::Color(180,180,180));
-            rotMinusBtn.setOutlineColor(sf::Color::Black);
-            rotMinusBtn.setOutlineThickness(1.0f);
-            window.draw(rotMinusBtn);
-            sf::Text rotMinusSign(hudFont, "-", fs);
-            rotMinusSign.setFillColor(sf::Color::Black);
-            rotMinusSign.setPosition(sf::Vector2f(hudX + pad + 166.0f, rotY));
-            window.draw(rotMinusSign);
-            // rot + button
-            sf::RectangleShape rotPlusBtn(sf::Vector2f(28.0f, 28.0f));
-            rotPlusBtn.setPosition(sf::Vector2f(hudX + pad + 196.0f, rotY));
-            rotPlusBtn.setFillColor(sf::Color(180,180,180));
-            rotPlusBtn.setOutlineColor(sf::Color::Black);
-            rotPlusBtn.setOutlineThickness(1.0f);
-            window.draw(rotPlusBtn);
-            sf::Text rotPlusSign(hudFont, "+", fs);
-            rotPlusSign.setFillColor(sf::Color::Black);
-            rotPlusSign.setPosition(sf::Vector2f(hudX + pad + 202.0f, rotY));
-            window.draw(rotPlusSign);
+            float rotInputX = hudX + pad + 160.0f;
+            float rotInputY = rotY;
+            float rotInputW = 80.0f;
+            float rotInputH = 28.0f;
+            sf::RectangleShape rotInputBox(sf::Vector2f(rotInputW, rotInputH));
+            rotInputBox.setPosition(sf::Vector2f(rotInputX, rotInputY));
+            rotInputBox.setFillColor(sf::Color(220,220,220));
+            rotInputBox.setOutlineColor(editRot ? sf::Color::Yellow : sf::Color::Black);
+            rotInputBox.setOutlineThickness(1.0f);
+            window.draw(rotInputBox);
+            std::string showRot = editRot ? rotSpeedStr : std::to_string(rotSpeedScale);
+            sf::Text rotText(hudFont, showRot, fs);
+            rotText.setFillColor(sf::Color::Black);
+            rotText.setPosition(sf::Vector2f(rotInputX + 6.0f, rotInputY));
+            window.draw(rotText);
+
         }
 
         // HUD: render BallPacket and MoveProfile inside the panel
