@@ -31,6 +31,88 @@ const int HUD_PANEL_WIDTH_PX = 320; // fixed HUD panel width on the right side
 // Helper conversions
 inline float mmToPx(float mm) { return mm * PX_PER_MM; }
 
+struct AxisAlignedRect {
+    float left;
+    float top;
+    float width;
+    float height;
+};
+
+// Goals are solid rectangular obstacles in simulation coordinates. Keeping
+// these bounds in millimetres makes their collision independent of rendering
+// scale and matches the rectangles drawn later in main().
+const AxisAlignedRect TOP_GOAL_BOUNDS = {
+    (FIELD_WIDTH_MM - GOAL_WIDTH_MM) / 2.0f,
+    WHITE_LINE_INSET_FROM_WALL_MM + WHITE_LINE_THICKNESS_MM / 2.0f - GOAL_DEPTH_MM,
+    GOAL_WIDTH_MM,
+    GOAL_DEPTH_MM
+};
+const AxisAlignedRect BOTTOM_GOAL_BOUNDS = {
+    (FIELD_WIDTH_MM - GOAL_WIDTH_MM) / 2.0f,
+    FIELD_HEIGHT_MM - WHITE_LINE_INSET_FROM_WALL_MM - WHITE_LINE_THICKNESS_MM / 2.0f,
+    GOAL_WIDTH_MM,
+    GOAL_DEPTH_MM
+};
+
+float clampFloat(float value, float minimum, float maximum) {
+    return std::max(minimum, std::min(maximum, value));
+}
+
+void resolveCircleAgainstRect(sf::Vector2f& position, float radius, const AxisAlignedRect& rect) {
+    const float right = rect.left + rect.width;
+    const float bottom = rect.top + rect.height;
+    const float closestX = clampFloat(position.x, rect.left, right);
+    const float closestY = clampFloat(position.y, rect.top, bottom);
+    const float dx = position.x - closestX;
+    const float dy = position.y - closestY;
+    const float distanceSquared = dx * dx + dy * dy;
+
+    if (distanceSquared >= radius * radius) {
+        return;
+    }
+
+    if (distanceSquared > 0.0001f) {
+        const float distance = std::sqrt(distanceSquared);
+        const float pushDistance = radius - distance;
+        position.x += dx / distance * pushDistance;
+        position.y += dy / distance * pushDistance;
+        return;
+    }
+
+    // The circle centre is inside the goal. Push it through its nearest face.
+    const float toLeft = position.x - rect.left;
+    const float toRight = right - position.x;
+    const float toTop = position.y - rect.top;
+    const float toBottom = bottom - position.y;
+    const float nearestFace = std::min(std::min(toLeft, toRight), std::min(toTop, toBottom));
+
+    if (nearestFace == toLeft) position.x = rect.left - radius;
+    else if (nearestFace == toRight) position.x = right + radius;
+    else if (nearestFace == toTop) position.y = rect.top - radius;
+    else position.y = bottom + radius;
+}
+
+void constrainToFieldAndGoals(sf::Vector2f& position, float radius) {
+    position.x = clampFloat(position.x, radius, FIELD_WIDTH_MM - radius);
+    position.y = clampFloat(position.y, radius, FIELD_HEIGHT_MM - radius);
+    resolveCircleAgainstRect(position, radius, TOP_GOAL_BOUNDS);
+    resolveCircleAgainstRect(position, radius, BOTTOM_GOAL_BOUNDS);
+}
+
+void moveWithGoalCollision(sf::Vector2f& position, const sf::Vector2f& target, float radius) {
+    const sf::Vector2f delta = target - position;
+    const float distance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    // Sweep in short increments to prevent a fast robot or mouse drag from
+    // stepping completely through a shallow goal in one frame.
+    const int steps = std::max(1, static_cast<int>(std::ceil(distance / std::max(1.0f, radius * 0.5f))));
+    const sf::Vector2f step = delta / static_cast<float>(steps);
+
+    for (int i = 0; i < steps; ++i) {
+        position += step;
+        constrainToFieldAndGoals(position, radius);
+    }
+}
+
 struct Robot {
     sf::Vector2f pos; // in mm
     float headingDeg; // 0 = up (toward negative y in screen coords)
@@ -141,13 +223,13 @@ int main() {
     float goalD_px = mmToPx(GOAL_DEPTH_MM);
     float centerX_px = WINDOW_MARGIN_PX + outerW_px/2.0f;
 
-    // Top goal (drawn just above the top white line; inner edge positioned GOAL_DEPTH_MM from inner edge of white line)
-    // Compute inner edge of the white top line y position (in pixels)
+    // Goals begin at the inner edge of each white line and extend away from
+    // the centre of the field.
+    // Compute the inner edge of the white top line in pixels.
     float whiteTopInnerY_px = WINDOW_MARGIN_PX + inset_px + (lineThickness_px/2.0f);
-    // Place goal so that its inner edge is GOAL_DEPTH_MM from that inner edge
-    float topGoalInnerY_px = whiteTopInnerY_px + mmToPx(GOAL_DEPTH_MM);
+    float topGoalInnerY_px = whiteTopInnerY_px;
     sf::RectangleShape topGoal(sf::Vector2f(goalW_px, goalD_px));
-    topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px)); // origin at bottom-center of goal rect
+    topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px)); // inner edge is the bottom edge
     topGoal.setPosition(sf::Vector2f(centerX_px, topGoalInnerY_px));
     topGoal.setFillColor(sf::Color(255,255,0)); // CMYK Yellow -> RGB (255,255,0)
     topGoal.setOutlineThickness(2.0f);
@@ -155,9 +237,9 @@ int main() {
 
     // Bottom goal (symmetrical)
     float whiteBottomInnerY_px = WINDOW_MARGIN_PX + outerH_px - inset_px - (lineThickness_px/2.0f);
-    float bottomGoalInnerY_px = whiteBottomInnerY_px - mmToPx(GOAL_DEPTH_MM);
+    float bottomGoalInnerY_px = whiteBottomInnerY_px;
     sf::RectangleShape bottomGoal(sf::Vector2f(goalW_px, goalD_px));
-    bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f)); // origin at top-center
+    bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f)); // inner edge is the top edge
     bottomGoal.setPosition(sf::Vector2f(centerX_px, bottomGoalInnerY_px));
     bottomGoal.setFillColor(sf::Color(0,255,255)); // CMYK Cyan -> RGB (0,255,255)
     bottomGoal.setOutlineThickness(2.0f);
@@ -351,20 +433,12 @@ int main() {
                 if (mmv && dragging) {
                     sf::Vector2i pix = mmv->position;
                     sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
-                    robot.pos = mouseMm + dragOffsetMm;
-                    // clamp to field bounds (keep center of robot within outer green area)
-                    float halfRobot = robot.diameterMm / 2.0f;
-                    robot.pos.x = std::max(halfRobot, std::min(FIELD_WIDTH_MM - halfRobot, robot.pos.x));
-                    robot.pos.y = std::max(halfRobot, std::min(FIELD_HEIGHT_MM - halfRobot, robot.pos.y));
+                    moveWithGoalCollision(robot.pos, mouseMm + dragOffsetMm, robot.diameterMm / 2.0f);
                 }
                 if (mmv && draggingBall) {
                     sf::Vector2i pix = mmv->position;
                     sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
-                    ballPosMm = mouseMm + ballDragOffsetMm;
-                    // clamp to field
-                    float halfBall = BALL_DIAMETER_MM / 2.0f;
-                    ballPosMm.x = std::max(halfBall, std::min(FIELD_WIDTH_MM - halfBall, ballPosMm.x));
-                    ballPosMm.y = std::max(halfBall, std::min(FIELD_HEIGHT_MM - halfBall, ballPosMm.y));
+                    moveWithGoalCollision(ballPosMm, mouseMm + ballDragOffsetMm, BALL_DIAMETER_MM / 2.0f);
                 }
             }
         }
@@ -394,12 +468,12 @@ int main() {
         goalD_px = mmToPx(GOAL_DEPTH_MM);
         centerX_px = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM)/2.0f;
         float whiteTopY = WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) + (mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
-        float topGoalInnerY = whiteTopY + mmToPx(GOAL_DEPTH_MM);
+        float topGoalInnerY = whiteTopY;
         topGoal.setSize(sf::Vector2f(goalW_px, goalD_px));
         topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px));
         topGoal.setPosition(sf::Vector2f(centerX_px, topGoalInnerY));
         float whiteBottomY = WINDOW_MARGIN_PX + mmToPx(FIELD_HEIGHT_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - (mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
-        float bottomGoalInnerY = whiteBottomY - mmToPx(GOAL_DEPTH_MM);
+        float bottomGoalInnerY = whiteBottomY;
         bottomGoal.setSize(sf::Vector2f(goalW_px, goalD_px));
         bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f));
         bottomGoal.setPosition(sf::Vector2f(centerX_px, bottomGoalInnerY));
@@ -431,12 +505,7 @@ int main() {
             float angleRad = (worldDeg - 90.0f) * 3.14159265f / 180.0f;
             float dx = std::cos(angleRad) * linear_mm_s * dt_s;
             float dy = std::sin(angleRad) * linear_mm_s * dt_s;
-            robot.pos.x += dx;
-            robot.pos.y += dy;
-            // clamp to field bounds
-            float halfRobot = robot.diameterMm / 2.0f;
-            robot.pos.x = std::max(halfRobot, std::min(FIELD_WIDTH_MM - halfRobot, robot.pos.x));
-            robot.pos.y = std::max(halfRobot, std::min(FIELD_HEIGHT_MM - halfRobot, robot.pos.y));
+            moveWithGoalCollision(robot.pos, robot.pos + sf::Vector2f(dx, dy), robot.diameterMm / 2.0f);
         }
 
         // draw robot
