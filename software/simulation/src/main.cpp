@@ -23,6 +23,16 @@ constexpr float ROBOT_DIAMETER_MM = 180.0f; // default robot diameter (changeabl
 constexpr float DRIBBLER_WIDTH_MM = 40.0f;  // frontal dribbler width
 constexpr float DRIBBLER_DEPTH_MM = 12.0f;  // how far it projects
 
+// Ball (40 mm diameter golf-ball sized)
+constexpr float BALL_DIAMETER_MM = 40.0f;
+constexpr float BALL_RADIUS_MM = BALL_DIAMETER_MM / 2.0f;
+
+// Ball physics tuning (units: mm, mm/s, seconds)
+constexpr float BALL_FRICTION_PER_S = 2.0f;   // exponential rolling-decay coefficient (1/s)
+constexpr float BALL_WALL_RESTITUTION = 0.6f; // fraction of speed kept when bouncing off walls/goals
+constexpr float BALL_MAX_SPEED_MM_S = 5000.0f; // safety cap: prevents tunneling through goal boxes
+constexpr float ROBOT_PUSH_FACTOR = 0.65f;    // fraction of the robot's closing speed imparted to the ball
+
 // Rendering
 float PX_PER_MM = 0.35f; // default scale (pixels per millimetre). Adjust for window size.
 const int WINDOW_MARGIN_PX = 40;
@@ -102,14 +112,150 @@ void constrainToFieldAndGoals(sf::Vector2f& position, float radius) {
 void moveWithGoalCollision(sf::Vector2f& position, const sf::Vector2f& target, float radius) {
     const sf::Vector2f delta = target - position;
     const float distance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
-    // Sweep in short increments to prevent a fast robot or mouse drag from
-    // stepping completely through a shallow goal in one frame.
+    // Sweep in short increments so a fast robot or mouse drag cannot step
+    // completely through a shallow goal in one frame.
     const int steps = std::max(1, static_cast<int>(std::ceil(distance / std::max(1.0f, radius * 0.5f))));
     const sf::Vector2f step = delta / static_cast<float>(steps);
 
     for (int i = 0; i < steps; ++i) {
         position += step;
         constrainToFieldAndGoals(position, radius);
+    }
+}
+
+// Ball position is only ever clamped to the field walls. Dragging/dropping the
+// ball must place it exactly where the cursor is (even over/behind a goal);
+// goal collisions only apply to the ball while it is rolling (moveBall below).
+void clampBallToField(sf::Vector2f& position) {
+    position.x = clampFloat(position.x, BALL_RADIUS_MM, FIELD_WIDTH_MM - BALL_RADIUS_MM);
+    position.y = clampFloat(position.y, BALL_RADIUS_MM, FIELD_HEIGHT_MM - BALL_RADIUS_MM);
+}
+
+// Ball drag: follow the mouse exactly (clamped to the field walls). No goal
+// collision here, so the ball never snaps to a goal surface while dragging.
+void moveBallWithCollision(sf::Vector2f& position, const sf::Vector2f& target) {
+    position = target;
+    clampBallToField(position);
+}
+
+// Keep the ball out of the goal boxes themselves (no scoring possible yet):
+// if the ball's centre is ever inside a goal box (e.g. shoved over the mouth
+// by the robot), return it to that goal's mouth. This is called only from the
+// physics step, never while the user is dragging, so it cannot snap a ball to
+// the goal surface as it is being dropped in the open field.
+void containBallInGoalBoxes(sf::Vector2f& position) {
+    if (position.x > BOTTOM_GOAL_BOUNDS.left && position.x < BOTTOM_GOAL_BOUNDS.left + BOTTOM_GOAL_BOUNDS.width &&
+        position.y > BOTTOM_GOAL_BOUNDS.top && position.y < BOTTOM_GOAL_BOUNDS.top + BOTTOM_GOAL_BOUNDS.height) {
+        position.y = BOTTOM_GOAL_BOUNDS.top - BALL_RADIUS_MM;
+    }
+    if (position.x > TOP_GOAL_BOUNDS.left && position.x < TOP_GOAL_BOUNDS.left + TOP_GOAL_BOUNDS.width &&
+        position.y > TOP_GOAL_BOUNDS.top && position.y < TOP_GOAL_BOUNDS.top + TOP_GOAL_BOUNDS.height) {
+        position.y = TOP_GOAL_BOUNDS.top + TOP_GOAL_BOUNDS.height + BALL_RADIUS_MM;
+    }
+}
+
+void resolveBallAgainstRect(sf::Vector2f& position, sf::Vector2f& velocity, const AxisAlignedRect& rect) {
+    const float right = rect.left + rect.width;
+    const float bottom = rect.top + rect.height;
+
+    // Left face (ball just to the left of the face)
+    if (position.x > rect.left - BALL_RADIUS_MM && position.x < rect.left &&
+        position.y > rect.top && position.y < bottom) {
+        position.x = rect.left - BALL_RADIUS_MM;
+        velocity.x = std::abs(velocity.x) * BALL_WALL_RESTITUTION;
+    }
+    // Right face (ball just to the right of the face)
+    if (position.x > right && position.x < right + BALL_RADIUS_MM &&
+        position.y > rect.top && position.y < bottom) {
+        position.x = right + BALL_RADIUS_MM;
+        velocity.x = -std::abs(velocity.x) * BALL_WALL_RESTITUTION;
+    }
+    // Top face (ball just above the face)
+    if (position.y > rect.top - BALL_RADIUS_MM && position.y < rect.top &&
+        position.x > rect.left && position.x < right) {
+        position.y = rect.top - BALL_RADIUS_MM;
+        velocity.y = std::abs(velocity.y) * BALL_WALL_RESTITUTION;
+    }
+    // Bottom face (ball just below the face)
+    if (position.y > bottom && position.y < bottom + BALL_RADIUS_MM &&
+        position.x > rect.left && position.x < right) {
+        position.y = bottom + BALL_RADIUS_MM;
+        velocity.y = -std::abs(velocity.y) * BALL_WALL_RESTITUTION;
+    }
+}
+
+void moveBall(sf::Vector2f& position, sf::Vector2f& velocity, float dt) {
+    // Rolling friction
+    velocity *= std::exp(-BALL_FRICTION_PER_S * dt);
+
+    // Safety cap so an extreme robot push (high moveSpeedScale) cannot launch
+    // the ball fast enough to skip past the goal boxes in one frame.
+    const float speed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    if (speed > BALL_MAX_SPEED_MM_S) {
+        velocity *= BALL_MAX_SPEED_MM_S / speed;
+    }
+
+    // Sweep in short increments (same idea as moveWithGoalCollision) so a fast
+    // ball bounces off walls/goals instead of tunnelling straight through the
+    // shallow goal boxes.
+    const float maxStepDist = BALL_RADIUS_MM * 0.5f;
+    float remaining = dt;
+    while (remaining > 0.0f) {
+        const float currentSpeed = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        float stepTime = remaining;
+        if (currentSpeed > 0.0001f) {
+            stepTime = std::min(remaining, maxStepDist / currentSpeed);
+        }
+        position += velocity * stepTime;
+        remaining -= stepTime;
+
+        // Outer walls (reflect velocity, keeping a bit of energy)
+        if (position.x < BALL_RADIUS_MM) {
+            position.x = BALL_RADIUS_MM;
+            velocity.x = std::abs(velocity.x) * BALL_WALL_RESTITUTION;
+        } else if (position.x > FIELD_WIDTH_MM - BALL_RADIUS_MM) {
+            position.x = FIELD_WIDTH_MM - BALL_RADIUS_MM;
+            velocity.x = -std::abs(velocity.x) * BALL_WALL_RESTITUTION;
+        }
+        if (position.y < BALL_RADIUS_MM) {
+            position.y = BALL_RADIUS_MM;
+            velocity.y = std::abs(velocity.y) * BALL_WALL_RESTITUTION;
+        } else if (position.y > FIELD_HEIGHT_MM - BALL_RADIUS_MM) {
+            position.y = FIELD_HEIGHT_MM - BALL_RADIUS_MM;
+            velocity.y = -std::abs(velocity.y) * BALL_WALL_RESTITUTION;
+        }
+
+        // Goals (treated as solid boxes, consistent with the robot)
+        resolveBallAgainstRect(position, velocity, TOP_GOAL_BOUNDS);
+        resolveBallAgainstRect(position, velocity, BOTTOM_GOAL_BOUNDS);
+    }
+}
+
+// The robot is far heavier than the ball, so on contact the ball is pushed out
+// of the overlap and picks up a fraction of the robot's closing speed.
+void resolveRobotBallCollision(sf::Vector2f& ballPos, sf::Vector2f& ballVel,
+                               const sf::Vector2f& robotPos, float robotRadius,
+                               const sf::Vector2f& robotVel) {
+    const float minDist = robotRadius + BALL_RADIUS_MM;
+    const sf::Vector2f toBall = ballPos - robotPos;
+    const float distSq = toBall.x * toBall.x + toBall.y * toBall.y;
+    if (distSq >= minDist * minDist) {
+        return;
+    }
+
+    const float dist = std::sqrt(distSq);
+    sf::Vector2f normal(0.0f, -1.0f);
+    if (dist > 0.0001f) {
+        normal = toBall / dist;
+    }
+
+    // Push the ball out to the robot's edge so they never overlap
+    ballPos = robotPos + normal * minDist;
+
+    // Only transfer momentum when the ball is approaching the robot
+    const float relativeVelN = (ballVel.x - robotVel.x) * normal.x + (ballVel.y - robotVel.y) * normal.y;
+    if (relativeVelN < 0.0f) {
+        ballVel -= normal * (relativeVelN * ROBOT_PUSH_FACTOR);
     }
 }
 
@@ -264,9 +410,9 @@ int main() {
     // set the robot_state flag so robot code can read whether it should be running
     robotCurrentlyRunning = robotEnabled;
 
-    // Ball entity (40 mm diameter golf-ball sized)
-    const float BALL_DIAMETER_MM = 40.0f;
+    // Ball entity
     sf::Vector2f ballPosMm(FIELD_WIDTH_MM*0.25f, FIELD_HEIGHT_MM*0.5f);
+    sf::Vector2f ballVelMmS(0.0f, 0.0f); // ball velocity in mm/s (rolled/pushed around by physics)
     bool draggingBall = false;
     sf::Vector2f ballDragOffsetMm(0.f, 0.f);
 
@@ -365,6 +511,7 @@ int main() {
                     if (std::sqrt(bdx*bdx + bdy*bdy) <= b_px) {
                         draggingBall = true;
                         ballDragOffsetMm = ballPosMm - mouseMm;
+                        ballVelMmS = sf::Vector2f(0.0f, 0.0f); // release a still ball
                             continue;
                         }
 
@@ -425,6 +572,7 @@ int main() {
                 if (mb && mb->button == sf::Mouse::Button::Left) {
                     dragging = false; // release control back to robot code
                     draggingBall = false;
+                    ballVelMmS = sf::Vector2f(0.0f, 0.0f); // dropped ball must not roll off
                 }
             }
 
@@ -438,7 +586,7 @@ int main() {
                 if (mmv && draggingBall) {
                     sf::Vector2i pix = mmv->position;
                     sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
-                    moveWithGoalCollision(ballPosMm, mouseMm + ballDragOffsetMm, BALL_DIAMETER_MM / 2.0f);
+                    moveBallWithCollision(ballPosMm, mouseMm + ballDragOffsetMm);
                 }
             }
         }
@@ -491,6 +639,7 @@ int main() {
 
         // Apply MoveProfile to simulated robot physics (if robot code is running and profile active)
         float dt_s = float(SIM_MS_PER_FRAME) / 1000.0f;
+        const sf::Vector2f prevRobotPos = robot.pos;
         if (robotCurrentlyRunning && currentMoveProfile.active) {
             // linear speed (mm/s)
             float linear_mm_s = currentMoveProfile.speed * SIM_MAX_LINEAR_MM_S * moveSpeedScale;
@@ -507,6 +656,21 @@ int main() {
             float dy = std::sin(angleRad) * linear_mm_s * dt_s;
             moveWithGoalCollision(robot.pos, robot.pos + sf::Vector2f(dx, dy), robot.diameterMm / 2.0f);
         }
+
+        // Ball physics: roll with friction, bounce off walls/goals, and be
+        // pushed out (and given a nudge) whenever it touches the robot.
+        const sf::Vector2f robotVelMmS = dt_s > 0.0f ? (robot.pos - prevRobotPos) / dt_s : sf::Vector2f(0.0f, 0.0f);
+        if (!draggingBall) {
+            moveBall(ballPosMm, ballVelMmS, dt_s);
+        }
+        // The user fully controls the ball while dragging it, so the robot must
+        // not shove it around (or give it velocity) mid-drag.
+        if (!draggingBall) {
+            resolveRobotBallCollision(ballPosMm, ballVelMmS, robot.pos, robot.diameterMm / 2.0f, robotVelMmS);
+            containBallInGoalBoxes(ballPosMm);
+        }
+        clampBallToField(ballPosMm);
+
 
         // draw robot
         robot.draw(window);
