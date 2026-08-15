@@ -231,6 +231,53 @@ void moveBall(sf::Vector2f& position, sf::Vector2f& velocity, float dt) {
     }
 }
 
+// Dribbler physics: when the robot code requests the dribbler (dribblerShouldRun)
+// and the ball touches the frontal dribbler bar, hold the ball against the bar
+// so it moves and rotates with the robot. Once held, the ball stays held (re-
+// pinned to the bar every frame) until the dribbler is switched off or the user
+// grabs the ball. Returns true while the ball is held; the caller should then
+// skip rolling/robot-body ball physics.
+bool updateBallDribbling(sf::Vector2f& ballPosMm, sf::Vector2f& ballVelMmS,
+                         bool ballHeld,
+                         const sf::Vector2f& robotPos, float robotDiameterMm,
+                         float headingDeg, const sf::Vector2f& robotVelMmS,
+                         bool dribblerShouldRun) {
+    if (!dribblerShouldRun) {
+        return false;
+    }
+    const float radius = robotDiameterMm * 0.5f;
+    // Dribbler bar centre sits just past the front of the robot body
+    // (matches how the dribbler is drawn in Robot::draw).
+    const float barCenterOffset = radius + 1.0f + DRIBBLER_DEPTH_MM * 0.5f;
+    const float halfDepth = DRIBBLER_DEPTH_MM * 0.5f;
+    const float halfWidth = DRIBBLER_WIDTH_MM * 0.5f;
+
+    // Robot front direction (0 deg = up / negative screen-y)
+    const float angleRad = (headingDeg - 90.0f) * 3.14159265f / 180.0f;
+    const sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
+
+    // Ball position relative to the robot, in the dribbler bar's local frame
+    const sf::Vector2f toBall = ballPosMm - robotPos;
+    const float forward = toBall.x * frontVec.x + toBall.y * frontVec.y;
+    const float lateral = std::abs(toBall.x * frontVec.y - toBall.y * frontVec.x);
+    const float u = forward - barCenterOffset;
+
+    // The ball touches the bar when its centre is within a ball radius of the
+    // bar rectangle (front face, or the side edges as it is scooped up).
+    const bool touchesBar =
+        std::abs(u) <= halfDepth + BALL_RADIUS_MM &&
+        lateral <= halfWidth + BALL_RADIUS_MM;
+    if (!ballHeld && !touchesBar) {
+        return false;
+    }
+
+    // Hold the ball against the front of the bar and carry the robot's motion
+    // over so a released ball keeps rolling naturally.
+    ballVelMmS = robotVelMmS;
+    ballPosMm = robotPos + frontVec * (barCenterOffset + halfDepth + BALL_RADIUS_MM);
+    return true;
+}
+
 // The robot is far heavier than the ball, so on contact the ball is pushed out
 // of the overlap and picks up a fraction of the robot's closing speed.
 void resolveRobotBallCollision(sf::Vector2f& ballPos, sf::Vector2f& ballVel,
@@ -415,6 +462,7 @@ int main() {
     sf::Vector2f ballVelMmS(0.0f, 0.0f); // ball velocity in mm/s (rolled/pushed around by physics)
     bool draggingBall = false;
     sf::Vector2f ballDragOffsetMm(0.f, 0.f);
+    bool ballHeld = false; // true while the dribbler is holding the ball
 
     unsigned long simMs = 0;
     const unsigned long SIM_MS_PER_FRAME = 16; // ~60Hz sim time step (16ms)
@@ -512,6 +560,7 @@ int main() {
                         draggingBall = true;
                         ballDragOffsetMm = ballPosMm - mouseMm;
                         ballVelMmS = sf::Vector2f(0.0f, 0.0f); // release a still ball
+                        ballHeld = false; // user grabbed the ball off the dribbler
                             continue;
                         }
 
@@ -659,14 +708,23 @@ int main() {
 
         // Ball physics: roll with friction, bounce off walls/goals, and be
         // pushed out (and given a nudge) whenever it touches the robot.
+        // If the dribbler is requested (dribblerShouldRun) and the ball touches
+        // the frontal dribbler bar, the ball is held against the bar instead of
+        // rolling/bouncing, so it moves and rotates with the robot.
         const sf::Vector2f robotVelMmS = dt_s > 0.0f ? (robot.pos - prevRobotPos) / dt_s : sf::Vector2f(0.0f, 0.0f);
         if (!draggingBall) {
-            moveBall(ballPosMm, ballVelMmS, dt_s);
+            ballHeld = updateBallDribbling(ballPosMm, ballVelMmS, ballHeld, robot.pos, robot.diameterMm,
+                                           robot.headingDeg, robotVelMmS, dribblerShouldRun);
         }
         // The user fully controls the ball while dragging it, so the robot must
         // not shove it around (or give it velocity) mid-drag.
-        if (!draggingBall) {
+        if (!draggingBall && !ballHeld) {
+            moveBall(ballPosMm, ballVelMmS, dt_s);
+        }
+        if (!draggingBall && !ballHeld) {
             resolveRobotBallCollision(ballPosMm, ballVelMmS, robot.pos, robot.diameterMm / 2.0f, robotVelMmS);
+        }
+        if (!draggingBall) {
             containBallInGoalBoxes(ballPosMm);
         }
         clampBallToField(ballPosMm);
@@ -820,6 +878,9 @@ int main() {
             std::string mp3 = "speed: " + std::to_string(currentMoveProfile.speed);
             std::string mp4 = "rot: " + std::to_string(currentMoveProfile.rotationSpeed);
 
+            std::string dr1 = std::string("Dribbler: ") + (dribblerShouldRun ? "RUNNING" : "off");
+            std::string dr2 = std::string("Ball held: ") + (ballHeld ? "YES" : "no");
+
             const float pad = 10.0f;
             float tx = hudX + pad;
                         const float HUD_CONTROLS_HEIGHT = 120.0f; // space reserved for enable buttons and scale controls
@@ -834,7 +895,10 @@ int main() {
             sf::Text m1(hudFont, mp1, fs); m1.setFillColor(sf::Color::White); m1.setPosition(sf::Vector2f(tx, ty)); window.draw(m1); ty += 22.0f;
             sf::Text m2(hudFont, mp2, fs); m2.setFillColor(sf::Color::White); m2.setPosition(sf::Vector2f(tx, ty)); window.draw(m2); ty += 22.0f;
             sf::Text m3(hudFont, mp3, fs); m3.setFillColor(sf::Color::White); m3.setPosition(sf::Vector2f(tx, ty)); window.draw(m3); ty += 22.0f;
-            sf::Text m4(hudFont, mp4, fs); m4.setFillColor(sf::Color::White); m4.setPosition(sf::Vector2f(tx, ty)); window.draw(m4); ty += 22.0f;
+            sf::Text m4(hudFont, mp4, fs); m4.setFillColor(sf::Color::White); m4.setPosition(sf::Vector2f(tx, ty)); ty += 32.0f;
+
+            sf::Text d1(hudFont, dr1, fs); d1.setFillColor(sf::Color(255, 220, 140)); d1.setPosition(sf::Vector2f(tx, ty)); window.draw(d1); ty += 22.0f;
+            sf::Text d2(hudFont, dr2, fs); d2.setFillColor(ballHeld ? sf::Color(140, 255, 140) : sf::Color::White); d2.setPosition(sf::Vector2f(tx, ty)); window.draw(d2); ty += 22.0f;
         }
 
         window.display();
