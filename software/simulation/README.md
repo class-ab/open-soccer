@@ -1,43 +1,81 @@
-Robocup Junior Open Soccer — 2D Simulation (SFML)
+# RCJ Open Soccer — 2D Simulation (SFML)
 
-Overview
+A minimal 2D simulation of an RCJ Open Soccer field with a single robot (with a
+frontal dribbler) and a ball. It runs the real robot firmware on a background
+thread through a simulator HAL, so the robot's `loop()` runs while the render
+loop animates the field.
 
-This folder contains a minimal 2D simulation of an RCJ Open Soccer field and a single robot with a frontal dribbler. The simulation uses SFML for rendering.
+## Field constants
 
-Field constants (from user):
 - Total green area: 1430 mm (width) x 1820 mm (height)
-- White lines: 50 mm thick, positioned 250 mm from the walls on every side (these form the play border)
-- Goals: 450 mm wide, centered on short sides, positioned with 74 mm depth from the inner edge of the white line
+- White lines: 50 mm thick, positioned 250 mm from the walls on every side
+  (these form the play border)
+- Goals: 450 mm wide, centered on the short sides, 74 mm deep from the inner
+  edge of the white line
+- Robot: 180 mm diameter (configurable) with a 40 mm wide frontal dribbler bar
+- Ball: 40 mm diameter
 
-Notes
+All constants live at the top of `src/main.cpp` and are expressed in
+millimetres, so sizes and the rendering scale can be tweaked easily.
 
-- The simulation is purposely 2D and parameterised with constants at the top of src/main.cpp so you can tweak sizes or scale easily.
-- Robot size and height are configurable via constants; no official robot max was required for this task.
+## Physics / behaviour
 
-Build (requires SFML 2.5+ and CMake)
+- Ball and robot are clamped to the field walls; goals are solid boxes.
+- Dragging/dropping the ball places it exactly where the cursor is (drag
+  follows the mouse, clamped only to the field). It can be placed over or
+  behind a goal — it no longer snaps to the goal surface.
+- Rolling ball friction, wall/goal bounces, and robot-ball contact are
+  simulated.
+- Dribbling: the sim reads the shared `dribblerShouldRun` flag. When the robot
+  requests the dribbler and the ball touches the frontal dribbler bar, the ball
+  is held against the bar and follows the robot through translation and
+  rotation. It releases when the dribbler is switched off or the user grabs it.
+- No scoring yet: the ball is kept out of the goal boxes themselves.
 
-Windows (example using vcpkg or system-installed SFML):
-1. mkdir build && cd build
-2. cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release ..
-3. cmake --build .
-4. Run .\simulation.exe
+## Build
 
-Linux / macOS:
-1. mkdir build && cd build
-2. cmake ..
-3. make
-4. ./simulation
+Requires CMake and SFML. On Windows the project has been built with Visual
+Studio 2022 (generated with `cmake -G "Visual Studio 17 2022"`).
 
-If CMake cannot find SFML, install SFML for your platform (or use a package manager such as vcpkg, apt, brew) and ensure SFML is discoverable by CMake.
+```
+cmake -S . -B build
+cmake --build build --config Release
+```
 
-Usage
+Then run `build\Release\simulation.exe` (Windows) or `build/simulation`
+(Linux/macOS).
 
-- Arrow keys: move forward/back and rotate
-- R: reset robot to center
-- +/-: adjust drawing scale
-- Escape: quit
+> The sim links against a selected subset of the robot code
+> (`../code/src/robot.cpp`, `vision.cpp`, `drivebase.cpp`, `robot_state.cpp`)
+> and uses `sim_hal/Arduino.h` + the `sim_stubs/` shims so firmware compiles
+> unmodified outside Arduino. No robot code is changed to make the sim work.
 
-Files
-- src/main.cpp : main simulation code
-- CMakeLists.txt : CMake project file
+If CMake cannot find SFML, install it for your platform (vcpkg, apt, brew, …)
+and make sure it is discoverable by CMake.
 
+## Usage
+
+Mouse:
+- Left-drag on the **robot** to move it (uses goal collision).
+- Left-drag on the **ball** to move it (follows the cursor, field-only).
+  Releasing places the ball exactly there.
+
+Keyboard:
+- `R` — reset robot to field centre
+- `Escape` — quit (or cancel an in-progress HUD text edit)
+
+HUD panel (right side):
+- **Enable / Disable** buttons toggle the robot firmware run state.
+- **Move** and **Rot** fields set the move/rotation speed scale used when
+  applying the robot's active `MoveProfile` to simulated motion.
+- Readouts: BallPacket (detected / angle / distance), MoveProfile (active /
+  direction / speed / rotation), and Dribbler + Ball held state.
+
+## Files
+
+- `src/main.cpp` — main simulation, physics/collision, rendering, input, HUD
+- `src/robot_wrapper.cpp` — runs `setup()`/`loop()` of the firmware on a thread
+- `src/sim_hal/` — Arduino-style shim (`Arduino.h`) and simulator time control
+- `src/sim_stubs/` — stubbed firmware peripherals (display, IMU, dribbler, battery)
+- `src/sim_state.cpp` — shared `currentMoveProfile`, `dribblerShouldRun`, etc.
+- `CMakeLists.txt` — CMake project
