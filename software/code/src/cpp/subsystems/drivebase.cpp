@@ -77,6 +77,15 @@ void drive(float direction_deg, float speed, float rotation) {
   SetSpeed(2, wheel_speeds[1] * 255);
   SetSpeed(3, wheel_speeds[3] * 255);
   SetSpeed(4, wheel_speeds[2] * 255);
+
+  // Update MoveProfile so the simulator (or any reader) can observe the
+  // commanded movement. RotationSpeed is the normalized rotation command
+  // (signed, unitless) and is passed through directly.
+  currentMoveProfile.active = true;
+  currentMoveProfile.movementDirectionDeg = direction_deg;
+  currentMoveProfile.speed = speed;
+  currentMoveProfile.rotationSpeed = rotation;
+  currentMoveProfile.lastUpdateMs = millis();
 }
 
 void stopAllDriveMotors() {
