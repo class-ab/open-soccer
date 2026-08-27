@@ -89,6 +89,7 @@ void systemTick() {
 
   checkEnabledButton(now);
   checkAllianceButtons(now);
+  updateHasBall();
 
   processVisionPackets();
 
@@ -171,6 +172,16 @@ void checkAllianceButtons(unsigned long now) {
     stableButton3State = currentButton3State;
   }
   lastButton3State = currentButton3State;
+}
+
+void updateHasBall() {
+  // "Has ball" is true when the latest ball packet reports the ball
+  // detected, within a reasonable range, and roughly in front of the
+  // robot (angleDeg is relative to the robot front/dribbler direction,
+  // 0 = straight ahead). Uses fabsf on the packet field.
+  hasBall = latestBallPacket.detected
+            && latestBallPacket.distanceCM <= HAS_BALL_MAX_DISTANCE_CM
+            && fabsf(latestBallPacket.angleDeg) <= HAS_BALL_MAX_ANGLE_DEG;
 }
 
 void stopAllMotors() {

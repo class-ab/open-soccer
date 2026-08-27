@@ -17,6 +17,7 @@ unsigned long bootMillis = 0;
 unsigned long lastRunStateChangeMs = 0;
 bool robotCurrentlyRunning = false;
 bool isYellowAlliance = true;
+bool hasBall = false;
 
 unsigned long lastBatteryCheckMs = 0;
 float lastBatteryVoltage = 0.0f;

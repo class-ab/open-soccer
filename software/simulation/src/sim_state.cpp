@@ -14,3 +14,4 @@ unsigned long lastBlueGoalPacketMs = 0;
 MoveProfile currentMoveProfile = {false, 0.0f, 0.0f, 0.0f, 0};
 
 bool isYellowAlliance = true;
+bool hasBall = false;

@@ -960,6 +960,7 @@ int main() {
             std::string bp2 = "angleDeg: " + std::to_string(latestBallPacket.angleDeg);
             std::string bp3 = "distanceCM: " + std::to_string(latestBallPacket.distanceCM);
             std::string bp4 = "size: " + std::to_string((int)latestBallPacket.sizeByte);
+            std::string bp5 = std::string("hasBall: ") + (hasBall ? "true" : "false");
 
             std::string mp1 = std::string("MoveProfile.active: ") + (currentMoveProfile.active ? "true" : "false");
             std::string mp2 = "dirDeg: " + std::to_string(currentMoveProfile.movementDirectionDeg);
@@ -986,7 +987,8 @@ int main() {
             sf::Text t1(hudFont, bp1, fs); t1.setFillColor(sf::Color::White); t1.setPosition(sf::Vector2f(tx, ty)); window.draw(t1); ty += HUD_LINE_H;
             sf::Text t2(hudFont, bp2, fs); t2.setFillColor(sf::Color::White); t2.setPosition(sf::Vector2f(tx, ty)); window.draw(t2); ty += HUD_LINE_H;
             sf::Text t3(hudFont, bp3, fs); t3.setFillColor(sf::Color::White); t3.setPosition(sf::Vector2f(tx, ty)); window.draw(t3); ty += HUD_LINE_H;
-            sf::Text t4(hudFont, bp4, fs); t4.setFillColor(sf::Color::White); t4.setPosition(sf::Vector2f(tx, ty)); window.draw(t4); ty += HUD_SECTION_GAP;
+            sf::Text t4(hudFont, bp4, fs); t4.setFillColor(sf::Color::White); t4.setPosition(sf::Vector2f(tx, ty)); window.draw(t4); ty += HUD_LINE_H;
+            sf::Text t5(hudFont, bp5, fs); t5.setFillColor(hasBall ? sf::Color(140, 255, 140) : sf::Color::White); t5.setPosition(sf::Vector2f(tx, ty)); window.draw(t5); ty += HUD_SECTION_GAP;
 
             // Section 2: Yellow Goal
             sf::Text yg1(hudFont, gy1, fs); yg1.setFillColor(sf::Color(255, 240, 140)); yg1.setPosition(sf::Vector2f(tx, ty)); window.draw(yg1); ty += HUD_LINE_H;

@@ -96,6 +96,11 @@ constexpr float BALL_CHASE_MIN_SPEED = 0.20f;
 constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
 constexpr float BALL_CHASE_RAMP_RANGE_CM = 120.0f;
 
+// "Has ball" is true when the ball is detected close enough and roughly
+// in front of the robot (i.e. within the dribbler capture cone).
+constexpr float HAS_BALL_MAX_DISTANCE_CM = 13.5f;
+constexpr float HAS_BALL_MAX_ANGLE_DEG = 5.0f;
+
 // ============================================================
 // Battery Monitor
 // ============================================================

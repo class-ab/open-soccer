@@ -57,6 +57,7 @@ extern unsigned long bootMillis;
 extern unsigned long lastRunStateChangeMs;
 extern bool robotCurrentlyRunning;
 extern bool isYellowAlliance;
+extern bool hasBall;
 
 extern unsigned long lastBatteryCheckMs;
 extern float lastBatteryVoltage;
