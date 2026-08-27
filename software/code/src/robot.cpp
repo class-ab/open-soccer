@@ -19,6 +19,8 @@
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
+#include "include/subsystems/attack.h"
+#include "include/subsystems/defend.h"
 
 void setup() {
   Serial.begin(115200);
@@ -70,7 +72,14 @@ void loop() {
 
   updateIMU();
 
-  chaseTick();
+  // When attacking but we have not seen the ball for BALL_LOST_RETURN_HOME_MS,
+  // fall back to defending (return home and face the ball) until it reappears.
+  bool ballSeenRecently = (millis() - lastBallSeenMs) <= BALL_LOST_RETURN_HOME_MS;
+  if (isAttacking && ballSeenRecently) {
+    attackTick();
+  } else {
+    defendTick();
+  }
 
   if (robotCurrentlyRunning && dribblerShouldRun) {
     setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
@@ -131,12 +140,12 @@ lastButton1State = currentButton1State;
 }
 
 void checkAllianceButtons(unsigned long now) {
-  // Button 2 -> yellow alliance (isYellowAlliance = true)
-  // Button 3 -> blue alliance (isYellowAlliance = false)
-  // Same debounced rising-edge detection as checkEnabledButton, but the two
-  // buttons share one debounce state per button.
+  // Button 2 -> toggle between yellow and blue alliance.
+  // Button 3 -> toggle between attacking and defending.
+  // Same debounced rising-edge detection as checkEnabledButton, with one
+  // debounce state per button.
 
-  // ---------- button2 (yellow) ----------
+  // ---------- button2 (toggle alliance) ----------
   static bool lastButton2State = LOW;
   static unsigned long lastButton2DebounceMs = 0;
   const unsigned long BUTTON_DEBOUNCE_MS = 50;
@@ -148,14 +157,14 @@ void checkAllianceButtons(unsigned long now) {
   if ((now - lastButton2DebounceMs) >= BUTTON_DEBOUNCE_MS) {
     static bool stableButton2State = LOW;
     if (currentButton2State == HIGH && stableButton2State == LOW) {
-      isYellowAlliance = true;
-      Serial.println("Alliance: YELLOW");
+      isYellowAlliance = !isYellowAlliance;
+      Serial.println(isYellowAlliance ? "Alliance: YELLOW" : "Alliance: BLUE");
     }
     stableButton2State = currentButton2State;
   }
   lastButton2State = currentButton2State;
 
-  // ---------- button3 (blue) ----------
+  // ---------- button3 (toggle attack/defend) ----------
   static bool lastButton3State = LOW;
   static unsigned long lastButton3DebounceMs = 0;
 
@@ -166,8 +175,8 @@ void checkAllianceButtons(unsigned long now) {
   if ((now - lastButton3DebounceMs) >= BUTTON_DEBOUNCE_MS) {
     static bool stableButton3State = LOW;
     if (currentButton3State == HIGH && stableButton3State == LOW) {
-      isYellowAlliance = false;
-      Serial.println("Alliance: BLUE");
+      isAttacking = !isAttacking;
+      Serial.println(isAttacking ? "Mode: ATTACK" : "Mode: DEFEND");
     }
     stableButton3State = currentButton3State;
   }

@@ -43,7 +43,7 @@ const int HUD_PANEL_WIDTH_PX = 320; // fixed HUD panel width on the right side
 // dribbler); these constants size the right-hand panel so every row always
 // fits and we never push text off the bottom of the window.
 constexpr float HUD_PAD_PX = 10.0f;
-constexpr float HUD_CONTROLS_HEIGHT_PX = 150.0f; // enable/disable + alliance buttons + scale controls
+constexpr float HUD_CONTROLS_HEIGHT_PX = 190.0f; // enable/disable + alliance + attack buttons + scale controls
 constexpr float HUD_LINE_H = 23.0f;              // vertical step between rows
 constexpr float HUD_SECTION_GAP = 18.0f;         // extra gap between readout sections
 constexpr int HUD_READOUT_LINES = 16;            // ball(4) + yellow(3) + blue(3) + move(4) + dribbler(2)
@@ -589,7 +589,7 @@ int main() {
                         const float btnSize = 28.0f;
 
                         // Scale control positions (match drawing below)
-                        float scaleRowY = hudY_click + pad_click + 76.0f;
+                        float scaleRowY = hudY_click + pad_click + 112.0f;
                         float moveInputX = hudX_click + pad_click + 160.0f; // x of input box
                         float moveInputW = 80.0f;
                         float moveInputH = 28.0f;
@@ -638,6 +638,7 @@ int main() {
                         // robotCurrentlyRunning, so they never interfere with the
                         // robot's own loop/thread -- they just toggle a shared bool.
                         const float ay = hudY_click + pad_click + 36.0f;
+                        const float yy = hudY_click + pad_click + 76.0f;
                         const float yx = hudX_click + pad_click;
                         const float bx = hudX_click + pad_click + 36.0f;
                         if (pix.x >= static_cast<int>(std::round(yx)) && pix.x <= static_cast<int>(std::round(yx + btnSize)) && pix.y >= static_cast<int>(std::round(ay)) && pix.y <= static_cast<int>(std::round(ay + btnSize))) {
@@ -646,6 +647,10 @@ int main() {
                         }
                         if (pix.x >= static_cast<int>(std::round(bx)) && pix.x <= static_cast<int>(std::round(bx + btnSize)) && pix.y >= static_cast<int>(std::round(ay)) && pix.y <= static_cast<int>(std::round(ay + btnSize))) {
                             isYellowAlliance = false;
+                            continue;
+                        }
+                        if (pix.x >= static_cast<int>(std::round(yx)) && pix.x <= static_cast<int>(std::round(yx + btnSize)) && pix.y >= static_cast<int>(std::round(yy)) && pix.y <= static_cast<int>(std::round(yy + btnSize))) {
+                            isAttacking = !isAttacking;
                             continue;
                         }
                     }
@@ -801,6 +806,7 @@ int main() {
         // Use simulator-driven milliseconds (simMs) for the ball packet timestamp so
         // the robot firmware (which reads millis()) sees a consistent epoch.
         lastBallPacketMs = simMs;
+        lastBallSeenMs = simMs;
 
         // Update goal packets the same way the ball packet is fed: the sim
         // bypasses the OpenMV/teensy UART link and writes the shared goal
@@ -890,6 +896,15 @@ int main() {
         btnBlue.setOutlineColor(sf::Color::Black);
         window.draw(btnBlue);
 
+        // Attack toggle button (third row). Toggles isAttacking directly.
+        const float attackY = hudY + pad + 76.0f;
+        sf::RectangleShape btnAttack(sf::Vector2f(28.0f, 28.0f));
+        btnAttack.setPosition(sf::Vector2f(hudX + pad, attackY));
+        btnAttack.setFillColor(isAttacking ? sf::Color(50,200,50) : sf::Color(80,80,80));
+        btnAttack.setOutlineThickness(1.0f);
+        btnAttack.setOutlineColor(sf::Color::Black);
+        window.draw(btnAttack);
+
         // Draw labels for robot state
         if (hudFontLoaded) {
             sf::Text stateLabel(hudFont, robotCurrentlyRunning ? "Robot: ENABLED" : "Robot: DISABLED", 14);
@@ -901,11 +916,16 @@ int main() {
             allianceLabel.setFillColor(isYellowAlliance ? sf::Color(255, 240, 140) : sf::Color(140, 220, 255));
             allianceLabel.setPosition(sf::Vector2f(hudX + pad + 72.0f, allianceY + 4.0f));
             window.draw(allianceLabel);
+
+            sf::Text attackLabel(hudFont, isAttacking ? "Attack: ON" : "Attack: OFF", 14);
+            attackLabel.setFillColor(isAttacking ? sf::Color(180,255,180) : sf::Color(200,120,120));
+            attackLabel.setPosition(sf::Vector2f(hudX + pad + 72.0f, attackY + 4.0f));
+            window.draw(attackLabel);
         }
 
         // Draw MoveProfile scaling controls
         if (hudFontLoaded) {
-            float scaleBaseY = hudY + pad + 76.0f;
+            float scaleBaseY = hudY + pad + 112.0f;
             unsigned int fs = 14;
             // Move scale label and input box
             sf::Text moveLabel(hudFont, std::string("Move scale:"), fs);

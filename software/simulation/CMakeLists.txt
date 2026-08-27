@@ -18,6 +18,9 @@ set(SIM_SOURCES
   # robot code sources (selected subset)
   ${CMAKE_SOURCE_DIR}/../code/src/robot.cpp
   ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/vision.cpp
+  ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/localisation.cpp
+  ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/attack.cpp
+  ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/defend.cpp
   ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/drivebase.cpp
   ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/robot_state.cpp
 )

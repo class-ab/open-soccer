@@ -438,6 +438,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\sim_stubs\sim_battery_stub.cpp" />
     <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\robot.cpp" />
     <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\vision.cpp" />
+    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\localisation.cpp" />
+    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\attack.cpp" />
+    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\defend.cpp" />
     <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\drivebase.cpp" />
     <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\robot_state.cpp" />
   </ItemGroup>

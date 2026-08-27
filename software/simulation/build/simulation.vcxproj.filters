@@ -28,6 +28,15 @@
     <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\vision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\localisation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\attack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\defend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\drivebase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

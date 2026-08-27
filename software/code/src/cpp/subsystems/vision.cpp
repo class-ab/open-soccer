@@ -29,6 +29,9 @@ void decodeBallPacket(const uint8_t *p) {
   latestBallPacket.distanceCM = (float)((uint16_t)((p[4] << 8) | p[5]));
   latestBallPacket.sizeByte = p[6];
   lastBallPacketMs = millis();
+  if (latestBallPacket.detected) {
+    lastBallSeenMs = millis();
+  }
 
 #ifdef DEBUG_BALL_LINK
   Serial.print("[BALL PKT OK] sync=A");
@@ -149,70 +152,4 @@ void getLatestYellowGoalData(GoalPacket &out) {
 
 void getLatestBlueGoalData(GoalPacket &out) {
   out = latestBlueGoalPacket;
-}
-
-void chaseTick() {
-  BallPacket ball;
-  getLatestBallData(ball);
-
-  unsigned long age_ms = millis() - lastBallPacketMs;
-  bool haveFreshBall = ball.detected && (age_ms <= BALL_DATA_TIMEOUT_MS);
-
-  if (!haveFreshBall) {
-    dribblerShouldRun = false;
-    float rotation = headingCorrection();
-    drive(0.0f, 0.0f, rotation);
-    stopAllDriveMotors();
-
-#ifdef DEBUG_BALL_CHASE
-    static unsigned long lastDebugMsA = 0;
-    unsigned long nowMsA = millis();
-    if (nowMsA - lastDebugMsA >= 100) {
-      lastDebugMsA = nowMsA;
-      Serial.print("chaseTick: no fresh ball data, ageMs=");
-      Serial.println(age_ms);
-    }
-#endif
-    return;
-  }
-
-  float chassisRelativeBallAngle = ball.angleDeg + CAMERA_MOUNT_OFFSET_DEG;
-
-  float effectiveYaw = YAW_SIGN * currentYawDeg;
-  desiredHeadingDeg = effectiveYaw + chassisRelativeBallAngle;
-
-  float rotation = -headingCorrection();
-
-  float radiusError = ball.distanceCM - BALL_TARGET_DISTANCE_CM;
-  float speed;
-
-  if (radiusError <= 0.0f) {
-    speed = 0.0f;
-  } else {
-    float t = constrain(radiusError / BALL_CHASE_RAMP_RANGE_CM, 0.0f, 1.0f);
-    speed = BALL_CHASE_MIN_SPEED + t * (BALL_CHASE_MAX_SPEED - BALL_CHASE_MIN_SPEED);
-  }
-
-  float fieldDirection = effectiveYaw - chassisRelativeBallAngle;
-
-  dribblerShouldRun = robotCurrentlyRunning;
-  drive(fieldDirection, speed, rotation);
-
-#ifdef DEBUG_BALL_CHASE
-  static unsigned long lastDebugMsB = 0;
-  unsigned long nowMsB = millis();
-  if (nowMsB - lastDebugMsB >= 100) {
-    lastDebugMsB = nowMsB;
-    Serial.print("bearing(chassis)=");
-    Serial.print(chassisRelativeBallAngle);
-    Serial.print(" distanceCM=");
-    Serial.print(ball.distanceCM);
-    Serial.print(" size=");
-    Serial.print(ball.sizeByte);
-    Serial.print(" speed=");
-    Serial.print(speed);
-    Serial.print(" ageMs=");
-    Serial.println(age_ms);
-  }
-#endif
 }

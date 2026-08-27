@@ -41,6 +41,7 @@ extern BallPacket latestBallPacket;
 extern GoalPacket latestYellowGoalPacket;
 extern GoalPacket latestBlueGoalPacket;
 extern unsigned long lastBallPacketMs;
+extern unsigned long lastBallSeenMs;
 extern unsigned long lastYellowGoalPacketMs;
 extern unsigned long lastBlueGoalPacketMs;
 
@@ -58,6 +59,7 @@ extern unsigned long lastRunStateChangeMs;
 extern bool robotCurrentlyRunning;
 extern bool isYellowAlliance;
 extern bool hasBall;
+extern bool isAttacking;
 
 extern unsigned long lastBatteryCheckMs;
 extern float lastBatteryVoltage;

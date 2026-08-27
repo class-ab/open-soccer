@@ -11,4 +11,3 @@ void processVisionPackets();
 void getLatestBallData(BallPacket &out);
 void getLatestYellowGoalData(GoalPacket &out);
 void getLatestBlueGoalData(GoalPacket &out);
-void chaseTick();

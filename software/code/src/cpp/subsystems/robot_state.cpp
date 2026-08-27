@@ -5,6 +5,7 @@ BallPacket latestBallPacket = {false, 0.0f, 0.0f, 0};
 GoalPacket latestYellowGoalPacket = {false, 0.0f, 0.0f, 0};
 GoalPacket latestBlueGoalPacket = {false, 0.0f, 0.0f, 0};
 unsigned long lastBallPacketMs = 0;
+unsigned long lastBallSeenMs = 0;
 unsigned long lastYellowGoalPacketMs = 0;
 unsigned long lastBlueGoalPacketMs = 0;
 uint8_t visionPacketBuf[BALL_PACKET_LEN];
@@ -18,6 +19,7 @@ unsigned long lastRunStateChangeMs = 0;
 bool robotCurrentlyRunning = false;
 bool isYellowAlliance = true;
 bool hasBall = false;
+bool isAttacking = true;
 
 unsigned long lastBatteryCheckMs = 0;
 float lastBatteryVoltage = 0.0f;
