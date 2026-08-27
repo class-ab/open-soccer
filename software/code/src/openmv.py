@@ -95,7 +95,7 @@ PACKET_SYNC_BYTE_C = 0xAC
 PACKET_LEN = 8
 
 
-def send_ball_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
+def send_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
     """Pack and send one 8-byte ball-position packet to the Teensy over UART."""
     if detected:
         # Wrap to [-180, 180) before scaling so it always fits an int16.
@@ -190,17 +190,17 @@ while True:
     detected_a, angle_a, radius_a, pixels_a = track_color(
         img, thresholds[COLOR_A_INDEX]
     )
-    send_ball_packet(PACKET_SYNC_BYTE_A, detected_a, angle_a, radius_a, pixels_a)
+    send_packet(PACKET_SYNC_BYTE_A, detected_a, angle_a, radius_a, pixels_a)
 
     detected_b, angle_b, radius_b, pixels_b = track_color(
         img, thresholds[COLOR_B_INDEX]
     )
-    send_ball_packet(PACKET_SYNC_BYTE_B, detected_b, angle_b, radius_b, pixels_b)
+    send_packet(PACKET_SYNC_BYTE_B, detected_b, angle_b, radius_b, pixels_b)
 
     detected_c, angle_c, radius_c, pixels_c = track_color(
         img, thresholds[COLOR_C_INDEX]
     )
-    send_ball_packet(PACKET_SYNC_BYTE_C, detected_c, angle_c, radius_c, pixels_c)
+    send_packet(PACKET_SYNC_BYTE_C, detected_c, angle_c, radius_c, pixels_c)
 
     print(
         clock.fps(),
