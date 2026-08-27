@@ -2,16 +2,21 @@
 #include "include/subsystems/robot_config.h"
 
 BallPacket latestBallPacket = {false, 0.0f, 0.0f, 0};
+GoalPacket latestYellowGoalPacket = {false, 0.0f, 0.0f, 0};
+GoalPacket latestBlueGoalPacket = {false, 0.0f, 0.0f, 0};
 unsigned long lastBallPacketMs = 0;
-uint8_t ballPacketBuf[BALL_PACKET_LEN];
-uint8_t ballPacketIdx = 0;
-bool ballSyncFound = false;
+unsigned long lastYellowGoalPacketMs = 0;
+unsigned long lastBlueGoalPacketMs = 0;
+uint8_t visionPacketBuf[BALL_PACKET_LEN];
+uint8_t visionPacketIdx = 0;
+bool visionSyncFound = false;
 
 MoveProfile currentMoveProfile = {false, 0.0f, 0.0f, 0.0f, 0};
 
 unsigned long bootMillis = 0;
 unsigned long lastRunStateChangeMs = 0;
 bool robotCurrentlyRunning = false;
+bool isYellowAlliance = true;
 
 unsigned long lastBatteryCheckMs = 0;
 float lastBatteryVoltage = 0.0f;

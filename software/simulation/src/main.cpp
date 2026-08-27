@@ -38,6 +38,21 @@ float PX_PER_MM = 0.35f; // default scale (pixels per millimetre). Adjust for wi
 const int WINDOW_MARGIN_PX = 40;
 const int HUD_PANEL_WIDTH_PX = 320; // fixed HUD panel width on the right side
 
+// HUD readout layout (pixels, independent of field scale). The HUD stacks
+// multiple readout sections (ball, yellow goal, blue goal, move profile,
+// dribbler); these constants size the right-hand panel so every row always
+// fits and we never push text off the bottom of the window.
+constexpr float HUD_PAD_PX = 10.0f;
+constexpr float HUD_CONTROLS_HEIGHT_PX = 150.0f; // enable/disable + alliance buttons + scale controls
+constexpr float HUD_LINE_H = 23.0f;              // vertical step between rows
+constexpr float HUD_SECTION_GAP = 18.0f;         // extra gap between readout sections
+constexpr int HUD_READOUT_LINES = 16;            // ball(4) + yellow(3) + blue(3) + move(4) + dribbler(2)
+constexpr int HUD_READOUT_SECTIONS = 5;
+constexpr float HUD_READOUT_HEIGHT_PX =
+    HUD_READOUT_LINES * HUD_LINE_H + (HUD_READOUT_SECTIONS - 1) * HUD_SECTION_GAP;
+constexpr float HUD_MIN_PANEL_HEIGHT_PX =
+    HUD_PAD_PX + HUD_CONTROLS_HEIGHT_PX + HUD_READOUT_HEIGHT_PX + 3 * HUD_PAD_PX;
+
 // Helper conversions
 inline float mmToPx(float mm) { return mm * PX_PER_MM; }
 
@@ -365,7 +380,10 @@ int main() {
     // Compute window size in pixels from field dims using chosen scale.
     // Layout: [ left margin | field px | inner margin | HUD panel | right margin ]
     int winW = static_cast<int>(std::round(mmToPx(FIELD_WIDTH_MM))) + 3*WINDOW_MARGIN_PX + HUD_PANEL_WIDTH_PX;
-    int winH = static_cast<int>(std::round(mmToPx(FIELD_HEIGHT_MM))) + 2*WINDOW_MARGIN_PX;
+    // The HUD panel height is the taller of the field and the readout stack,
+    // so the panel (and all of its readouts) always fit vertically.
+    float hudHeight = std::max(mmToPx(FIELD_HEIGHT_MM), HUD_MIN_PANEL_HEIGHT_PX);
+    int winH = static_cast<int>(std::round(hudHeight)) + 2*WINDOW_MARGIN_PX;
 
     sf::VideoMode mode(sf::Vector2u(static_cast<unsigned int>(winW), static_cast<unsigned int>(winH)), 32);
     sf::RenderWindow window(mode, sf::String("RCJ Open Soccer - 2D Simulation"));
@@ -571,7 +589,7 @@ int main() {
                         const float btnSize = 28.0f;
 
                         // Scale control positions (match drawing below)
-                        float scaleRowY = hudY_click + pad_click + 40.0f;
+                        float scaleRowY = hudY_click + pad_click + 76.0f;
                         float moveInputX = hudX_click + pad_click + 160.0f; // x of input box
                         float moveInputW = 80.0f;
                         float moveInputH = 28.0f;
@@ -611,6 +629,23 @@ int main() {
                         if (pix.x >= static_cast<int>(std::round(dx)) && pix.x <= static_cast<int>(std::round(dx + btnSize)) && pix.y >= static_cast<int>(std::round(dy)) && pix.y <= static_cast<int>(std::round(dy + btnSize))) {
                             robotEnabled = false;
                             robotCurrentlyRunning = false;
+                            continue;
+                        }
+
+                        // Alliance selection buttons (second row of HUD, below
+                        // enable/disable). These write isYellowAlliance directly,
+                        // mirroring how the enable/disable buttons write
+                        // robotCurrentlyRunning, so they never interfere with the
+                        // robot's own loop/thread -- they just toggle a shared bool.
+                        const float ay = hudY_click + pad_click + 36.0f;
+                        const float yx = hudX_click + pad_click;
+                        const float bx = hudX_click + pad_click + 36.0f;
+                        if (pix.x >= static_cast<int>(std::round(yx)) && pix.x <= static_cast<int>(std::round(yx + btnSize)) && pix.y >= static_cast<int>(std::round(ay)) && pix.y <= static_cast<int>(std::round(ay + btnSize))) {
+                            isYellowAlliance = true;
+                            continue;
+                        }
+                        if (pix.x >= static_cast<int>(std::round(bx)) && pix.x <= static_cast<int>(std::round(bx + btnSize)) && pix.y >= static_cast<int>(std::round(ay)) && pix.y <= static_cast<int>(std::round(ay + btnSize))) {
+                            isYellowAlliance = false;
                             continue;
                         }
                     }
@@ -767,11 +802,42 @@ int main() {
         // the robot firmware (which reads millis()) sees a consistent epoch.
         lastBallPacketMs = simMs;
 
+        // Update goal packets the same way the ball packet is fed: the sim
+        // bypasses the OpenMV/teensy UART link and writes the shared goal
+        // globals directly (Serial7.available() returns 0 in the sim HAL, so
+        // the firmware's own packet framing never interferes with the real
+        // OpenMV path -- this code only runs inside the simulator). The robot
+        // sees the goals exactly as if they had arrived over the wire.
+        // Yellow goal = top goal, blue goal = bottom goal; the representative
+        // point for each is its rectangle centre.
+        {
+            AxisAlignedRect gBounds[] = { TOP_GOAL_BOUNDS, BOTTOM_GOAL_BOUNDS };
+            GoalPacket *gPkt[] = { &latestYellowGoalPacket, &latestBlueGoalPacket };
+            unsigned long *gTs[] = { &lastYellowGoalPacketMs, &lastBlueGoalPacketMs };
+            for (int gi = 0; gi < 2; ++gi) {
+                float gx = gBounds[gi].left + gBounds[gi].width / 2.0f;
+                float gy = gBounds[gi].top + gBounds[gi].height / 2.0f;
+                float gdx = gx - robot.pos.x;
+                float gdy = gy - robot.pos.y;
+                float gMm = std::sqrt(gdx*gdx + gdy*gdy);
+                sf::Vector2f gv(gdx, gdy);
+                float gdot = frontVec.x * gv.x + frontVec.y * gv.y;
+                float gcross = frontVec.x * gv.y - frontVec.y * gv.x;
+                float gBearingDeg = std::atan2(gcross, gdot) * 180.0f / 3.14159265f;
+
+                gPkt[gi]->detected = true;
+                gPkt[gi]->angleDeg = gBearingDeg; // angle relative to robot front
+                gPkt[gi]->distanceCM = gMm / 10.0f;
+                gPkt[gi]->sizeByte = static_cast<uint8_t>(std::min(255, static_cast<int>(GOAL_WIDTH_MM)));
+                *gTs[gi] = simMs;
+            }
+        }
+
         // HUD panel area on the right side
         float hudX = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) + WINDOW_MARGIN_PX;
         float hudY = WINDOW_MARGIN_PX;
         float hudW = static_cast<float>(HUD_PANEL_WIDTH_PX);
-        float hudH = mmToPx(FIELD_HEIGHT_MM);
+        float hudH = std::max(mmToPx(FIELD_HEIGHT_MM), HUD_MIN_PANEL_HEIGHT_PX);
 
         // draw HUD background panel
         sf::RectangleShape hudPanel(sf::Vector2f(hudW, hudH));
@@ -807,17 +873,39 @@ int main() {
         btnDisable.setOutlineColor(sf::Color::Black);
         window.draw(btnDisable);
 
+        // Alliance selection buttons (second row). Clicking these sets
+        // isYellowAlliance without touching the robot's run state or thread.
+        const float allianceY = hudY + pad + 36.0f;
+        sf::RectangleShape btnYellow(sf::Vector2f(28.0f, 28.0f));
+        btnYellow.setPosition(sf::Vector2f(hudX + pad, allianceY));
+        btnYellow.setFillColor(isYellowAlliance ? sf::Color(220,220,0) : sf::Color(80,80,80));
+        btnYellow.setOutlineThickness(1.0f);
+        btnYellow.setOutlineColor(sf::Color::Black);
+        window.draw(btnYellow);
+
+        sf::RectangleShape btnBlue(sf::Vector2f(28.0f, 28.0f));
+        btnBlue.setPosition(sf::Vector2f(hudX + pad + 36.0f, allianceY));
+        btnBlue.setFillColor(isYellowAlliance ? sf::Color(80,80,80) : sf::Color(0,150,220));
+        btnBlue.setOutlineThickness(1.0f);
+        btnBlue.setOutlineColor(sf::Color::Black);
+        window.draw(btnBlue);
+
         // Draw labels for robot state
         if (hudFontLoaded) {
             sf::Text stateLabel(hudFont, robotCurrentlyRunning ? "Robot: ENABLED" : "Robot: DISABLED", 14);
             stateLabel.setFillColor(robotCurrentlyRunning ? sf::Color(180,255,180) : sf::Color(200,120,120));
             stateLabel.setPosition(sf::Vector2f(hudX + pad + 72.0f, hudY + pad + 4.0f));
             window.draw(stateLabel);
+
+            sf::Text allianceLabel(hudFont, isYellowAlliance ? "Alliance: YELLOW" : "Alliance: BLUE", 14);
+            allianceLabel.setFillColor(isYellowAlliance ? sf::Color(255, 240, 140) : sf::Color(140, 220, 255));
+            allianceLabel.setPosition(sf::Vector2f(hudX + pad + 72.0f, allianceY + 4.0f));
+            window.draw(allianceLabel);
         }
 
         // Draw MoveProfile scaling controls
         if (hudFontLoaded) {
-            float scaleBaseY = hudY + pad + 40.0f;
+            float scaleBaseY = hudY + pad + 76.0f;
             unsigned int fs = 14;
             // Move scale label and input box
             sf::Text moveLabel(hudFont, std::string("Move scale:"), fs);
@@ -881,24 +969,44 @@ int main() {
             std::string dr1 = std::string("Dribbler: ") + (dribblerShouldRun ? "RUNNING" : "off");
             std::string dr2 = std::string("Ball held: ") + (ballHeld ? "YES" : "no");
 
-            const float pad = 10.0f;
+            std::string gy1 = std::string("YellowGoal.detected: ") + (latestYellowGoalPacket.detected ? "true" : "false");
+            std::string gy2 = "angleDeg: " + std::to_string(latestYellowGoalPacket.angleDeg);
+            std::string gy3 = "distanceCM: " + std::to_string(latestYellowGoalPacket.distanceCM);
+
+            std::string bg1 = std::string("BlueGoal.detected: ") + (latestBlueGoalPacket.detected ? "true" : "false");
+            std::string bg2 = "angleDeg: " + std::to_string(latestBlueGoalPacket.angleDeg);
+            std::string bg3 = "distanceCM: " + std::to_string(latestBlueGoalPacket.distanceCM);
+
+            const float pad = HUD_PAD_PX;
             float tx = hudX + pad;
-                        const float HUD_CONTROLS_HEIGHT = 120.0f; // space reserved for enable buttons and scale controls
-                        float ty = hudY + pad + HUD_CONTROLS_HEIGHT; // start text below controls
-            unsigned int fs = 16;
+            const unsigned int fs = 14; // font size (kept small so all rows fit)
+            float ty = hudY + pad + HUD_CONTROLS_HEIGHT_PX; // start text below controls
 
-            sf::Text t1(hudFont, bp1, fs); t1.setFillColor(sf::Color::White); t1.setPosition(sf::Vector2f(tx, ty)); window.draw(t1); ty += 22.0f;
-            sf::Text t2(hudFont, bp2, fs); t2.setFillColor(sf::Color::White); t2.setPosition(sf::Vector2f(tx, ty)); window.draw(t2); ty += 22.0f;
-            sf::Text t3(hudFont, bp3, fs); t3.setFillColor(sf::Color::White); t3.setPosition(sf::Vector2f(tx, ty)); window.draw(t3); ty += 22.0f;
-            sf::Text t4(hudFont, bp4, fs); t4.setFillColor(sf::Color::White); t4.setPosition(sf::Vector2f(tx, ty)); window.draw(t4); ty += 32.0f;
+            // Section 1: Ball
+            sf::Text t1(hudFont, bp1, fs); t1.setFillColor(sf::Color::White); t1.setPosition(sf::Vector2f(tx, ty)); window.draw(t1); ty += HUD_LINE_H;
+            sf::Text t2(hudFont, bp2, fs); t2.setFillColor(sf::Color::White); t2.setPosition(sf::Vector2f(tx, ty)); window.draw(t2); ty += HUD_LINE_H;
+            sf::Text t3(hudFont, bp3, fs); t3.setFillColor(sf::Color::White); t3.setPosition(sf::Vector2f(tx, ty)); window.draw(t3); ty += HUD_LINE_H;
+            sf::Text t4(hudFont, bp4, fs); t4.setFillColor(sf::Color::White); t4.setPosition(sf::Vector2f(tx, ty)); window.draw(t4); ty += HUD_SECTION_GAP;
 
-            sf::Text m1(hudFont, mp1, fs); m1.setFillColor(sf::Color::White); m1.setPosition(sf::Vector2f(tx, ty)); window.draw(m1); ty += 22.0f;
-            sf::Text m2(hudFont, mp2, fs); m2.setFillColor(sf::Color::White); m2.setPosition(sf::Vector2f(tx, ty)); window.draw(m2); ty += 22.0f;
-            sf::Text m3(hudFont, mp3, fs); m3.setFillColor(sf::Color::White); m3.setPosition(sf::Vector2f(tx, ty)); window.draw(m3); ty += 22.0f;
-            sf::Text m4(hudFont, mp4, fs); m4.setFillColor(sf::Color::White); m4.setPosition(sf::Vector2f(tx, ty)); ty += 32.0f;
+            // Section 2: Yellow Goal
+            sf::Text yg1(hudFont, gy1, fs); yg1.setFillColor(sf::Color(255, 240, 140)); yg1.setPosition(sf::Vector2f(tx, ty)); window.draw(yg1); ty += HUD_LINE_H;
+            sf::Text yg2(hudFont, gy2, fs); yg2.setFillColor(sf::Color(255, 240, 140)); yg2.setPosition(sf::Vector2f(tx, ty)); window.draw(yg2); ty += HUD_LINE_H;
+            sf::Text yg3(hudFont, gy3, fs); yg3.setFillColor(sf::Color(255, 240, 140)); yg3.setPosition(sf::Vector2f(tx, ty)); window.draw(yg3); ty += HUD_SECTION_GAP;
 
-            sf::Text d1(hudFont, dr1, fs); d1.setFillColor(sf::Color(255, 220, 140)); d1.setPosition(sf::Vector2f(tx, ty)); window.draw(d1); ty += 22.0f;
-            sf::Text d2(hudFont, dr2, fs); d2.setFillColor(ballHeld ? sf::Color(140, 255, 140) : sf::Color::White); d2.setPosition(sf::Vector2f(tx, ty)); window.draw(d2); ty += 22.0f;
+            // Section 3: Blue Goal
+            sf::Text bl1(hudFont, bg1, fs); bl1.setFillColor(sf::Color(140, 220, 255)); bl1.setPosition(sf::Vector2f(tx, ty)); window.draw(bl1); ty += HUD_LINE_H;
+            sf::Text bl2(hudFont, bg2, fs); bl2.setFillColor(sf::Color(140, 220, 255)); bl2.setPosition(sf::Vector2f(tx, ty)); window.draw(bl2); ty += HUD_LINE_H;
+            sf::Text bl3(hudFont, bg3, fs); bl3.setFillColor(sf::Color(140, 220, 255)); bl3.setPosition(sf::Vector2f(tx, ty)); window.draw(bl3); ty += HUD_SECTION_GAP;
+
+            // Section 4: MoveProfile
+            sf::Text m1(hudFont, mp1, fs); m1.setFillColor(sf::Color::White); m1.setPosition(sf::Vector2f(tx, ty)); window.draw(m1); ty += HUD_LINE_H;
+            sf::Text m2(hudFont, mp2, fs); m2.setFillColor(sf::Color::White); m2.setPosition(sf::Vector2f(tx, ty)); window.draw(m2); ty += HUD_LINE_H;
+            sf::Text m3(hudFont, mp3, fs); m3.setFillColor(sf::Color::White); m3.setPosition(sf::Vector2f(tx, ty)); window.draw(m3); ty += HUD_LINE_H;
+            sf::Text m4(hudFont, mp4, fs); m4.setFillColor(sf::Color::White); m4.setPosition(sf::Vector2f(tx, ty)); window.draw(m4); ty += HUD_SECTION_GAP;
+
+            // Section 5: Dribbler
+            sf::Text d1(hudFont, dr1, fs); d1.setFillColor(sf::Color(255, 220, 140)); d1.setPosition(sf::Vector2f(tx, ty)); window.draw(d1); ty += HUD_LINE_H;
+            sf::Text d2(hudFont, dr2, fs); d2.setFillColor(ballHeld ? sf::Color(140, 255, 140) : sf::Color::White); d2.setPosition(sf::Vector2f(tx, ty)); window.draw(d2); ty += HUD_LINE_H;
         }
 
         window.display();

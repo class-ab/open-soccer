@@ -88,8 +88,9 @@ void systemTick() {
   unsigned long now = millis();
 
   checkEnabledButton(now);
+  checkAllianceButtons(now);
 
-  processBallPacket();
+  processVisionPackets();
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {
     checkBattery();
@@ -126,6 +127,50 @@ if ((now - lastDebounceMs) >= BUTTON_DEBOUNCE_MS) {
   updateDisplay();
 }
 lastButton1State = currentButton1State;
+}
+
+void checkAllianceButtons(unsigned long now) {
+  // Button 2 -> yellow alliance (isYellowAlliance = true)
+  // Button 3 -> blue alliance (isYellowAlliance = false)
+  // Same debounced rising-edge detection as checkEnabledButton, but the two
+  // buttons share one debounce state per button.
+
+  // ---------- button2 (yellow) ----------
+  static bool lastButton2State = LOW;
+  static unsigned long lastButton2DebounceMs = 0;
+  const unsigned long BUTTON_DEBOUNCE_MS = 50;
+
+  bool currentButton2State = digitalRead(button2);
+  if (currentButton2State != lastButton2State) {
+    lastButton2DebounceMs = now;
+  }
+  if ((now - lastButton2DebounceMs) >= BUTTON_DEBOUNCE_MS) {
+    static bool stableButton2State = LOW;
+    if (currentButton2State == HIGH && stableButton2State == LOW) {
+      isYellowAlliance = true;
+      Serial.println("Alliance: YELLOW");
+    }
+    stableButton2State = currentButton2State;
+  }
+  lastButton2State = currentButton2State;
+
+  // ---------- button3 (blue) ----------
+  static bool lastButton3State = LOW;
+  static unsigned long lastButton3DebounceMs = 0;
+
+  bool currentButton3State = digitalRead(button3);
+  if (currentButton3State != lastButton3State) {
+    lastButton3DebounceMs = now;
+  }
+  if ((now - lastButton3DebounceMs) >= BUTTON_DEBOUNCE_MS) {
+    static bool stableButton3State = LOW;
+    if (currentButton3State == HIGH && stableButton3State == LOW) {
+      isYellowAlliance = false;
+      Serial.println("Alliance: BLUE");
+    }
+    stableButton3State = currentButton3State;
+  }
+  lastButton3State = currentButton3State;
 }
 
 void stopAllMotors() {

@@ -46,6 +46,7 @@ void updateDisplay() {
 
   display.print("Status: ");
   display.println(robotCurrentlyRunning ? "RUNNING" : "STOPPED");
+  display.println(isYellowAlliance ? "Yellow" : "Blue");
 
   display.print(robotCurrentlyRunning ? "Run tmr: " : "Idle tmr:");
   display.println(formatDuration(runStateMs));
