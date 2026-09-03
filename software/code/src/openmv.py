@@ -44,12 +44,12 @@ from machine import UART
 
 # Index into `thresholds` for each of the three colors being tracked.
 COLOR_A_INDEX = 2  # ball 2
-COLOR_B_INDEX = 3  # yellow goal 1
-COLOR_C_INDEX = 3  # blue goal 0
+COLOR_B_INDEX = 1  # yellow goal 1
+COLOR_C_INDEX = 0  # blue goal 0
 
 CAMERA_ROTATION_OFFSET_DEG = 90
 
-MIN_TOTAL_PIXELS = 10
+MIN_TOTAL_PIXELS = 1
 
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green/blue things. You will
@@ -62,9 +62,9 @@ MIN_TOTAL_PIXELS = 10
 # ]
 
 thresholds = [  # home tuning
-    (17, 27, -25, -10, -12, 5),  # blue goal
-    (55, 75, -20, 10, 30, 50),  # yellow goal
-    (40, 75, 25, 45, 15, 45),  # ball
+    (50, 70, -20, 0, -35, -15),  # blue goal
+    (75, 90, -20, -8, 20, 40),  # yellow goal
+    (30, 75, 25, 45, 15, 45),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
 
@@ -80,7 +80,7 @@ clock = time.clock()
 IMG_W = sensor.width()
 IMG_H = sensor.height()
 CENTER_X = 150
-CENTER_Y = 125
+CENTER_Y = 130
 # Only blobs with more pixels than "pixels_threshold" and more area than
 # "area_threshold" are returned by "find_blobs" below. Change these if you
 # change the camera resolution. "merge=True" merges all overlapping blobs.
@@ -95,7 +95,7 @@ PACKET_SYNC_BYTE_C = 0xAC
 PACKET_LEN = 8
 
 
-def send_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
+def send_ball_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
     """Pack and send one 8-byte ball-position packet to the Teensy over UART."""
     if detected:
         # Wrap to [-180, 180) before scaling so it always fits an int16.
@@ -134,7 +134,8 @@ def pixels_to_cm_y(py):
     """Vertical pixel-distance -> cm, using pre-rotation calibration."""
     sign = 1.0 if py >= 0 else -1.0
     x = abs(py)
-    cm = 0.0102221 * x * x - 0.252213 * x + 10.85662
+    # cm = 0.0102221 * x * x - 0.252213 * x + 10.85662  # white robot
+    cm = 0.005964 * x * x + 0.295067 * x - 3.86654  # black robot
     return sign * cm
 
 
@@ -142,7 +143,8 @@ def pixels_to_cm_x(px):
     """Horizontal pixel-distance -> cm, using pre-rotation calibration."""
     sign = 1.0 if px >= 0 else -1.0
     x = abs(px)
-    cm = -0.00398991 * x * x + 1.73715 * x - 33.05303
+    # cm = -0.00398991 * x * x + 1.73715 * x - 33.05303  # white robot
+    cm = 0.005964 * x * x + 0.295067 * x - 3.86654  # black robot
     return sign * cm
 
 
@@ -190,17 +192,19 @@ while True:
     detected_a, angle_a, radius_a, pixels_a = track_color(
         img, thresholds[COLOR_A_INDEX]
     )
-    send_packet(PACKET_SYNC_BYTE_A, detected_a, angle_a, radius_a, pixels_a)
+    send_ball_packet(PACKET_SYNC_BYTE_A, detected_a, angle_a, radius_a, pixels_a)
 
     detected_b, angle_b, radius_b, pixels_b = track_color(
         img, thresholds[COLOR_B_INDEX]
     )
-    send_packet(PACKET_SYNC_BYTE_B, detected_b, angle_b, radius_b, pixels_b)
+    send_ball_packet(PACKET_SYNC_BYTE_B, detected_b, angle_b, radius_b, pixels_b)
 
     detected_c, angle_c, radius_c, pixels_c = track_color(
         img, thresholds[COLOR_C_INDEX]
     )
-    send_packet(PACKET_SYNC_BYTE_C, detected_c, angle_c, radius_c, pixels_c)
+    send_ball_packet(PACKET_SYNC_BYTE_C, detected_c, angle_c, radius_c, pixels_c)
+
+    # img.draw_cross((CENTER_X, CENTER_Y), size=100)
 
     print(
         clock.fps(),
