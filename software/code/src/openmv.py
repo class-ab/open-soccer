@@ -1,7 +1,6 @@
 import csi
 import time
 import math
-import image
 import sensor
 from machine import UART
 
