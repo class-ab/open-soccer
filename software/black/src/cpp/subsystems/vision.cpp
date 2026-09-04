@@ -6,8 +6,11 @@
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 
+static uint8_t uartRxBuf[512];
+
 void initBallTracking() {
   BALL_UART.begin(BALL_UART_BAUD);
+  BALL_UART.addMemoryForRead(uartRxBuf, sizeof(uartRxBuf));
   Serial.println("Ball-tracking UART receiver ready");
 }
 
@@ -53,7 +56,7 @@ void decodeYellowGoalPacket(const uint8_t *p) {
   latestYellowGoalPacket.sizeByte = p[6];
   lastYellowGoalPacketMs = millis();
 
-#ifdef DEBUG_BALL_LINK
+#ifdef DEBUG_YELLOW_LINK
   Serial.print("[YELLOW GOAL PKT OK] sync=B");
   Serial.print("  detected=");
   Serial.print(latestYellowGoalPacket.detected ? "YES" : "no ");
@@ -73,7 +76,7 @@ void decodeBlueGoalPacket(const uint8_t *p) {
   latestBlueGoalPacket.sizeByte = p[6];
   lastBlueGoalPacketMs = millis();
 
-#ifdef DEBUG_BALL_LINK
+#ifdef DEBUG_BLUE_LINK
   Serial.print("[BLUE GOAL PKT OK] sync=C");
   Serial.print("  detected=");
   Serial.print(latestBlueGoalPacket.detected ? "YES" : "no ");
@@ -97,7 +100,7 @@ void decodeVisionPacket(const uint8_t *p) {
   } else if (sync == BLUE_GOAL_SYNC) {
     decodeBlueGoalPacket(p);
   } else {
-#ifdef DEBUG_BALL_LINK
+#ifdef DEBUG_VISION_LINK
     Serial.println("[VISION DROP] bad sync byte");
 #endif
   }
@@ -131,7 +134,7 @@ void processVisionPackets() {
       if (checksum == visionPacketBuf[BALL_PACKET_LEN - 1]) {
         decodeVisionPacket(visionPacketBuf);
       }
-#ifdef DEBUG_BALL_LINK
+#ifdef DEBUG_VISION_LINK
       else {
         Serial.println("[VISION DROP] checksum mismatch");
       }

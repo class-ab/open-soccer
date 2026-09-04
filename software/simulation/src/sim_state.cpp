@@ -14,6 +14,12 @@ unsigned long lastBlueGoalPacketMs = 0;
 
 MoveProfile currentMoveProfile = {false, 0.0f, 0.0f, 0.0f, 0};
 
+unsigned long lastBatteryCheckMs = 0;
+float lastBatteryVoltage = 0.0f;
+unsigned long batteryLowSinceMs = 0;
+bool shutdownLatched = false;
+bool dribblerShouldRun = false;
+
 bool isYellowAlliance = true;
 bool hasBall = false;
 bool isAttacking = true;

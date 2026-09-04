@@ -46,6 +46,7 @@ void setup() {
   lastRunStateChangeMs = bootMillis;
 
   Wire2.begin();
+  Wire2.setClock(400000);
   initDisplay();
   initBallTracking();
 

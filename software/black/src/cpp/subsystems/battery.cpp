@@ -26,7 +26,13 @@ void checkBattery() {
   lastBatteryCheckMs = millis();
 
   if (lastBatteryVoltage < BATTERY_SHUTDOWN_VOLTAGE) {
-    emergencyShutdown();
+    if (batteryLowSinceMs == 0) {
+      batteryLowSinceMs = millis();
+    } else if (millis() - batteryLowSinceMs >= BATTERY_SHUTDOWN_DELAY_MS) {
+      emergencyShutdown();
+    }
+  } else {
+    batteryLowSinceMs = 0;
   }
 }
 

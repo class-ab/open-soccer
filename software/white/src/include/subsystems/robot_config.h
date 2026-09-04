@@ -10,6 +10,9 @@
 // results and checksum failures) over Serial - useful for debugging the
 // physical link itself (wiring, clock rate, sync/checksum issues).
 // #define DEBUG_BALL_LINK
+// #define DEBUG_VISION_LINK
+// #define DEBUG_BLUE_LINK
+// #define DEBUG_YELLOW_LINK
 
 // ============================================================
 // BNO08X IMU
@@ -164,6 +167,7 @@ constexpr float ADC_REF_VOLTAGE = 3.3f;
 
 constexpr float BATTERY_SHUTDOWN_VOLTAGE = 14.8f;
 constexpr unsigned long BATTERY_CHECK_INTERVAL_MS = 5000;
+constexpr unsigned long BATTERY_SHUTDOWN_DELAY_MS = 3000;
 constexpr int BATTERY_SAMPLE_COUNT = 8;
 
 // ============================================================

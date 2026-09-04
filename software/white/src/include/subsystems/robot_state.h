@@ -63,6 +63,7 @@ extern bool isAttacking;
 
 extern unsigned long lastBatteryCheckMs;
 extern float lastBatteryVoltage;
+extern unsigned long batteryLowSinceMs;
 extern bool shutdownLatched;
 extern bool dribblerShouldRun;
 

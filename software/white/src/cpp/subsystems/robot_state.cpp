@@ -23,6 +23,7 @@ bool isAttacking = true;
 
 unsigned long lastBatteryCheckMs = 0;
 float lastBatteryVoltage = 0.0f;
+unsigned long batteryLowSinceMs = 0;
 bool shutdownLatched = false;
 bool dribblerShouldRun = false;
 

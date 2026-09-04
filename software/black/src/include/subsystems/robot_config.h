@@ -9,7 +9,10 @@
 // Uncomment to print raw ball-link diagnostics (per-packet decode
 // results and checksum failures) over Serial - useful for debugging the
 // physical link itself (wiring, clock rate, sync/checksum issues).
-// #define DEBUG_BALL_LINK
+#define DEBUG_BALL_LINK
+#define DEBUG_VISION_LINK
+// #define DEBUG_BLUE_LINK
+// #define DEBUG_YELLOW_LINK
 
 // ============================================================
 // BNO08X IMU
@@ -89,8 +92,8 @@ constexpr float ROTATION_MAX_SPEED = 0.5f;
 
 constexpr float ROBOT_RAMP_RANGE = 20.0f;
 
-constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
-constexpr float BALL_TARGET_DISTANCE_CM = 5.00f;
+constexpr unsigned long BALL_DATA_TIMEOUT_MS = 500;
+constexpr float BALL_TARGET_DISTANCE_CM = 0.00f;
 
 // "Has ball" is true when the ball is detected close enough and roughly
 // in front of the robot (i.e. within the dribbler capture cone).
@@ -164,6 +167,7 @@ constexpr float ADC_REF_VOLTAGE = 3.3f;
 
 constexpr float BATTERY_SHUTDOWN_VOLTAGE = 14.8f;
 constexpr unsigned long BATTERY_CHECK_INTERVAL_MS = 5000;
+constexpr unsigned long BATTERY_SHUTDOWN_DELAY_MS = 3000;
 constexpr int BATTERY_SAMPLE_COUNT = 8;
 
 // ============================================================
