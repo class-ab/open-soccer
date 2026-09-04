@@ -47,7 +47,7 @@ COLOR_A_INDEX = 2  # ball 2
 COLOR_B_INDEX = 1  # yellow goal 1
 COLOR_C_INDEX = 0  # blue goal 0
 
-CAMERA_ROTATION_OFFSET_DEG = 90
+CAMERA_ROTATION_OFFSET_DEG = 0
 
 MIN_TOTAL_PIXELS = 1
 
@@ -62,9 +62,9 @@ MIN_TOTAL_PIXELS = 1
 # ]
 
 thresholds = [  # home tuning
-    (50, 70, -20, 0, -35, -15),  # blue goal
-    (75, 90, -20, -8, 20, 40),  # yellow goal
-    (30, 75, 25, 45, 15, 45),  # ball
+    (0, 40, 0, 40, -60, -40),  # blue goal
+    (40, 80, -45, -10, 50, 80),  # yellow goal
+    (0, 50, 25, 65, 15, 55),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
 
@@ -72,15 +72,25 @@ csi0 = csi.CSI()
 csi0.reset()
 csi0.pixformat(csi.RGB565)
 csi0.framesize(csi.QVGA)
-csi0.snapshot(time=2000)
+# csi0.snapshot(time=2000)
+
+csi0.hmirror(True)
+csi0.vflip(False)
+csi0.transpose(True)
+
 csi0.auto_gain(False)  # must be turned off for color tracking
 csi0.auto_whitebal(False)  # must be turned off for color tracking
+csi0.auto_blc(True)
+csi0.brightness(3)
+csi0.contrast(3)
+csi0.saturation(1)
+
 clock = time.clock()
 
 IMG_W = sensor.width()
 IMG_H = sensor.height()
-CENTER_X = 150
-CENTER_Y = 130
+CENTER_X = 130
+CENTER_Y = 160
 # Only blobs with more pixels than "pixels_threshold" and more area than
 # "area_threshold" are returned by "find_blobs" below. Change these if you
 # change the camera resolution. "merge=True" merges all overlapping blobs.
@@ -134,8 +144,7 @@ def pixels_to_cm_y(py):
     """Vertical pixel-distance -> cm, using pre-rotation calibration."""
     sign = 1.0 if py >= 0 else -1.0
     x = abs(py)
-    # cm = 0.0102221 * x * x - 0.252213 * x + 10.85662  # white robot
-    cm = 0.005964 * x * x + 0.295067 * x - 3.86654  # black robot
+    cm = 0.0102221 * x * x - 0.252213 * x + 10.85662  # white robot
     return sign * cm
 
 
@@ -143,8 +152,7 @@ def pixels_to_cm_x(px):
     """Horizontal pixel-distance -> cm, using pre-rotation calibration."""
     sign = 1.0 if px >= 0 else -1.0
     x = abs(px)
-    # cm = -0.00398991 * x * x + 1.73715 * x - 33.05303  # white robot
-    cm = 0.005964 * x * x + 0.295067 * x - 3.86654  # black robot
+    cm = -0.00398991 * x * x + 1.73715 * x - 33.05303  # white robot
     return sign * cm
 
 
