@@ -108,7 +108,7 @@ constexpr float HAS_BALL_MAX_ANGLE_DEG = 5.0f;
 // MoveProfile that drives holonomically toward a field point while rotating
 // to a target heading.
 constexpr float LOC_MAX_SPEED = ROBOT_MAX_SPEED;
-constexpr float LOC_MIN_SPEED = 0.0f;
+constexpr float LOC_MIN_SPEED = 0.1f;
 constexpr float LOC_RAMP_RANGE_CM = ROBOT_RAMP_RANGE;   // distance over which to ramp speed
 constexpr float LOC_TARGET_REACH_DIST_CM = 0.0f; // stop once within this distance
 // Heading error (deg) that produces full (1.0) rotation effort. Flip the sign
@@ -119,37 +119,27 @@ constexpr float LOC_ROT_EFFORT_DEG = 45.0f;
 // Attack Strategy (ball chasing + goal scoring)
 // ============================================================
 
-// Front ball-chasing: robot bearing R = B + O*M (see
-// https://bozotics.github.io/open/strat/attack/).
-//     B = ball bearing (robot-relative)
-//     O = offset angle = B * BALL_OFFSET_N, capped at BALL_OFFSET_MAX_DEG
-//     M = offset multiplier = min(A * exp(B_MULT * f), 1), f = 1 - D/c
-constexpr float BALL_OFFSET_N = 1.5f;
-constexpr float BALL_OFFSET_MAX_DEG = 90.0f;
-constexpr float BALL_MULT_A = 1.0f;
-constexpr float BALL_MULT_B = 3.0f;
-constexpr float BALL_MAX_DIST_CM = 120.0f;   // "c": distance at which M saturates
 // Attack phase-1 speed ramps toward the ball proportional to distance.
-constexpr float CHASE_MIN_SPEED = 0.10f;
+constexpr float CHASE_MIN_SPEED = 0.2f;
 constexpr float CHASE_MAX_SPEED = ROBOT_MAX_SPEED;
 constexpr float CHASE_RAMP_RANGE_CM = 15.0f;
 // If the ball has not been detected for this long while attacking, fall back
 // to returning home (used by the loop to dispatch to defend).
-constexpr unsigned long BALL_LOST_RETURN_HOME_MS = 5000;
+constexpr unsigned long BALL_LOST_RETURN_HOME_MS = 1000;
 
 // Goal scoring: robot bearing R = G + O_G*M_G (front scoring, see article).
-constexpr float GOAL_OFFSET_MULT = 1.0f;     // constant M_G while orbiting the goal
+constexpr float GOAL_OFFSET_MULT = 0.0f;     // constant M_G while orbiting the goal
 constexpr float SCORE_MIN_SPEED = 0.25f;
 constexpr float SCORE_MAX_SPEED = ROBOT_MAX_SPEED;
 constexpr float SCORE_RAMP_RANGE_CM = ROBOT_RAMP_RANGE;
 // Below this distance from the goal we stop orbiting and drive straight into
 // the goal with the ball (our "kicker" equivalent since we have no kicker).
-constexpr float PUSH_DIST_CM = 30.0f;
+constexpr float PUSH_DIST_CM = 60.0f;
 constexpr float PUSH_SPEED = ROBOT_MAX_SPEED;
 
 // When not attacking, the robot returns to a point this distance in front of
 // its own goal (measured from the goal line toward the field centre).
-constexpr float DEFEND_DIST_FROM_OWN_GOAL_CM = ROBOT_RAMP_RANGE;
+constexpr float DEFEND_DIST_FROM_OWN_GOAL_CM = 30.0f;
 
 // ============================================================
 // Battery Monitor

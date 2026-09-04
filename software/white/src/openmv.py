@@ -62,7 +62,7 @@ MIN_TOTAL_PIXELS = 1
 # ]
 
 thresholds = [  # home tuning
-    (0, 40, 0, 40, -60, -40),  # blue goal
+    (0, 40, 0, 40, -60, -20),  # blue goal
     (40, 80, -45, -10, 50, 80),  # yellow goal
     (0, 50, 25, 65, 15, 55),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
@@ -169,6 +169,8 @@ def track_color(img, threshold):
         area_threshold=20,
         merge=True,
     ):
+        if abs(blob.cx - CENTER_X) < 15 and abs(blob.cy - CENTER_Y) < 15:
+            continue
         img.draw_detection(blob, 1)
         # These values are stable all the time.
         if blob.pixels > last_biggest:

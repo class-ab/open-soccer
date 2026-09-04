@@ -53,6 +53,7 @@ void updateDisplay() {
   display.println(formatDuration(runStateMs));
 
   display.println(BALL_UART.available() ? "OpenMV UART: YES" : "OpenMV UART: NO");
+  display.println(hasBall ? "Has Ball: YES" : "Has Ball: NO");
 
   display.display();
 }

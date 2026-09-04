@@ -52,6 +52,9 @@ void updateDisplay() {
   display.print(robotCurrentlyRunning ? "Run tmr: " : "Idle tmr:");
   display.println(formatDuration(runStateMs));
 
+  display.println(BALL_UART.available() ? "OpenMV UART: YES" : "OpenMV UART: NO");
+  display.println(hasBall ? "Has Ball: YES" : "Has Ball: NO");
+
   display.display();
 }
 

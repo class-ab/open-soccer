@@ -62,8 +62,8 @@ MIN_TOTAL_PIXELS = 1
 # ]
 
 thresholds = [  # home tuning
-    (0, 40, 30, 70, -80, -40),  # blue goal
-    (70, 110, -70, -30, 70, 110),  # yellow goal
+    (0, 40, -50, 50, -70, -25),  # blue goal
+    (30, 80, -60, -40, 40, 80),  # yellow goal
     (20, 50, 40, 80, 30, 70),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
@@ -103,6 +103,7 @@ PACKET_SYNC_BYTE_A = 0xAA
 PACKET_SYNC_BYTE_B = 0xAB
 PACKET_SYNC_BYTE_C = 0xAC
 PACKET_LEN = 8
+
 
 def send_ball_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
     """Pack and send one 8-byte ball-position packet to the Teensy over UART."""
@@ -168,6 +169,8 @@ def track_color(img, threshold):
         area_threshold=20,
         merge=True,
     ):
+        if abs(blob.cx - CENTER_X) < 15 and abs(blob.cy - CENTER_Y) < 15:
+            continue
         img.draw_detection(blob, 1)
         # These values are stable all the time.
         if blob.pixels > last_biggest:

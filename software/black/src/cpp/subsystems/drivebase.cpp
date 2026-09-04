@@ -96,6 +96,12 @@ void stopAllDriveMotors() {
 }
 
 void SetSpeed(int motor, int pwm) {
+  if(pwm > 0 && pwm < 35) {
+    pwm = 35;
+  } else if(pwm < 0 && pwm > -35) {
+    pwm = -35;
+  }
+  
   pwm = (int)(pwm * motorMult[motor]);
   pwm = constrain(pwm, -255, 255);
 
