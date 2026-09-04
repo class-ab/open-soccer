@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <string>
 
 using byte = uint8_t;
@@ -52,6 +53,8 @@ public:
   int available();
   int read();
   void write(uint8_t);
+  // Teensy API to extend the RX buffer; no-op in sim
+  void addMemoryForRead(uint8_t *buf, size_t size) { (void)buf; (void)size; }
 };
 
 extern HardwareSerial Serial;
@@ -66,6 +69,7 @@ constexpr float PI = 3.14159265358979323846f;
 class TwoWire {
 public:
   void begin() {}
+  void setClock(unsigned long) {}
 };
 extern TwoWire Wire2;
 

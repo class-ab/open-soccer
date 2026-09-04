@@ -1,6 +1,6 @@
 #include "../sim_hal/Arduino.h"
-#include "../../include/subsystems/display.h"
-#include "../../code/src/include/subsystems/robot_state.h"
+#include "subsystems/display.h"
+#include "subsystems/robot_state.h"
 
 void initDisplay() {
   // mark display as unavailable in sim

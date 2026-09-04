@@ -1,6 +1,6 @@
 #include "../sim_hal/Arduino.h"
-#include "../../include/subsystems/imu.h"
-#include "../../code/src/include/subsystems/robot_state.h"
+#include "subsystems/imu.h"
+#include "subsystems/robot_state.h"
 
 void initIMU() {
   // start with yaw = 0

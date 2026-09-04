@@ -2,7 +2,6 @@
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/CMakeCInformation.cmake
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/CMakeCXXInformation.cmake
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/CMakeCommonLanguageInclude.cmake
-C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/CMakeDependentOption.cmake
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/CMakeGenericSystem.cmake
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/CMakeInitializeConfigs.cmake
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/CMakeLanguageInformation.cmake
@@ -28,11 +27,11 @@ C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/Platform/Windows-MSVC.cmake
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/Platform/Windows.cmake
 C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0/LocalCache/local-packages/Python311/site-packages/cmake/data/share/cmake-4.4/Modules/Platform/WindowsPaths.cmake
-C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/CMakeLists.txt
-C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/build/CMakeFiles/4.4.2/CMakeCCompiler.cmake
-C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/build/CMakeFiles/4.4.2/CMakeCXXCompiler.cmake
-C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/build/CMakeFiles/4.4.2/CMakeRCCompiler.cmake
-C:/Users/jared/VSCode/Soccer/open-soccer.worktrees/cpp-robocup-soccer-simulation/software/simulation/build/CMakeFiles/4.4.2/CMakeSystem.cmake
+C:/Users/jared/VSCode/open-soccer/software/simulation/CMakeLists.txt
+C:/Users/jared/VSCode/open-soccer/software/simulation/build/CMakeFiles/4.4.2/CMakeCCompiler.cmake
+C:/Users/jared/VSCode/open-soccer/software/simulation/build/CMakeFiles/4.4.2/CMakeCXXCompiler.cmake
+C:/Users/jared/VSCode/open-soccer/software/simulation/build/CMakeFiles/4.4.2/CMakeRCCompiler.cmake
+C:/Users/jared/VSCode/open-soccer/software/simulation/build/CMakeFiles/4.4.2/CMakeSystem.cmake
 C:/Users/jared/VSCode/vcpkg/installed/x64-windows/share/sfml/SFMLConfig.cmake
 C:/Users/jared/VSCode/vcpkg/installed/x64-windows/share/sfml/SFMLConfigVersion.cmake
 C:/Users/jared/VSCode/vcpkg/installed/x64-windows/share/sfml/SFMLGraphicsSharedTargets-debug.cmake
@@ -44,4 +43,3 @@ C:/Users/jared/VSCode/vcpkg/installed/x64-windows/share/sfml/SFMLSystemSharedTar
 C:/Users/jared/VSCode/vcpkg/installed/x64-windows/share/sfml/SFMLWindowSharedTargets-debug.cmake
 C:/Users/jared/VSCode/vcpkg/installed/x64-windows/share/sfml/SFMLWindowSharedTargets-release.cmake
 C:/Users/jared/VSCode/vcpkg/installed/x64-windows/share/sfml/SFMLWindowSharedTargets.cmake
-C:/Users/jared/VSCode/vcpkg/scripts/buildsystems/vcpkg.cmake

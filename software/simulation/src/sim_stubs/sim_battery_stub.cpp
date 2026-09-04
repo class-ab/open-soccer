@@ -1,5 +1,5 @@
 #include "../sim_hal/Arduino.h"
-#include "../../code/src/include/subsystems/robot_state.h"
+#include "subsystems/robot_state.h"
 
 float readBatteryVoltage() {
   // return a safe value above any shutdown threshold

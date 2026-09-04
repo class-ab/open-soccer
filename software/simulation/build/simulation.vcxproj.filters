@@ -1,55 +1,55 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\main.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\simulation\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\robot_wrapper.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\simulation\src\robot_wrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\sim_hal\sim_hal.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\simulation\src\sim_hal\sim_hal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\sim_stubs\sim_display_stub.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\simulation\src\sim_stubs\sim_display_stub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\sim_stubs\sim_imu_stub.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\simulation\src\sim_stubs\sim_imu_stub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\sim_stubs\sim_dribbler_stub.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\simulation\src\sim_stubs\sim_dribbler_stub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\src\sim_stubs\sim_battery_stub.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\simulation\src\sim_stubs\sim_battery_stub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\robot.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\white\src\robot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\vision.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\white\src\cpp\subsystems\vision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\localisation.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\white\src\cpp\subsystems\localisation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\attack.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\white\src\cpp\subsystems\attack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\defend.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\white\src\cpp\subsystems\defend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\drivebase.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\white\src\cpp\subsystems\drivebase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\code\src\cpp\subsystems\robot_state.cpp">
+    <ClCompile Include="C:\Users\jared\VSCode\open-soccer\software\white\src\cpp\subsystems\robot_state.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\jared\VSCode\open-soccer\software\simulation\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{0288F669-2025-3065-83B3-1A0E78438E19}</UniqueIdentifier>
+      <UniqueIdentifier>{F71ECAB5-1F67-3CEE-8EF8-FF49183B84F5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -42,11 +42,18 @@ cmake -S . -B build
 cmake --build build --config Release
 ```
 
+On this machine SFML is installed via vcpkg, so configure with the SFML dir:
+
+```
+cmake -S . -B build "-DSFML_DIR=C:\Users\jared\VSCode\vcpkg\installed\x64-windows\share\sfml"
+cmake --build build --config Release
+```
+
 Then run `build\Release\simulation.exe` (Windows) or `build/simulation`
 (Linux/macOS).
 
 > The sim links against a selected subset of the robot code
-> (`../code/src/robot.cpp`, `vision.cpp`, `drivebase.cpp`, `robot_state.cpp`)
+> (`../white/src/robot.cpp`, `vision.cpp`, `drivebase.cpp`, `robot_state.cpp`)
 > and uses `sim_hal/Arduino.h` + the `sim_stubs/` shims so firmware compiles
 > unmodified outside Arduino. No robot code is changed to make the sim work.
 

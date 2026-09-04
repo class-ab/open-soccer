@@ -1,0 +1,10 @@
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\sfml-graphics-3.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\sfml-window-3.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\sfml-system-3.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\freetype.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\z.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\bz2.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\libpng16.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\brotlidec.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\Release\brotlicommon.dll
+C:\Users\jared\VSCode\open-soccer\software\simulation\build\simulation.dir\Release\simulati.09116A0F.Up2Date

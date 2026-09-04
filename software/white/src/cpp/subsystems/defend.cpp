@@ -8,6 +8,8 @@
 #include "include/subsystems/drivebase.h"
 #include "include/subsystems/imu.h"
 
+#include <cmath>
+
 namespace {
 
 // Wrap an angle to [0, 360).
@@ -32,8 +34,14 @@ float forwardsBearing(const localisation::Frame &f) {
     : f.frontAngleDeg;
 }
 
-// Position on the goal-to-ball line at DEFEND_DIST from own goal, facing the
-// ball. Falls back to return-home if ball data is unavailable.
+// Dot product of two robot-frame vectors.
+float dot(const localisation::Vec2 &a, const localisation::Vec2 &b) {
+  return a.x * b.x + a.y * b.y;
+}
+
+// Position the robot on the goal-to-ball line so it sits between the own goal
+// and the ball, keeping it within DEFEND_DIST..DEFEND_DIST+MAX_FORWARD of the
+// goal. Falls back to return-home if ball data is unavailable.
 // Returns true if a movement was commanded.
 bool returnHomeAndFaceBall(const localisation::Frame &frame) {
   BallPacket ball;
@@ -65,54 +73,52 @@ bool returnHomeAndFaceBall(const localisation::Frame &frame) {
     return true;
   }
 
-  // Own goal centre G in robot-relative coords.
-  localisation::Vec2 goalCentre = localisation::polarToXY(
-      frame.frontAngleDeg, frame.goalDistanceCm / 2.0f);
-  goalCentre.x = frame.centre.x - goalCentre.x;
-  goalCentre.y = frame.centre.y - goalCentre.y;
+  // Field frame: origin at field centre A, x-axis = "forwards" (0 deg),
+  // y-axis = left of forwards. Own goal is at (-d, 0) with
+  // d = goalDistance/2.
+  const float d = frame.goalDistanceCm / 2.0f;
+  const localisation::Vec2 eF =
+      localisation::polarToXY(forwardsBearing(frame), 1.0f);
+  const localisation::Vec2 eL = {-eF.y, eF.x};
 
-  // Ball and goal centre in the field frame (centred on A).
-  localisation::Vec2 ballField = {
-      localisation::polarToXY(ball.angleDeg, ball.distanceCM).x - frame.centre.x,
-      localisation::polarToXY(ball.angleDeg, ball.distanceCM).y - frame.centre.y,
+  // Ball in field-frame coords.
+  const localisation::Vec2 toBallRobot =
+      localisation::polarToXY(ball.angleDeg, ball.distanceCM);
+  const localisation::Vec2 aToBallRobot = {
+      toBallRobot.x - frame.centre.x,
+      toBallRobot.y - frame.centre.y,
   };
-  localisation::Vec2 goalField = {
-      goalCentre.x - frame.centre.x,
-      goalCentre.y - frame.centre.y,
-  };
-
-  // Direction from own goal to the ball in the field frame.
-  localisation::Vec2 gb = {
-      ballField.x - goalField.x,
-      ballField.y - goalField.y,
+  const localisation::Vec2 ballField = {
+      dot(aToBallRobot, eF),
+      dot(aToBallRobot, eL),
   };
 
-  // Target y: at DEFEND_DIST from the goal line.
-  float targetY = goalField.y + DEFEND_DIST_FROM_OWN_GOAL_CM;
+  // Goal -> ball line in field coords.
+  localisation::Vec2 gbField = {
+      ballField.x + d,
+      ballField.y,
+  };
+  const float gbLen = std::sqrt(gbField.x * gbField.x + gbField.y * gbField.y);
 
-  // Intersect the goal-to-ball line with that y.
-  float t = 0.0f;
-  if (fabsf(gb.y) > 1e-3f) {
-    t = (targetY - goalField.y) / gb.y;
+  // Ideal blocking distance from the goal: the defend line, but advance toward
+  // the ball up to DEFEND_MAX_FORWARD_CM of extra forward travel.
+  float targetFromGoal = DEFEND_DIST_FROM_OWN_GOAL_CM;
+  if (gbLen > DEFEND_DIST_FROM_OWN_GOAL_CM) {
+    targetFromGoal = std::min(gbLen, DEFEND_DIST_FROM_OWN_GOAL_CM + DEFEND_MAX_FORWARD_CM);
   }
 
-  // Clamp so the robot never goes more than DEFEND_MAX_FORWARD_CM past the
-  // defend line (toward the ball).
-  float tMax = DEFEND_MAX_FORWARD_CM / fabsf(gb.y);
-  t = constrain(t, -1000.0f, tMax);
-
-  // Target in the field frame, then convert to robot-relative.
-  localisation::Vec2 targetField = {
-      goalField.x + gb.x * t,
-      goalField.y + gb.y * t,
-  };
-  localisation::Vec2 targetRobot = {
-      targetField.x + frame.centre.x,
-      targetField.y + frame.centre.y,
+  // Target on the goal-ball line at targetFromGoal from the goal.
+  const float ux = (gbLen > 1e-3f) ? gbField.x / gbLen : 0.0f;
+  const float uy = (gbLen > 1e-3f) ? gbField.y / gbLen : 0.0f;
+  const localisation::Vec2 targetField = {
+      -d + ux * targetFromGoal,
+      0.0f + uy * targetFromGoal,
   };
 
-  float targetAngleDeg, targetDistCm;
-  localisation::xyToPolar(targetRobot, targetAngleDeg, targetDistCm);
+  // Target in field-frame polar (bearing from A, distance from A).
+  const float targetAngleDeg = std::atan2(targetField.y, targetField.x) * 180.0f / PI;
+  const float targetDistCm =
+      std::sqrt(targetField.x * targetField.x + targetField.y * targetField.y);
 
   MoveProfile prof;
   if (!localisation::computeTargetMoveProfile(frame, targetAngleDeg, targetDistCm,
@@ -120,11 +126,8 @@ bool returnHomeAndFaceBall(const localisation::Frame &frame) {
     return false;
   }
 
-  // Face the ball. Use the ball's bearing from field centre A so the heading
-  // stays consistent as the robot strafes along the defend line.
-  float ballAngleDeg, ballDistCm;
-  localisation::xyToPolar(ballField, ballAngleDeg, ballDistCm);
-  desiredHeadingDeg = effectiveYaw + ballAngleDeg - forwardsBearing(frame);
+  // Face the ball.
+  desiredHeadingDeg = effectiveYaw + ball.angleDeg;
   float rotation = -headingCorrection();
 
   drive(effectiveYaw - prof.movementDirectionDeg, prof.speed, rotation);

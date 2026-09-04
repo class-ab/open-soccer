@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="C:\Users\jared\VSCode\Soccer\open-soccer.worktrees\cpp-robocup-soccer-simulation\software\simulation\build\CMakeFiles\e18d07f7600cb46d4eae31ca493c37e0\generate.stamp.rule">
+    <CustomBuild Include="C:\Users\jared\VSCode\open-soccer\software\simulation\build\CMakeFiles\c09cfa5cfafc64a1c779e2638f13210a\generate.stamp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{FB34A0DF-E437-3458-9103-AC93B2DF6C5C}</UniqueIdentifier>
+      <UniqueIdentifier>{CA38359E-1D18-3DA0-97BF-DDB242B77B99}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
