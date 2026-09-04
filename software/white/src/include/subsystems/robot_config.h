@@ -140,6 +140,7 @@ constexpr float PUSH_SPEED = ROBOT_MAX_SPEED;
 // When not attacking, the robot returns to a point this distance in front of
 // its own goal (measured from the goal line toward the field centre).
 constexpr float DEFEND_DIST_FROM_OWN_GOAL_CM = 30.0f;
+constexpr float DEFEND_MAX_FORWARD_CM = 30.0f;
 
 // ============================================================
 // Battery Monitor
