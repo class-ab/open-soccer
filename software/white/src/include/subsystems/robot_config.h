@@ -24,14 +24,14 @@
 // Motor Pins
 // ============================================================
 
-constexpr int M1a = 2; // FRONT LEFT
-constexpr int M1b = 3;
-constexpr int M2a = 5; // FRONT RIGHT
-constexpr int M2b = 4;
-constexpr int M3a = 9; // BACK LEFT
-constexpr int M3b = 8;
-constexpr int M4a = 7; // BACK RIGHT
-constexpr int M4b = 6;
+constexpr int M1a = 5; // FRONT LEFT
+constexpr int M1b = 4;
+constexpr int M2a = 9; // FRONT RIGHT
+constexpr int M2b = 8;
+constexpr int M3a = 7; // BACK LEFT
+constexpr int M3b = 6;
+constexpr int M4a = 2; // BACK RIGHT
+constexpr int M4b = 3;
 
 // ============================================================
 // Dribbler ESC
@@ -195,6 +195,6 @@ constexpr float ROTATION_ACCEL_LIMIT = 720.0f;
 
 constexpr float HEADING_KP = 0.005f;
 constexpr float HEADING_KI = 0.0f;
-constexpr float HEADING_KD = 0.001f;
+constexpr float HEADING_KD = 0.0005f;
 constexpr float HEADING_INTEGRAL_MAX = 0.20f;
 constexpr float YAW_SIGN = 1.0f;

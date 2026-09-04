@@ -194,29 +194,34 @@ def track_color(img, threshold):
 
 
 while True:
-    clock.tick()
-    img = csi0.snapshot()
+    try:
+        clock.tick()
+        img = csi0.snapshot()
+        if img is None:
+            continue
 
-    detected_a, angle_a, radius_a, pixels_a = track_color(
-        img, thresholds[COLOR_A_INDEX]
-    )
-    send_ball_packet(PACKET_SYNC_BYTE_A, detected_a, angle_a, radius_a, pixels_a)
+        detected_a, angle_a, radius_a, pixels_a = track_color(
+            img, thresholds[COLOR_A_INDEX]
+        )
+        send_ball_packet(PACKET_SYNC_BYTE_A, detected_a, angle_a, radius_a, pixels_a)
 
-    detected_b, angle_b, radius_b, pixels_b = track_color(
-        img, thresholds[COLOR_B_INDEX]
-    )
-    send_ball_packet(PACKET_SYNC_BYTE_B, detected_b, angle_b, radius_b, pixels_b)
+        detected_b, angle_b, radius_b, pixels_b = track_color(
+            img, thresholds[COLOR_B_INDEX]
+        )
+        send_ball_packet(PACKET_SYNC_BYTE_B, detected_b, angle_b, radius_b, pixels_b)
 
-    detected_c, angle_c, radius_c, pixels_c = track_color(
-        img, thresholds[COLOR_C_INDEX]
-    )
-    send_ball_packet(PACKET_SYNC_BYTE_C, detected_c, angle_c, radius_c, pixels_c)
+        detected_c, angle_c, radius_c, pixels_c = track_color(
+            img, thresholds[COLOR_C_INDEX]
+        )
+        send_ball_packet(PACKET_SYNC_BYTE_C, detected_c, angle_c, radius_c, pixels_c)
 
-    # img.draw_cross((CENTER_X, CENTER_Y), size=100)
+        # img.draw_cross((CENTER_X, CENTER_Y), size=100)
 
-    print(
-        clock.fps(),
-        "A:", detected_a, angle_a, radius_a,
-        "B:", detected_b, angle_b, radius_b,
-        "C:", detected_c, angle_c, radius_c,
-    )
+        print(
+            clock.fps(),
+            "A:", detected_a, angle_a, radius_a,
+            "B:", detected_b, angle_b, radius_b,
+            "C:", detected_c, angle_c, radius_c,
+        )
+    except Exception as e:
+        print("ERR:", e)
