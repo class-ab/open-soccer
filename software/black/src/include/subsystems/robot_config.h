@@ -130,9 +130,9 @@ constexpr float BALL_MULT_A = 1.0f;
 constexpr float BALL_MULT_B = 3.0f;
 constexpr float BALL_MAX_DIST_CM = 120.0f;   // "c": distance at which M saturates
 // Attack phase-1 speed ramps toward the ball proportional to distance.
-constexpr float CHASE_MIN_SPEED = 0.10f;
+constexpr float CHASE_MIN_SPEED = 0.05f;
 constexpr float CHASE_MAX_SPEED = ROBOT_MAX_SPEED;
-constexpr float CHASE_RAMP_RANGE_CM = 15.0f;
+constexpr float CHASE_RAMP_RANGE_CM = 30.0f;
 // If the ball has not been detected for this long while attacking, fall back
 // to returning home (used by the loop to dispatch to defend).
 constexpr unsigned long BALL_LOST_RETURN_HOME_MS = 5000;
@@ -195,6 +195,6 @@ constexpr float ROTATION_ACCEL_LIMIT = 720.0f;
 
 constexpr float HEADING_KP = 0.005f;
 constexpr float HEADING_KI = 0.0f;
-constexpr float HEADING_KD = 0.001f;
-constexpr float HEADING_INTEGRAL_MAX = 0.20f;
+constexpr float HEADING_KD = 0.0005f;
+constexpr float HEADING_INTEGRAL_MAX = 0.01f;
 constexpr float YAW_SIGN = 1.0f;

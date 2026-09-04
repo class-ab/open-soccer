@@ -89,7 +89,7 @@ clock = time.clock()
 
 IMG_W = sensor.width()
 IMG_H = sensor.height()
-CENTER_X = 130
+CENTER_X = 134
 CENTER_Y = 170
 # Only blobs with more pixels than "pixels_threshold" and more area than
 # "area_threshold" are returned by "find_blobs" below. Change these if you

@@ -73,10 +73,10 @@ void drive(float direction_deg, float speed, float rotation) {
   }
 #endif
 
-  SetSpeed(1, wheel_speeds[0] * 255);
-  SetSpeed(2, wheel_speeds[1] * 255);
-  SetSpeed(3, wheel_speeds[3] * 255);
-  SetSpeed(4, wheel_speeds[2] * 255);
+  SetSpeed(1, wheel_speeds[0] * 255 * ROBOT_MAX_SPEED);
+  SetSpeed(2, wheel_speeds[1] * 255 * ROBOT_MAX_SPEED);
+  SetSpeed(3, wheel_speeds[3] * 255 * ROBOT_MAX_SPEED);
+  SetSpeed(4, wheel_speeds[2] * 255 * ROBOT_MAX_SPEED);
 
   // Update MoveProfile so the simulator (or any reader) can observe the
   // commanded movement. RotationSpeed is the normalized rotation command
