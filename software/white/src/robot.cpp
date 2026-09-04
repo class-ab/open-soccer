@@ -51,7 +51,7 @@ void setup() {
   initBallTracking();
 
   initDribbler();
-  setDribblerDirectionReverse();
+  setDribblerDirectionForward();
 
   analogReadResolution(ADC_RESOLUTION_BITS);
 

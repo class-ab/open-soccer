@@ -104,7 +104,6 @@ PACKET_SYNC_BYTE_B = 0xAB
 PACKET_SYNC_BYTE_C = 0xAC
 PACKET_LEN = 8
 
-
 def send_ball_packet(sync_byte, detected, angle_deg, radius_px, pixel_count):
     """Pack and send one 8-byte ball-position packet to the Teensy over UART."""
     if detected:

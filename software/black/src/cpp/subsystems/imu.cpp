@@ -9,18 +9,7 @@ Adafruit_BNO08x bno08x(BNO08X_RESET);
 sh2_SensorValue_t sensorValue;
 
 void initIMU() {
-  if (!bno08x.begin_I2C()) {
-    Serial.println("BNO08x not found!");
 
-    while (1) {
-      delay(10);
-    }
-  }
-
-  Serial.println("BNO08x Found");
-  setReports();
-  delay(500);
-  updateIMU();
 }
 
 void setReports() {
@@ -39,22 +28,7 @@ float quaternionToYawDegrees(float real, float i, float j, float k) {
 }
 
 void updateIMU() {
-  if (bno08x.wasReset()) {
-    setReports();
-  }
-
-  if (!bno08x.getSensorEvent(&sensorValue)) {
-    return;
-  }
-
-  if (sensorValue.sensorId == SH2_GAME_ROTATION_VECTOR) {
-    currentYawDeg =
-      quaternionToYawDegrees(
-        sensorValue.un.gameRotationVector.real,
-        sensorValue.un.gameRotationVector.i,
-        sensorValue.un.gameRotationVector.j,
-        sensorValue.un.gameRotationVector.k);
-  }
+  currentYawDeg = 0;
 }
 
 float angleError(float target, float current) {
