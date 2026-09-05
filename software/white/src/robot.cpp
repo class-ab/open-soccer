@@ -65,6 +65,7 @@ void setup() {
 }
 
 void loop() {
+
   systemTick();
 
   if (shutdownLatched) {
@@ -78,6 +79,7 @@ void loop() {
   bool ballSeenRecently = (millis() - lastBallSeenMs) <= BALL_LOST_RETURN_HOME_MS;
   if (isAttacking && ballSeenRecently) {
     attackTick();
+    // drive(90, 0.7, 0);
   } else {
     defendTick();
   }

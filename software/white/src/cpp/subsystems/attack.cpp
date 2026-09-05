@@ -130,3 +130,30 @@ void attackTick() {
     drive(direction, speed, rotation);
   }
 }
+
+// void attackTick() {
+//   GoalPacket goal;
+//   unsigned long goalMs;
+//   if (!getOpponentGoal(goal, goalMs)) {
+//     // Can't see the goal to aim at; hold the ball and stop.
+//     stopAllDriveMotors();
+//     return;
+//   }
+
+//   float goal0 = to0To360(goal.angleDeg);
+//   float goalDeg = toSigned(goal0);
+//   float goalDist = goal.distanceCM;
+
+//   float effectiveYaw = YAW_SIGN * currentYawDeg;
+
+//   // Rotate to face the goal so the frontal dribbler pushes the ball in.
+//   desiredHeadingDeg = effectiveYaw + goalDeg;
+//   float rotation = -headingCorrection();
+
+//   float direction;
+//   float speed;
+//   direction = effectiveYaw - goalDeg;
+//   speed = PUSH_SPEED;
+
+//   drive(direction, speed, rotation);
+// }
