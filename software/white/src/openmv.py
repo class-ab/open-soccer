@@ -44,8 +44,8 @@ from machine import UART
 
 # Index into `thresholds` for each of the three colors being tracked.
 COLOR_A_INDEX = 2  # ball 2
-COLOR_B_INDEX = 1  # yellow goal 1
-COLOR_C_INDEX = 0  # blue goal 0
+COLOR_B_INDEX = 3  # yellow goal 1
+COLOR_C_INDEX = 3  # blue goal 0
 
 CAMERA_ROTATION_OFFSET_DEG = 0
 
@@ -54,19 +54,19 @@ MIN_TOTAL_PIXELS = 1
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green/blue things. You will
 # want to re-tune these for your actual target colors.
-# thresholds = [ #competition tuning
-#     (17, 27, -25, -10, -12, 5),  # blue goal
-#     (55, 75, -20, 10, 30, 50),  # yellow goal
-#     (30, 65, 10, 45, 25, 50),  # ball
-#     (0, 0, 0, 0, 0, 0),  # nothing
-# ]
-
-thresholds = [  # home tuning
-    (0, 40, 0, 40, -60, -20),  # blue goal
-    (40, 80, -45, -10, 50, 80),  # yellow goal
-    (0, 50, 25, 65, 15, 55),  # ball
+thresholds = [  #competition tuning
+    (30, 50, -15, 5, -15, 5),  # blue goal
+    (65, 75, -20, 10, 30, 50),  # yellow goal
+    (0, 50, 30, 70, 25, 55),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
+
+# thresholds = [  # home tuning
+#     (0, 40, 0, 40, -60, -20),  # blue goal
+#     (40, 80, -45, -10, 50, 80),  # yellow goal
+#     (0, 50, 25, 65, 15, 55),  # ball
+#     (0, 0, 0, 0, 0, 0),  # nothing
+# ]
 
 csi0 = csi.CSI()
 csi0.reset()
@@ -89,8 +89,8 @@ clock = time.clock()
 
 IMG_W = sensor.width()
 IMG_H = sensor.height()
-CENTER_X = 130
-CENTER_Y = 160
+CENTER_X = 132
+CENTER_Y = 165
 # Only blobs with more pixels than "pixels_threshold" and more area than
 # "area_threshold" are returned by "find_blobs" below. Change these if you
 # change the camera resolution. "merge=True" merges all overlapping blobs.
@@ -165,8 +165,8 @@ def track_color(img, threshold):
     biggest_y = 0.0
     for blob in img.find_blobs(
         [threshold],
-        pixels_threshold=10,
-        area_threshold=20,
+        pixels_threshold=3,
+        area_threshold=3,
         merge=True,
     ):
         if abs(blob.cx - CENTER_X) < 15 and abs(blob.cy - CENTER_Y) < 15:

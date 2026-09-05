@@ -97,8 +97,8 @@ constexpr float BALL_TARGET_DISTANCE_CM = 5.00f;
 
 // "Has ball" is true when the ball is detected close enough and roughly
 // in front of the robot (i.e. within the dribbler capture cone).
-constexpr float HAS_BALL_MAX_DISTANCE_CM = 13.5f;
-constexpr float HAS_BALL_MAX_ANGLE_DEG = 5.0f;
+constexpr float HAS_BALL_MAX_DISTANCE_CM = 30.0f;
+constexpr float HAS_BALL_MAX_ANGLE_DEG = 7.0f;
 
 // ============================================================
 // Localisation (goal-vector triangulation)
@@ -120,7 +120,7 @@ constexpr float LOC_ROT_EFFORT_DEG = 45.0f;
 // ============================================================
 
 // Attack phase-1 speed ramps toward the ball proportional to distance.
-constexpr float CHASE_MIN_SPEED = 0.2f;
+constexpr float CHASE_MIN_SPEED = 0.1f;
 constexpr float CHASE_MAX_SPEED = ROBOT_MAX_SPEED;
 constexpr float CHASE_RAMP_RANGE_CM = 15.0f;
 // If the ball has not been detected for this long while attacking, fall back

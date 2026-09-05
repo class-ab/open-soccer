@@ -49,24 +49,24 @@ COLOR_C_INDEX = 0  # blue goal 0
 
 CAMERA_ROTATION_OFFSET_DEG = 0
 
-MIN_TOTAL_PIXELS = 1
+MIN_TOTAL_PIXELS = 5
 
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green/blue things. You will
 # want to re-tune these for your actual target colors.
-# thresholds = [ #competition tuning
-#     (17, 27, -25, -10, -12, 5),  # blue goal
-#     (55, 75, -20, 10, 30, 50),  # yellow goal
-#     (30, 65, 10, 45, 25, 50),  # ball
-#     (0, 0, 0, 0, 0, 0),  # nothing
-# ]
-
-thresholds = [  # home tuning
-    (0, 40, -50, 50, -70, -25),  # blue goal
-    (30, 80, -60, -40, 40, 80),  # yellow goal
-    (20, 50, 40, 80, 30, 70),  # ball
+thresholds = [  # competition tuning
+    (20, 50, -25, -15, -5, 5),  # blue goal
+    (70, 100, -15, 5, 25, 45),  # yellow goal
+    (65, 80, 15, 45, 15, 45),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
+
+# thresholds = [  # home tuning
+#     (0, 40, -50, 50, -70, -25),  # blue goal
+#     (30, 80, -60, -40, 40, 80),  # yellow goal
+#     (20, 50, 40, 80, 30, 70),  # ball
+#     (0, 0, 0, 0, 0, 0),  # nothing
+# ]
 
 csi0 = csi.CSI()
 csi0.reset()
@@ -83,7 +83,7 @@ csi0.auto_whitebal(False)  # must be turned off for color tracking
 csi0.auto_blc(True)
 csi0.brightness(3)
 csi0.contrast(3)
-csi0.saturation(1)
+# csi0.saturation(1)
 
 clock = time.clock()
 
@@ -169,9 +169,9 @@ def track_color(img, threshold):
         area_threshold=20,
         merge=True,
     ):
-        if abs(blob.cx - CENTER_X) < 15 and abs(blob.cy - CENTER_Y) < 15:
+        if abs(blob.cx - CENTER_X) < 30 and abs(blob.cy - CENTER_Y) < 15:
             continue
-        img.draw_detection(blob, 1)
+        img.draw_detection(blob,1)
         # These values are stable all the time.
         if blob.pixels > last_biggest:
             last_biggest = blob.pixels
