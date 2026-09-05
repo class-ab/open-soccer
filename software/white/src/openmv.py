@@ -44,8 +44,8 @@ from machine import UART
 
 # Index into `thresholds` for each of the three colors being tracked.
 COLOR_A_INDEX = 2  # ball 2
-COLOR_B_INDEX = 3  # yellow goal 1
-COLOR_C_INDEX = 3  # blue goal 0
+COLOR_B_INDEX = 1  # yellow goal 1
+COLOR_C_INDEX = 0  # blue goal 0
 
 CAMERA_ROTATION_OFFSET_DEG = 0
 
@@ -54,10 +54,10 @@ MIN_TOTAL_PIXELS = 1
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green/blue things. You will
 # want to re-tune these for your actual target colors.
-thresholds = [  #competition tuning
-    (30, 50, -15, 5, -15, 5),  # blue goal
-    (65, 75, -20, 10, 30, 50),  # yellow goal
-    (0, 50, 30, 70, 25, 55),  # ball
+thresholds = [  # competition tuning
+    (0, 35, -128, 127, -128, -7),  # blue goal
+    (50, 68, -18, 127, 20, 127),  # yellow goal
+    (0, 100, 15, 127, -128, 127),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
 
@@ -78,12 +78,13 @@ csi0.hmirror(True)
 csi0.vflip(False)
 csi0.transpose(True)
 
-csi0.auto_gain(False)  # must be turned off for color tracking
+csi0.auto_gain(True)  # must be turned off for color tracking
 csi0.auto_whitebal(False)  # must be turned off for color tracking
+csi0.auto_exposure(False)
 csi0.auto_blc(True)
 csi0.brightness(3)
-csi0.contrast(3)
-csi0.saturation(1)
+csi0.contrast(-3)
+# csi0.saturation(1)
 
 clock = time.clock()
 
@@ -165,8 +166,8 @@ def track_color(img, threshold):
     biggest_y = 0.0
     for blob in img.find_blobs(
         [threshold],
-        pixels_threshold=3,
-        area_threshold=3,
+        pixels_threshold=5,
+        area_threshold=5,
         merge=True,
     ):
         if abs(blob.cx - CENTER_X) < 15 and abs(blob.cy - CENTER_Y) < 15:

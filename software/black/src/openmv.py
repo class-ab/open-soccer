@@ -57,7 +57,7 @@ MIN_TOTAL_PIXELS = 5
 thresholds = [  # competition tuning
     (20, 50, -25, -15, -5, 5),  # blue goal
     (70, 100, -15, 5, 25, 45),  # yellow goal
-    (65, 80, 15, 45, 15, 45),  # ball
+    (0, 100, 20, 127, -128, 127),  # ball
     (0, 0, 0, 0, 0, 0),  # nothing
 ]
 
@@ -165,8 +165,8 @@ def track_color(img, threshold):
     biggest_y = 0.0
     for blob in img.find_blobs(
         [threshold],
-        pixels_threshold=10,
-        area_threshold=20,
+        pixels_threshold=5,
+        area_threshold=5,
         merge=True,
     ):
         if abs(blob.cx - CENTER_X) < 30 and abs(blob.cy - CENTER_Y) < 15:

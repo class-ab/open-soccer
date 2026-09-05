@@ -127,7 +127,7 @@ void attackTick() {
                         SCORE_MIN_SPEED, SCORE_MAX_SPEED, SCORE_RAMP_RANGE_CM);
     }
 
-    drive(direction, speed, rotation);
+    drive(direction, speed, rotation * SCORE_ROTATION_MULT);
   }
 }
 
