@@ -87,7 +87,7 @@ constexpr uint8_t BLUE_GOAL_SYNC = 0xAC;
 // Overall Speed Ceiling
 // ============================================================
 
-constexpr float ROBOT_MAX_SPEED = 0.5f;
+constexpr float ROBOT_MAX_SPEED = 0.6f;
 constexpr float ROTATION_MAX_SPEED = 0.5f;
 
 constexpr float ROBOT_RAMP_RANGE = 20.0f;
@@ -97,7 +97,7 @@ constexpr float BALL_TARGET_DISTANCE_CM = 0.00f;
 
 // "Has ball" is true when the ball is detected close enough and roughly
 // in front of the robot (i.e. within the dribbler capture cone).
-constexpr float HAS_BALL_MAX_DISTANCE_CM = 11.5f;
+constexpr float HAS_BALL_MAX_DISTANCE_CM = 12.0f;
 constexpr float HAS_BALL_MAX_ANGLE_DEG = 5.0f;
 
 // ============================================================
@@ -140,7 +140,7 @@ constexpr float PUSH_SPEED = ROBOT_MAX_SPEED;
 // When not attacking, the robot returns to a point this distance in front of
 // its own goal (measured from the goal line toward the field centre).
 constexpr float DEFEND_DIST_FROM_OWN_GOAL_CM = 30.0f;
-constexpr float DEFEND_MAX_FORWARD_CM = 30.0f;
+constexpr float DEFEND_MAX_FORWARD_CM = 40.0f;
 
 // ============================================================
 // Battery Monitor
