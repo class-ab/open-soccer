@@ -90,7 +90,7 @@ void attackTick() {
 
     // drive() expects a world/effectiveYaw-relative direction; subtract the
     // desired robot-relative bearing to reuse the established convention.
-    drive(effectiveYaw - moveDeg, speed, rotation);
+    drive(moveDeg, speed, rotation);
   } else {
     // ---- Phase 2: score (keep the orbiting from the article) ----
     GoalPacket goal;

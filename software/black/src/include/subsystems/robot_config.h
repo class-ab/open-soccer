@@ -87,10 +87,10 @@ constexpr uint8_t BLUE_GOAL_SYNC = 0xAC;
 // Overall Speed Ceiling
 // ============================================================
 
-constexpr float ROBOT_MAX_SPEED = 0.9f;
-constexpr float ROTATION_MAX_SPEED = 0.3f;
+constexpr float ROBOT_MAX_SPEED = 0.5f;
+constexpr float ROTATION_MAX_SPEED = 0.2f;
 
-constexpr float ROBOT_RAMP_RANGE = 50.0f;
+constexpr float ROBOT_RAMP_RANGE = 30.0f;
 
 constexpr unsigned long BALL_DATA_TIMEOUT_MS = 500;
 constexpr float BALL_TARGET_DISTANCE_CM = 0.00f;
@@ -120,7 +120,7 @@ constexpr float LOC_ROT_EFFORT_DEG = 45.0f;
 // ============================================================
 
 // Attack phase-1 speed ramps toward the ball proportional to distance.
-constexpr float CHASE_MIN_SPEED = 0.2f;
+constexpr float CHASE_MIN_SPEED = 0.1f;
 constexpr float CHASE_MAX_SPEED = ROBOT_MAX_SPEED;
 constexpr float CHASE_RAMP_RANGE_CM = 10.0f;
 // If the ball has not been detected for this long while attacking, fall back
@@ -132,7 +132,7 @@ constexpr float GOAL_OFFSET_MULT = 0.0f;     // constant M_G while orbiting the 
 constexpr float SCORE_MIN_SPEED = 0.1f;
 constexpr float SCORE_MAX_SPEED = ROBOT_MAX_SPEED;
 constexpr float SCORE_RAMP_RANGE_CM = 0.3f;
-constexpr float SCORE_ROTATION_MULT = 0.25f;
+constexpr float SCORE_ROTATION_MULT = 0.15f;
 // Below this distance from the goal we stop orbiting and drive straight into
 // the goal with the ball (our "kicker" equivalent since we have no kicker).
 constexpr float PUSH_DIST_CM = 60.0f;
