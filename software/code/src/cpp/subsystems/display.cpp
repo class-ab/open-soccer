@@ -5,7 +5,6 @@
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/localization.h"
-#include "cpp\subsystems\localization.cpp"
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire2, OLED_RESET_PIN);
 
@@ -53,13 +52,15 @@ void updateDisplay() {
   display.println(formatDuration(runStateMs));
 
   display.print("Pose:   ");
-  if (robotPose.valid) {
+  RobotPose pose;
+  getRobotPose(pose);
+  if (pose.valid) {
     display.print("X=" );
-    display.print(robotPose.xMm, 0);
+    display.print(pose.xMm, 0);
     display.print(" Y=" );
-    display.print(robotPose.yMm, 0);
+    display.print(pose.yMm, 0);
     display.print(" H= ");
-    display.print(robotPose.headingDeg, 1);
+    display.print(pose.headingDeg, 1);
   } else {
     display.print("INVALID");
   }
