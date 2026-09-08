@@ -16,6 +16,7 @@
 #include "include/subsystems/drivebase.h"
 #include "include/subsystems/dribbler.h"
 #include "include/subsystems/imu.h"
+#include "include/subsystems/localization.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
@@ -46,6 +47,7 @@ void setup() {
   Wire2.begin();
   initDisplay();
   initBallTracking();
+  initLocalization();
 
   initDribbler();
   setDribblerDirectionReverse();
@@ -62,13 +64,12 @@ void setup() {
 }
 
 void loop() {
+  updateIMU();
   systemTick();
 
   if (shutdownLatched) {
     return;
   }
-
-  updateIMU();
 
   chaseTick();
 
@@ -90,6 +91,7 @@ void systemTick() {
   checkEnabledButton(now);
 
   processBallPacket();
+  updateLocalization();
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {
     checkBattery();

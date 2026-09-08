@@ -75,7 +75,7 @@ constexpr int SCREEN_HEIGHT = 64;
 constexpr int OLED_RESET_PIN = -1;
 constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
 
-constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 250;
+constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 100;
 
 // ============================================================
 // Ball Tracking (hardware UART link to OpenMV, Serial7)
@@ -83,6 +83,11 @@ constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 250;
 
 #define BALL_UART      Serial7
 #define BALL_UART_BAUD 115200
+
+// LD14P UART. Serial8 uses Teensy 4.1 pins 34 (RX) and 35 (TX), which are
+// not shared with the motor pins used above. Connect the LiDAR TX to pin 34.
+#define LIDAR_UART      Serial8
+#define LIDAR_UART_BAUD 230400
 
 constexpr uint8_t BALL_PACKET_LEN = 8;
 constexpr uint8_t BALL_SYNC = 0xAA;
