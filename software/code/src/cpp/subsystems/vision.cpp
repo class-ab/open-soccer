@@ -5,6 +5,7 @@
 #include "include/subsystems/imu.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
+#include "include/subsystems/localization.h"
 
 void initBallTracking() {
   BALL_UART.begin(BALL_UART_BAUD);

@@ -20,6 +20,7 @@
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/robot_tick.h"
+#include "include/subsystems/strategy.h"
 
 void setup() {
   Serial.begin(115200);
@@ -64,32 +65,33 @@ void setup() {
 }
 
 void loop() {
-  updateIMU();
+  // main update system
   systemTick();
-
+  // check if battery under-voltage shutdown has been latched
   if (shutdownLatched) {
     return;
   }
 
-  chaseTick();
-
-  if (robotCurrentlyRunning && dribblerShouldRun) {
-    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
-  } else {
-    stopDribbler();
-  }
+  updateStrategy();
 
   if(!robotCurrentlyRunning) {
     stopAllMotors();
   }
 
+  /* OLD CODE
+  chaseBall();
+  if (robotCurrentlyRunning && dribblerShouldRun) {
+    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
+  } else {
+    stopDribbler();
+  }
+  */
 }
 
 void systemTick() {
   unsigned long now = millis();
-
+  updateIMU();
   checkEnabledButton(now);
-
   processBallPacket();
   updateLocalization();
 

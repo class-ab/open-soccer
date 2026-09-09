@@ -11,7 +11,8 @@
 // chaseTick() runs - useful for calibrating CAMERA_ROTATION_OFFSET_DEG
 // (on the OpenMV side), CAMERA_MOUNT_OFFSET_DEG, BALL_TARGET_DISTANCE_CM,
 // and BALL_CHASE_RAMP_RANGE_CM.
-#define DEBUG_BALL_CHASE
+
+//#define DEBUG_BALL_CHASE
 
 // Uncomment to print raw ball-link diagnostics (per-packet decode
 // results and checksum failures) over Serial - useful for debugging the
@@ -19,6 +20,7 @@
 // independent of the ball-chase behavior above. Off by default since it
 // prints at packet rate, which is a lot busier than the throttled
 // DEBUG_BALL_CHASE output.
+
 // #define DEBUG_BALL_LINK
 
 // ============================================================

@@ -15,8 +15,8 @@ from machine import UART
 # actually being tracked. Fixed to match what the comments say. If that
 # was intentional (e.g. goals temporarily disabled), just set these back.
 COLOR_A_INDEX = 2  # ball
-COLOR_B_INDEX = 1  # yellow goal
-COLOR_C_INDEX = 0  # blue goal
+COLOR_B_INDEX = 3  # yellow goal
+COLOR_C_INDEX = 3  # blue goal
 
 CAMERA_ROTATION_OFFSET_DEG = 90
 MIN_TOTAL_PIXELS = 10
