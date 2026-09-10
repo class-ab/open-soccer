@@ -1,6 +1,7 @@
 #pragma once
 
 void updateStrategy();
+void updateBallState();
 
 enum class BallState {
         unknown,
@@ -9,7 +10,8 @@ enum class BallState {
         nearOwnGoal,
         nearFarGoal,
         middle,
-        ownPossession,
+        mePossession,
+        himPossession,
         theirPossession
     };
 

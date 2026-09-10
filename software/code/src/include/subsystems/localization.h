@@ -20,7 +20,16 @@ struct FieldBall {
   unsigned long timestampMs;
 };
 
+struct OpponentRobot {
+  bool valid;
+  float xMm;
+  float yMm;
+  float confidence;
+  unsigned long timestampMs;
+};
+
 void initLocalization();
 void updateLocalization();
 void getRobotPose(RobotPose &out);
 void getFieldBall(FieldBall &out);
+void getOpponents(OpponentRobot *out, int maxOpponents, int &count);
