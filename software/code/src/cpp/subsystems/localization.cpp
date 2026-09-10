@@ -341,3 +341,5 @@ void getRobotPose(RobotPose &out) {
 void getFieldBall(FieldBall &out) {
   out = fieldBall;
 }
+
+// X DIRECTION IS LONG SIDE OF FIELD (i think)

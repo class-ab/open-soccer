@@ -4,6 +4,7 @@ void updateStrategy();
 
 enum class BallState {
         unknown,
+        farSidesOwn,
         farSides,
         nearOwnGoal,
         nearFarGoal,
