@@ -20,7 +20,7 @@ struct FieldBall {
   unsigned long timestampMs;
 };
 
-struct OpponentRobot {
+struct OpponentRobot { // NEED TO SUBTRACT OWN ROBOT USING COMMUNICATION
   bool valid;
   float xMm;
   float yMm;

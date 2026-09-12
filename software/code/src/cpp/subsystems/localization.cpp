@@ -232,7 +232,6 @@ bool fitCircleToCluster(const ClusterPoint *points, int count,
   // Solve for circle center
   float a = uu + uv;
   float b = uv + vv;
-  // float c = 0.5f * (uu * uu + 2 * uv * uv + vv * vv - u * u - 2 * u * v + u * v - v * v);
   
   float det = a * b - uv * uv;
   if (fabsf(det) < 1e-6f) {
