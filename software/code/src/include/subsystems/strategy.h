@@ -1,7 +1,14 @@
 #pragma once
 
+#include "localization.h"
+
 void updateStrategy();
 void updateBallState();
+void processOpponents();
+
+// Opponent tracking
+extern OpponentRobot opponent1;
+extern OpponentRobot opponent2;
 
 enum class BallState {
         unknown,
@@ -12,7 +19,8 @@ enum class BallState {
         middle,
         mePossession,
         himPossession,
-        theirPossession
+        theirPossession1,
+        theirPossession2
     };
 
 struct ballLocation {
