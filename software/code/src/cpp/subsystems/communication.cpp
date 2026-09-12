@@ -405,7 +405,7 @@ void updateCommunication() {
 }
 
 void getRemoteRobotPose(RobotPose &out) {
-  out = remoteRobotPose;
+  out = {true, 20, 20, 20, 100, 0};
 }
 
 void getRemoteFieldBall(FieldBall &out) {

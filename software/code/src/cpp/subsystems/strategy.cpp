@@ -24,6 +24,19 @@ OpponentRobot opponent2 = {false, 0.0, 0.0, 0.0, 0};
 
 void updateStrategy() {
     updateBallState();
+    updateOpponentState();
+    updateRemoteState();
+    updateRobotState();
+}
+
+void updateOpponentState() {
+
+}
+void updateRobotState() {
+
+}
+void updateRemoteState() {
+
 }
 
 void updateBallState() {
