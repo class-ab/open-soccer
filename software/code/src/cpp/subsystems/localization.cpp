@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <math.h>
 
+#include "include/subsystems/communication.h"
 #include "include/subsystems/imu.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
@@ -98,8 +99,10 @@ FieldBall fieldBall = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
 // Opponent detection storage
 LocalPoint lidarPoints[MAX_LIDAR_POINTS];
 int lidarPointCount = 0;
-DetectedRobot detectedOpponents[3];
-int detectedOpponentCount = 0;
+DetectedRobot detectedOpponents_robot1[3];
+int detectedOpponentCount_robot1 = 0;
+DetectedRobot detectedOpponents_robot2[3];
+int detectedOpponentCount_robot2 = 0;
 unsigned long lastOpponentTimestampMs = 0;
 
 float angleDifference(float first, float second) {
@@ -192,6 +195,22 @@ float pointWeight(uint16_t distanceMm, uint8_t intensity) {
   return confidence * (rangeWeight < 0.05f ? 0.05f : rangeWeight);
 }
 
+// Check if detected position matches remote robot position (within ±100mm)
+bool isRemoteRobot(float centerX, float centerY) {
+  RobotPose remotePose;
+  getRemoteRobotPose(remotePose);
+  
+  if (!remotePose.valid) {
+    return false;
+  }
+  
+  float dx = centerX - remotePose.xMm;
+  float dy = centerY - remotePose.yMm;
+  
+  // Filter if within ±100mm in both x and y
+  return (fabsf(dx) <= 100.0f && fabsf(dy) <= 100.0f);
+}
+
 // Circle fitting using least squares method
 bool fitCircleToCluster(const ClusterPoint *points, int count, 
                         float &centerX, float &centerY, float &radius) {
@@ -232,7 +251,6 @@ bool fitCircleToCluster(const ClusterPoint *points, int count,
   // Solve for circle center
   float a = uu + uv;
   float b = uv + vv;
-  // float c = 0.5f * (uu * uu + 2 * uv * uv + vv * vv - u * u - 2 * u * v + u * v - v * v);
   
   float det = a * b - uv * uv;
   if (fabsf(det) < 1e-6f) {
@@ -262,13 +280,15 @@ bool fitCircleToCluster(const ClusterPoint *points, int count,
 // Cluster LiDAR points to find circular objects
 void detectOpponentClusters() {
   if (lidarPointCount < MIN_POINTS_FOR_CLUSTER) {
-    detectedOpponentCount = 0;
+    detectedOpponentCount_robot1 = 0;
+    detectedOpponentCount_robot2 = 0;
     return;
   }
 
   ClusterPoint *clusterPoints = (ClusterPoint *)malloc(lidarPointCount * sizeof(ClusterPoint));
   if (!clusterPoints) {
-    detectedOpponentCount = 0;
+    detectedOpponentCount_robot1 = 0;
+    detectedOpponentCount_robot2 = 0;
     return;
   }
 
@@ -279,10 +299,11 @@ void detectOpponentClusters() {
     clusterPoints[i].clustered = false;
   }
 
-  detectedOpponentCount = 0;
+  detectedOpponentCount_robot1 = 0;
+  detectedOpponentCount_robot2 = 0;
 
   // Find clusters using simple connectivity
-  for (int seed = 0; seed < lidarPointCount && detectedOpponentCount < 3; seed++) {
+  for (int seed = 0; seed < lidarPointCount && detectedOpponentCount_robot1 < 3 && detectedOpponentCount_robot2 < 3; seed++) {
     if (clusterPoints[seed].clustered) {
       continue;
     }
@@ -323,6 +344,11 @@ void detectOpponentClusters() {
     if (clusterSize >= MIN_POINTS_FOR_CLUSTER) {
       float centerX, centerY, radius;
       if (fitCircleToCluster(cluster, clusterSize, centerX, centerY, radius)) {
+        // Skip if this is the remote robot
+        if (isRemoteRobot(centerX, centerY)) {
+          continue;
+        }
+
         // Validate that the circle is reasonably consistent
         float totalError = 0.0f;
         for (int i = 0; i < clusterSize; i++) {
@@ -337,10 +363,18 @@ void detectOpponentClusters() {
           float confidence = 1.0f - (avgError / (radius + 1.0f));
           confidence = constrain(confidence, MIN_CLUSTER_CONFIDENCE, 1.0f);
 
-          detectedOpponents[detectedOpponentCount] = {
-            centerX, centerY, radius, confidence
-          };
-          detectedOpponentCount++;
+          uint8_t robotNum = getCurrentRobotNumber();
+          if (robotNum == 1 && detectedOpponentCount_robot1 < 3) {
+            detectedOpponents_robot1[detectedOpponentCount_robot1] = {
+              centerX, centerY, radius, confidence
+            };
+            detectedOpponentCount_robot1++;
+          } else if (robotNum == 2 && detectedOpponentCount_robot2 < 3) {
+            detectedOpponents_robot2[detectedOpponentCount_robot2] = {
+              centerX, centerY, radius, confidence
+            };
+            detectedOpponentCount_robot2++;
+          }
         }
       }
     }
@@ -592,13 +626,17 @@ void getOpponents(OpponentRobot *out, int maxOpponents, int &count) {
     return;
   }
 
-  for (int i = 0; i < detectedOpponentCount && count < maxOpponents; i++) {
-    if (detectedOpponents[i].confidence >= MIN_CLUSTER_CONFIDENCE) {
+  uint8_t robotNum = getCurrentRobotNumber();
+  int detectedCount = (robotNum == 1) ? detectedOpponentCount_robot1 : detectedOpponentCount_robot2;
+  DetectedRobot *detected = (robotNum == 1) ? detectedOpponents_robot1 : detectedOpponents_robot2;
+
+  for (int i = 0; i < detectedCount && count < maxOpponents; i++) {
+    if (detected[i].confidence >= MIN_CLUSTER_CONFIDENCE) {
       out[count] = {
         true,
-        detectedOpponents[i].centerX,
-        detectedOpponents[i].centerY,
-        detectedOpponents[i].confidence,
+        detected[i].centerX,
+        detected[i].centerY,
+        detected[i].confidence,
         lastOpponentTimestampMs
       };
       count++;

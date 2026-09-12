@@ -1,17 +1,11 @@
-/*
-  Merged robot sketch (Teensy 4.1)
-  =================================
-  Full robot control code (motors, IMU heading hold, OLED status display,
-  battery protection, ball-chase) split across subsystems under src/subsystems/.
-*/
-
-#include <Arduino.h>
+ #include <Arduino.h>
 #include <Wire.h>
 
 #include "include/robot.h"
 
 #include "include/subsystems/vision.h"
 #include "include/subsystems/battery.h"
+#include "include/subsystems/communication.h"
 #include "include/subsystems/display.h"
 #include "include/subsystems/drivebase.h"
 #include "include/subsystems/dribbler.h"
@@ -49,6 +43,7 @@ void setup() {
   initDisplay();
   initBallTracking();
   initLocalization();
+  initCommunication();
 
   initDribbler();
   setDribblerDirectionReverse();
@@ -94,6 +89,7 @@ void systemTick() {
   checkEnabledButton(now);
   processBallPacket();
   updateLocalization();
+  updateCommunication();
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {
     checkBattery();

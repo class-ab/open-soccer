@@ -119,7 +119,7 @@ constexpr float ADC_REF_VOLTAGE = 3.3f;
 
 constexpr float BATTERY_SHUTDOWN_VOLTAGE = 14.8f;
 constexpr unsigned long BATTERY_CHECK_INTERVAL_MS = 5000;
-constexpr int BATTERY_SAMPLE_COUNT = 8;
+constexpr int BATTERY_SAMPLE_COUNT = 3;
 
 // ============================================================
 // Motor Calibration
