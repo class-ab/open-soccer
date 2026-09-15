@@ -50,7 +50,6 @@ void updateStrategy() {
 }
 
 void processOpponents() {
-    OpponentRobot opponents[2];
     OpponentRobot opponentsLocal[2];
     OpponentRobot opponentsRemote[2];
     count = 0;
@@ -60,13 +59,13 @@ void processOpponents() {
 
     // Assign first opponent if available
     if (count >= 1) {
-        if ((opponentsLocal[0].valid = true) && (opponentsRemote[0].valid = true)) {
+        if ((opponentsLocal[0].valid == true) && (opponentsRemote[0].valid == true)) {
             opponent1.valid = true;
             opponent1.confidence = (opponentsLocal[0].confidence + opponentsRemote[0].confidence) / 2;
             opponent1.xMm = (opponentsLocal[0].xMm + opponentsRemote[0].xMm) / 2;
             opponent1.yMm = (opponentsLocal[0].yMm + opponentsRemote[0].yMm) / 2;
             opponent1.timestampMs = 0;
-        } else if (opponentsLocal[0].valid = true) {
+        } else if (opponentsLocal[0].valid == true) {
             opponent1.valid = true;
             opponent1.confidence = opponentsLocal[0].confidence;
             opponent1.xMm = opponentsLocal[0].xMm;
@@ -85,13 +84,13 @@ void processOpponents() {
 
     // Assign second opponent if available
     if (count >= 2) {
-       if ((opponentsLocal[1].valid = true) && (opponentsRemote[1].valid = true)) {
+       if ((opponentsLocal[1].valid == true) && (opponentsRemote[1].valid == true)) {
             opponent1.valid = true;
             opponent1.confidence = (opponentsLocal[1].confidence + opponentsRemote[1].confidence) / 2;
             opponent1.xMm = (opponentsLocal[1].xMm + opponentsRemote[1].xMm) / 2;
             opponent1.yMm = (opponentsLocal[1].yMm + opponentsRemote[1].yMm) / 2;
             opponent1.timestampMs = 0;
-        } else if (opponentsLocal[1].valid = true) {
+        } else if (opponentsLocal[1].valid == true) {
             opponent1.valid = true;
             opponent1.confidence = opponentsLocal[1].confidence;
             opponent1.xMm = opponentsLocal[1].xMm;
