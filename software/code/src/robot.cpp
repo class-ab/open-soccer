@@ -1,8 +1,7 @@
- #include <Arduino.h>
+#include <Arduino.h>
 #include <Wire.h>
 
 #include "include/robot.h"
-
 #include "include/subsystems/vision.h"
 #include "include/subsystems/battery.h"
 #include "include/subsystems/communication.h"
@@ -85,6 +84,7 @@ void loop() {
 
 void systemTick() {
   unsigned long now = millis();
+  checkButtons();
   updateIMU();
   checkEnabledButton(now);
   processBallPacket();
@@ -102,30 +102,24 @@ void systemTick() {
 }
 
 void checkEnabledButton(unsigned long now) {
-static bool lastButton1State = LOW;
-static unsigned long lastDebounceMs = 0;
-const unsigned long BUTTON_DEBOUNCE_MS = 50;
+  static bool lastButton1State = LOW;
 
-bool currentButton1State = digitalRead(button1);
-
-// If the reading changed, reset the debounce timer
-if (currentButton1State != lastButton1State) {
-lastDebounceMs = now;
-}
-
-// If enough time has passed since the last change and the state is stable...
-if ((now - lastDebounceMs) >= BUTTON_DEBOUNCE_MS) {
-  // Detect rising edge (LOW->HIGH).
-  static bool stableLastState = LOW;
-  if (currentButton1State == HIGH && stableLastState == LOW) {
+  if (button1State == HIGH && lastButton1State == LOW) {
   robotCurrentlyRunning = !robotCurrentlyRunning;
+  updateLocalRobotMode();
   lastRunStateChangeMs = now;
   Serial.println(robotCurrentlyRunning ? "Robot RUNNING" : "Robot STOPPED");
-  }
-  stableLastState = currentButton1State;
   updateDisplay();
-}
-lastButton1State = currentButton1State;
+  }
+
+  lastButton1State = button1State;
+
+  static bool lastButton3State = LOW;
+  if (button3State == HIGH && lastButton3State == LOW) {
+    updateLocalRobotMode();
+  }
+
+  lastButton3State = button3State;
 }
 
 void stopAllMotors() {

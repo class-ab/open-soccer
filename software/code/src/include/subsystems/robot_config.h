@@ -67,6 +67,7 @@ constexpr unsigned long DRIBBLER_PAUSE_MS = 1000;
 constexpr int button1 = A6;
 constexpr int button2 = A7;
 constexpr int button3 = A8;
+constexpr unsigned long BUTTON_DEBOUNCE_MS = 50;
 
 // ============================================================
 // OLED Display (SSD1306 over I2C)

@@ -5,6 +5,7 @@
 struct RobotPose;
 struct FieldBall;
 struct OpponentRobot;
+struct LocalState;
 
 // ============================================================
 // Communication Subsystem Interface
@@ -21,6 +22,7 @@ void updateCommunication();
 // Get the other robot's pose/ball/opponents
 // These mirror the localization.h interface but for the remote robot
 void getRemoteRobotPose(RobotPose &out);
+void getRemoteRobotState(LocalState &out);
 void getRemoteFieldBall(FieldBall &out);
 void getRemoteOpponents(OpponentRobot *out, int maxOpponents, int &count);
 

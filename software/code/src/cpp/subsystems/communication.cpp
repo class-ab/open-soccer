@@ -6,6 +6,8 @@
 
 #include "include/subsystems/localization.h"
 #include "include/subsystems/robot_config.h"
+#include "include/subsystems/robot_state.h"
+#include "include/subsystems/strategy.h"
 
 // ============================================================
 // RF24 Hardware Configuration
@@ -53,6 +55,11 @@ struct RemoteOpponentPacket {
   uint32_t timestampMs;    // 4 bytes
 } __attribute__((packed));  // Total: 17 bytes
 
+struct RemoteRobotStatePacket {
+  uint8_t state;
+  uint8_t damaged;
+} __attribute__((packed));
+
 // Combined payload: pose (21) + ball (21) + 3 opponents (51) = 93 bytes
 // (nRF24 max payload is 32 bytes, so we'll use dynamic payload)
 // Actually, we'll send in separate payloads to keep things simple
@@ -67,16 +74,16 @@ struct CommunicationPayload {
 // ============================================================
 namespace {
   uint8_t currentRobotNumber = 1;  // Selected robot (1 or 2)
-  unsigned long lastRobotNumberCheckMs = 0;
-  constexpr unsigned long ROBOT_NUMBER_CHECK_INTERVAL_MS = 100;
 
   // Cached remote data
   RobotPose remoteRobotPose = {false, 0, 0, 0, 0, 0};
+  LocalState remoteRobotState = {RobotState::damaged, RobotGoal::none};
   FieldBall remoteFieldBall = {false, 0, 0, 0, 0, 0};
   OpponentRobot remoteOpponents[5] = {};
   int remoteOpponentCount = 0;
 
   unsigned long lastPoseSendMs = 0;
+  unsigned long lastStateSendMs = 0;
   unsigned long lastBallSendMs = 0;
   unsigned long lastOpponentsSendMs = 0;
 
@@ -86,6 +93,7 @@ namespace {
   uint32_t sendFailures = 0;
 
   constexpr unsigned long POSE_SEND_INTERVAL_MS = 20;      // 50 Hz
+  constexpr unsigned long STATE_SEND_INTERVAL_MS = 20;     // 50 Hz
   constexpr unsigned long BALL_SEND_INTERVAL_MS = 20;      // 50 Hz
   constexpr unsigned long OPPONENTS_SEND_INTERVAL_MS = 20;  // 50 Hz
 }
@@ -98,16 +106,15 @@ uint8_t getCurrentRobotNumber() {
   return currentRobotNumber;
 }
 
-static void updateRobotSelection(unsigned long now) {
-  if (now - lastRobotNumberCheckMs < ROBOT_NUMBER_CHECK_INTERVAL_MS) {
+static void updateRobotSelection() {
+  static bool lastButton2State = LOW;
+  if (!button2State || lastButton2State) {
+    lastButton2State = button2State;
     return;
   }
-  lastRobotNumberCheckMs = now;
 
-  // Button 2 selects robot number (pressed = robot 2, not pressed = robot 1)
-  // Adjust this logic based on your button behavior
-  int buttonState = digitalRead(button2);
-  uint8_t newRobotNumber = (buttonState == HIGH) ? 2 : 1;
+  lastButton2State = button2State;
+  uint8_t newRobotNumber = (currentRobotNumber == 1) ? 2 : 1;
 
   if (newRobotNumber != currentRobotNumber) {
     currentRobotNumber = newRobotNumber;
@@ -159,6 +166,35 @@ static void deserializePose(const uint8_t *buffer, int len, RobotPose &pose) {
   pose.headingDeg = pkt.headingDeg;
   pose.quality = pkt.quality;
   pose.timestampMs = pkt.timestampMs;
+}
+
+static void serializeRobotState(const LocalState &state, uint8_t *buffer,
+                                int &len) {
+  RemoteRobotStatePacket pkt;
+  pkt.state = static_cast<uint8_t>(state.robotState);
+  pkt.damaged = (state.robotState == RobotState::damaged) ? 1 : 0;
+
+  memcpy(buffer, &pkt, sizeof(pkt));
+  len = sizeof(pkt);
+}
+
+static void deserializeRobotState(const uint8_t *buffer, int len,
+                                  LocalState &state) {
+  if (len < (int)sizeof(RemoteRobotStatePacket)) {
+    state.robotState = RobotState::damaged;
+    return;
+  }
+
+  RemoteRobotStatePacket pkt;
+  memcpy(&pkt, buffer, sizeof(pkt));
+
+  if (pkt.damaged != 0) {
+    state.robotState = RobotState::damaged;
+  } else if (pkt.state <= static_cast<uint8_t>(RobotState::damaged)) {
+    state.robotState = static_cast<RobotState>(pkt.state);
+  } else {
+    state.robotState = RobotState::damaged;
+  }
 }
 
 static void serializeBall(const FieldBall &ball, uint8_t *buffer, int &len) {
@@ -277,6 +313,10 @@ static void receiveData() {
       deserializePose(data, dataLen, remoteRobotPose);
       break;
 
+    case 3:  // Robot state
+      deserializeRobotState(data, dataLen, remoteRobotState);
+      break;
+
     case 1:  // Ball
       deserializeBall(data, dataLen, remoteFieldBall);
       break;
@@ -300,6 +340,29 @@ static void transmitData(unsigned long now) {
     serializePose(localPose, &buffer[1], len);
 
     buffer[0] = 0;  // Type: Pose
+    len++;
+
+    radio.stopListening();
+    if (!radio.write(buffer, len)) {
+      sendFailures++;
+    } else {
+      packetsSent++;
+    }
+    radio.startListening();
+  }
+
+  // Send robot state at 50 Hz.
+  if (now - lastStateSendMs >= STATE_SEND_INTERVAL_MS) {
+    lastStateSendMs = now;
+
+    LocalState localState;
+    getLocalState(localState);
+
+    uint8_t buffer[32];
+    int len;
+    serializeRobotState(localState, &buffer[1], len);
+
+    buffer[0] = 3;  // Type: Robot state
     len++;
 
     radio.stopListening();
@@ -395,7 +458,7 @@ void updateCommunication() {
   unsigned long now = millis();
 
   // Check button for robot selection
-  updateRobotSelection(now);
+  updateRobotSelection();
 
   // Receive data from other robot
   receiveData();
@@ -406,6 +469,10 @@ void updateCommunication() {
 
 void getRemoteRobotPose(RobotPose &out) {
   out = {true, 20, 20, 20, 100, 0};
+}
+
+void getRemoteRobotState(LocalState &out) {
+  out = remoteRobotState;
 }
 
 void getRemoteFieldBall(FieldBall &out) {

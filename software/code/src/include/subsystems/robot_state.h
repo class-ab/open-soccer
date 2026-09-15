@@ -52,3 +52,9 @@ extern float headingIntegral;
 extern float headingLastError;
 extern unsigned long headingLastTimeMs;
 extern bool headingPidInitialized;
+
+void checkButtons();
+
+extern bool button1State;
+extern bool button2State;
+extern bool button3State;
