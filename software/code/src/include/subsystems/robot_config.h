@@ -11,7 +11,8 @@
 // chaseTick() runs - useful for calibrating CAMERA_ROTATION_OFFSET_DEG
 // (on the OpenMV side), CAMERA_MOUNT_OFFSET_DEG, BALL_TARGET_DISTANCE_CM,
 // and BALL_CHASE_RAMP_RANGE_CM.
-#define DEBUG_BALL_CHASE
+
+//#define DEBUG_BALL_CHASE
 
 // Uncomment to print raw ball-link diagnostics (per-packet decode
 // results and checksum failures) over Serial - useful for debugging the
@@ -19,6 +20,7 @@
 // independent of the ball-chase behavior above. Off by default since it
 // prints at packet rate, which is a lot busier than the throttled
 // DEBUG_BALL_CHASE output.
+
 // #define DEBUG_BALL_LINK
 
 // ============================================================
@@ -65,6 +67,7 @@ constexpr unsigned long DRIBBLER_PAUSE_MS = 1000;
 constexpr int button1 = A6;
 constexpr int button2 = A7;
 constexpr int button3 = A8;
+constexpr unsigned long BUTTON_DEBOUNCE_MS = 50;
 
 // ============================================================
 // OLED Display (SSD1306 over I2C)
@@ -75,7 +78,7 @@ constexpr int SCREEN_HEIGHT = 64;
 constexpr int OLED_RESET_PIN = -1;
 constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
 
-constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 250;
+constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 100;
 
 // ============================================================
 // Ball Tracking (hardware UART link to OpenMV, Serial7)
@@ -83,6 +86,11 @@ constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 250;
 
 #define BALL_UART      Serial7
 #define BALL_UART_BAUD 115200
+
+// LD14P UART. Serial8 uses Teensy 4.1 pins 34 (RX) and 35 (TX), which are
+// not shared with the motor pins used above. Connect the LiDAR TX to pin 34.
+#define LIDAR_UART      Serial8
+#define LIDAR_UART_BAUD 230400
 
 constexpr uint8_t BALL_PACKET_LEN = 8;
 constexpr uint8_t BALL_SYNC = 0xAA;
@@ -112,7 +120,7 @@ constexpr float ADC_REF_VOLTAGE = 3.3f;
 
 constexpr float BATTERY_SHUTDOWN_VOLTAGE = 14.8f;
 constexpr unsigned long BATTERY_CHECK_INTERVAL_MS = 5000;
-constexpr int BATTERY_SAMPLE_COUNT = 8;
+constexpr int BATTERY_SAMPLE_COUNT = 3;
 
 // ============================================================
 // Motor Calibration
