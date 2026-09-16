@@ -146,7 +146,17 @@ constexpr float ROTATION_MAX_SPEED = 0.5f;
 // ============================================================
 
 constexpr float ACCEL_LIMIT = 1.1f;
-constexpr float ROTATION_ACCEL_LIMIT = 720.0f;
+constexpr float ROTATION_ACCEL_LIMIT = 1.8f;
+
+// Coordinate movement controller. Position error is in millimeters and the
+// controller output is normalized to the same range as drive() speed.
+constexpr float POSITION_KP = 0.0012f;
+constexpr float POSITION_KI = 0.0000004f;
+constexpr float POSITION_KD = 0.00025f;
+constexpr float POSITION_INTEGRAL_MAX_MM = 500.0f;
+constexpr float POSITION_DERIVATIVE_FILTER = 0.2f;
+constexpr float POSITION_TOLERANCE_MM = 12.0f;
+constexpr float HEADING_TOLERANCE_DEG = 2.0f;
 
 // ============================================================
 // Heading Hold Settings (PID)
