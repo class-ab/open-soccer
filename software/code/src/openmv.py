@@ -1,105 +1,85 @@
 import csi
 import time
 import math
-import sensor
 from machine import UART
 
 # ---------------------------------------------------------------------------
-# Color tracking configuration
+# Ball tracking configuration
 # ---------------------------------------------------------------------------
-# Index into `thresholds` for each of the three colors being tracked.
-#
-# NOTE: in the original file COLOR_B_INDEX and COLOR_C_INDEX were both set
-# to 3, which is the empty "nothing" threshold (0,0,0,0,0,0) -- that only
-# matches pixels with L=0,A=0,B=0, so the yellow/blue goals were never
-# actually being tracked. Fixed to match what the comments say. If that
-# was intentional (e.g. goals temporarily disabled), just set these back.
-COLOR_A_INDEX = 2  # ball
-COLOR_B_INDEX = 3  # yellow goal
-COLOR_C_INDEX = 3  # blue goal
-
 CAMERA_ROTATION_OFFSET_DEG = 90
-MIN_TOTAL_PIXELS = 10
 
-# Flip these off for a competition run once you're done tuning -- they cost
-# real time every frame and are the single easiest way to get more fps
-# without touching the tracking logic at all.
-DEBUG_DRAW = True         # draw blob boxes into the frame buffer
+# Ball threshold (L Min, L Max, A Min, A Max, B Min, B Max)
+# BALL_THRESHOLD = (30, 65, 10, 45, 25, 50)   # competition tuning
+BALL_THRESHOLD = (40, 75, 25, 45, 15, 45)     # home tuning
+
+# Mirror / frame centre in pixels.
+# !! These were calibrated at HVGA. At VGA the centre and the
+# !! pixels_to_cm_* polynomials below need to be re-measured.
+CENTER_X = 150
+CENTER_Y = 125
+
+# --- Speed knobs for find_blobs() -----------------------------------------
+# Restrict the search to the part of the frame that can contain the ball,
+# as (x, y, w, h). For an omni-mirror setup, a box around the mirror is the
+# single biggest speed-up available: fewer pixels scanned = higher fps.
+# None = scan the whole frame.
+SEARCH_ROI = None
+
+# Sample every Nth pixel in x / y. The ball is large at VGA, so 2/2 scans
+# ~4x fewer pixels than 1/1 with almost no loss. Raise to 3 if you still
+# want more fps (the ball must stay wider/taller than the stride).
+X_STRIDE = 2
+Y_STRIDE = 2
+
+# Noise rejection. These are 2x the old HVGA values (VGA has ~2x the pixels).
+# Higher = fewer junk blobs for Python to loop over.
+BLOB_PIXELS_THRESHOLD = 20
+BLOB_AREA_THRESHOLD = 40
+
+# merge=True glues nearby fragments of the ball together (e.g. if a glare spot
+# splits it) but costs extra time per frame. With merge off we simply take the
+# largest blob. Turn on only if the ball comes back fragmented.
+MERGE_BLOBS = False
+
+# Packet "size" byte = pixel_count >> SIZE_SHIFT, capped at 255 (original
+# protocol value). At VGA the ball has ~2x the pixels, so the byte saturates
+# at roughly half the ball size it did at HVGA.
+SIZE_SHIFT = 2
+
+# Flip these off for a competition run once you're done tuning.
+DEBUG_DRAW = False        # draw blob boxes into the frame buffer
 DEBUG_PRINT = True        # serial print of fps / results
 DEBUG_PRINT_EVERY = 10    # only print every Nth frame (throttles USB/UART IO)
 
-# Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
-# The below thresholds track in general red/green/blue things. You will
-# want to re-tune these for your actual target colors.
-# thresholds = [ #competition tuning
-#     (17, 27, -25, -10, -12, 5),  # blue goal
-#     (55, 75, -20, 10, 30, 50),  # yellow goal
-#     (30, 65, 10, 45, 25, 50),  # ball
-#     (0, 0, 0, 0, 0, 0),  # nothing
-# ]
-
-thresholds = [  # home tuning
-    (17, 27, -25, -10, -12, 5),   # 0: blue goal
-    (55, 75, -20, 10, 30, 50),    # 1: yellow goal
-    (40, 75, 25, 45, 15, 45),     # 2: ball
-    (0, 0, 0, 0, 0, 0),           # 3: nothing
-]
-
+# ---------------------------------------------------------------------------
+# Camera setup
+# ---------------------------------------------------------------------------
 csi0 = csi.CSI()
 csi0.reset()
 csi0.pixformat(csi.RGB565)
-csi0.framesize(csi.QVGA)
-csi0.snapshot(time=2000)
+csi0.framesize(csi.VGA)
+csi0.snapshot(time=2000)    # let the sensor settle
 csi0.auto_gain(False)       # must be off for color tracking
 csi0.auto_whitebal(False)   # must be off for color tracking
 clock = time.clock()
 
-IMG_W = sensor.width()
-IMG_H = sensor.height()
-CENTER_X = 150
-CENTER_Y = 125
-# Only blobs with more pixels than "pixels_threshold" and more area than
-# "area_threshold" are returned by "find_blobs" below. Change these if you
-# change the camera resolution.
-
-# Hardware UART on the RT1062 (bus 1 -> P4/P5, see header comment).
-# 8N1, no flow control - matches the Teensy's hardware Serial7 defaults.
+# ---------------------------------------------------------------------------
+# UART (hardware UART on the RT1062, bus 1 -> P4/P5), 8N1, no flow control
+# ---------------------------------------------------------------------------
 uart = UART(1, 115200, timeout_char=100)
 
-PACKET_SYNC_BYTE_A = 0xAA
-PACKET_SYNC_BYTE_B = 0xAB
-PACKET_SYNC_BYTE_C = 0xAC
+# Original 3-packet protocol: the Teensy still receives 24 bytes per frame.
+PACKET_SYNC_BYTE_A = 0xAA   # ball (live)
+PACKET_SYNC_BYTE_B = 0xAB   # yellow goal (not tracked -> always "not detected")
+PACKET_SYNC_BYTE_C = 0xAC   # blue goal   (not tracked -> always "not detected")
 PACKET_LEN = 8
 
-# Built once, outside the loop: the 3 thresholds we actually search for.
-# Passing all 3 to a single find_blobs() call means the image is scanned
-# ONCE per frame instead of three times -- this is the biggest win here.
-TRACK_INDICES = (COLOR_A_INDEX, COLOR_B_INDEX, COLOR_C_INDEX)
-TRACK_THRESHOLDS = [thresholds[i] for i in TRACK_INDICES]
-SYNC_BYTES = (PACKET_SYNC_BYTE_A, PACKET_SYNC_BYTE_B, PACKET_SYNC_BYTE_C)
+# Built once, outside the loop: find_blobs wants a list of thresholds.
+BLOB_THRESHOLDS = [BALL_THRESHOLD]
 
-# One reusable buffer for all 3 packets, filled in place every frame and
-# sent with a single uart.write(). Avoids allocating (and later
-# garbage-collecting) a new bytearray 3x per frame.
+# One reusable buffer for all 3 packets, filled in place and sent with a
+# single uart.write() -- no per-frame allocation.
 tx_buf = bytearray(PACKET_LEN * 3)
-
-
-def _code_of(blob):
-    """blob.code tells you which of the thresholds passed to find_blobs()
-    this blob matched (bit 0 = 1st threshold, bit 1 = 2nd, ...). Some
-    OpenMV builds expose this as a property, others as a method -- handle
-    both so this doesn't silently break on your firmware."""
-    c = blob.code
-    return c() if callable(c) else c
-
-
-def _merge_same_code(b1, b2):
-    # Only merge touching/overlapping blobs that matched the SAME
-    # threshold. Without this, merge=True could fuse a ball blob into a
-    # goal blob if they happen to touch in the frame -- something the old
-    # per-color find_blobs() calls could never do, since each call only
-    # ever saw one threshold at a time.
-    return _code_of(b1) == _code_of(b2)
 
 
 def pixels_to_cm_y(py):
@@ -118,8 +98,9 @@ def pixels_to_cm_x(px):
     return sign * cm
 
 
-def pack_ball_packet(buf, offset, sync_byte, detected, angle_deg, radius_px, pixel_count):
-    """Pack one 8-byte ball-position packet into buf at offset, in place."""
+def pack_ball_packet(buf, offset, sync_byte, detected, angle_deg, radius_px,
+                     pixel_count, shift=SIZE_SHIFT):
+    """Pack one 8-byte packet into buf at offset, in place."""
     if detected:
         # Wrap to [-180, 180) before scaling so it always fits an int16.
         angle_deg = ((angle_deg + 180.0) % 360.0) - 180.0
@@ -135,113 +116,96 @@ def pack_ball_packet(buf, offset, sync_byte, detected, angle_deg, radius_px, pix
         elif radius_i > 65535:
             radius_i = 65535
 
-        size_byte = pixel_count >> 2  # same as //4 for non-negative ints, cheaper
+        size_byte = pixel_count >> shift
         if size_byte > 255:
             size_byte = 255
+        flag = 1
     else:
         angle_x100 = 0
         radius_i = 0
         size_byte = 0
+        flag = 0
+
+    b2 = (angle_x100 >> 8) & 0xFF
+    b3 = angle_x100 & 0xFF
+    b4 = (radius_i >> 8) & 0xFF
+    b5 = radius_i & 0xFF
 
     buf[offset] = sync_byte
-    buf[offset + 1] = 1 if detected else 0
-    buf[offset + 2] = (angle_x100 >> 8) & 0xFF
-    buf[offset + 3] = angle_x100 & 0xFF
-    buf[offset + 4] = (radius_i >> 8) & 0xFF
-    buf[offset + 5] = radius_i & 0xFF
+    buf[offset + 1] = flag
+    buf[offset + 2] = b2
+    buf[offset + 3] = b3
+    buf[offset + 4] = b4
+    buf[offset + 5] = b5
     buf[offset + 6] = size_byte
-    # Unrolled instead of a for-loop over packet[0:7]: same result, no
-    # slice allocation and no loop overhead for a fixed 7 bytes.
-    buf[offset + 7] = (
-        buf[offset] ^ buf[offset + 1] ^ buf[offset + 2] ^ buf[offset + 3]
-        ^ buf[offset + 4] ^ buf[offset + 5] ^ buf[offset + 6]
-    )
+    # XOR checksum of bytes 0-6
+    buf[offset + 7] = sync_byte ^ flag ^ b2 ^ b3 ^ b4 ^ b5 ^ size_byte
 
 
-def process_frame(img, find_blobs, thresholds_list, tx_buf,
-                   # Default-arg binding turns these into fast local
-                   # variables for the life of the call instead of slow
-                   # global/module lookups -- worth doing since this runs
-                   # every single frame.
-                   atan2=math.atan2, degrees=math.degrees, sqrt=math.sqrt,
-                   code_of=_code_of, merge_cb=_merge_same_code,
-                   to_cm_x=pixels_to_cm_x, to_cm_y=pixels_to_cm_y,
-                   pack=pack_ball_packet,
-                   CX=CENTER_X, CY=CENTER_Y, ROT=CAMERA_ROTATION_OFFSET_DEG,
-                   MIN_PX=MIN_TOTAL_PIXELS, syncs=SYNC_BYTES, plen=PACKET_LEN):
-    """One image pass that finds all 3 tracked colors and fills tx_buf."""
-    best_pixels = [0, 0, 0]
-    best_x = [0.0, 0.0, 0.0]
-    best_y = [0.0, 0.0, 0.0]
+def process_frame(img, thresholds_list, buf,
+                  # Default-arg binding makes these fast locals instead of
+                  # slower global/module lookups -- this runs every frame.
+                  atan2=math.atan2, degrees=math.degrees, sqrt=math.sqrt,
+                  to_cm_x=pixels_to_cm_x, to_cm_y=pixels_to_cm_y,
+                  pack=pack_ball_packet,
+                  CX=CENTER_X, CY=CENTER_Y, ROT=CAMERA_ROTATION_OFFSET_DEG,
+                  SYNC=PACKET_SYNC_BYTE_A):
+    """Find the largest ball blob and fill the ball packet (slot 0) of buf.
+    Returns its pixel count."""
+    best_pixels = 0
+    best_blob = None
 
-    for blob in find_blobs(
+    for blob in img.find_blobs(
         thresholds_list,
-        pixels_threshold=10,
-        area_threshold=20,
-        merge=True,
-        merge_cb=merge_cb,
+        roi=SEARCH_ROI,
+        x_stride=X_STRIDE,
+        y_stride=Y_STRIDE,
+        pixels_threshold=BLOB_PIXELS_THRESHOLD,
+        area_threshold=BLOB_AREA_THRESHOLD,
+        merge=MERGE_BLOBS,
     ):
-        code = code_of(blob)
-        if not code:
-            continue
-
         if DEBUG_DRAW:
             img.draw_detection(blob, 1)
-
         px = blob.pixels
-        cx = blob.cx
-        cy = blob.cy
-        is_new_best = False
+        if px > best_pixels:
+            best_pixels = px
+            best_blob = blob
 
-        # A blob can in principle match more than one threshold at once
-        # (bits set for each); check all that apply rather than picking
-        # just the lowest bit, so nothing gets silently dropped.
-        if (code & 1) and px > best_pixels[0]:
-            best_pixels[0] = px
-            best_x[0] = cx
-            best_y[0] = cy
-            is_new_best = True
-        if (code & 2) and px > best_pixels[1]:
-            best_pixels[1] = px
-            best_x[1] = cx
-            best_y[1] = cy
-            is_new_best = True
-        if (code & 4) and px > best_pixels[2]:
-            best_pixels[2] = px
-            best_x[2] = cx
-            best_y[2] = cy
-            is_new_best = True
+    if best_blob is None:
+        pack(buf, 0, SYNC, False, 0.0, 0.0, 0)
+        return 0
 
-        if DEBUG_DRAW and is_new_best:
-            img.draw_detection(blob)
+    if DEBUG_DRAW:
+        img.draw_detection(best_blob)
 
-    for slot in range(3):
-        offset = slot * plen
-        pixels = best_pixels[slot]
-        if pixels < MIN_PX:
-            pack(tx_buf, offset, syncs[slot], False, 0.0, 0.0, 0)
-            continue
-        dx = best_x[slot] - CX
-        dy = best_y[slot] - CY
-        dx_cm = to_cm_x(dx)
-        dy_cm = to_cm_y(dy)
-        angle_deg = degrees(atan2(dx, dy)) + ROT
-        radius_cm = sqrt(dx_cm * dx_cm + dy_cm * dy_cm)
-        pack(tx_buf, offset, syncs[slot], True, angle_deg, radius_cm, pixels)
-
+    dx = best_blob.cx - CX
+    dy = best_blob.cy - CY
+    dx_cm = to_cm_x(dx)
+    dy_cm = to_cm_y(dy)
+    angle_deg = degrees(atan2(dx, dy)) + ROT
+    radius_cm = sqrt(dx_cm * dx_cm + dy_cm * dy_cm)
+    pack(buf, 0, SYNC, True, angle_deg, radius_cm, best_pixels)
     return best_pixels
 
 
+# Packets B and C never change (goals are no longer tracked), so they are
+# filled once here as "not detected" and left alone in the main loop.
+pack_ball_packet(tx_buf, PACKET_LEN, PACKET_SYNC_BYTE_B, False, 0.0, 0.0, 0)
+pack_ball_packet(tx_buf, PACKET_LEN * 2, PACKET_SYNC_BYTE_C, False, 0.0, 0.0, 0)
+
+# ---------------------------------------------------------------------------
+# Main loop
+# ---------------------------------------------------------------------------
 frame_count = 0
 while True:
     clock.tick()
     img = csi0.snapshot()
 
-    best_pixels = process_frame(img, img.find_blobs, TRACK_THRESHOLDS, tx_buf)
+    ball_pixels = process_frame(img, BLOB_THRESHOLDS, tx_buf)
     uart.write(tx_buf)
 
     if DEBUG_PRINT:
         frame_count += 1
         if frame_count >= DEBUG_PRINT_EVERY:
             frame_count = 0
-            print(clock.fps(), "px A/B/C:", best_pixels)
+            print(clock.fps(), "ball px:", ball_pixels)

@@ -43,6 +43,7 @@ void updateDisplay() {
   display.print(lastBatteryVoltage, 2);
   display.println("V");
 
+  /* ROBOT TIMER
   display.print("Uptime: ");
   display.println(formatDuration(uptimeMs));
 
@@ -51,6 +52,7 @@ void updateDisplay() {
 
   display.print(robotCurrentlyRunning ? "Run tmr: " : "Idle tmr:");
   display.println(formatDuration(runStateMs));
+  */
 
   display.print("LclPos: ");
   RobotPose pose;
