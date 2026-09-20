@@ -5,7 +5,8 @@
 extern Adafruit_BNO08x bno08x;
 extern sh2_SensorValue_t sensorValue;
 
-void initIMU();
+// Returns false when the IMU is absent or cannot be reached on I2C.
+bool initIMU();
 void setReports();
 void updateIMU();
 

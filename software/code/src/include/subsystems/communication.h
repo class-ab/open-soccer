@@ -16,7 +16,8 @@ struct LocalState;
 //   - Not pressed: Robot 1
 //   - Pressed: Robot 2
 
-void initCommunication();
+// Returns false when the nRF24L01+ cannot be reached over SPI.
+bool initCommunication();
 void updateCommunication();
 
 // Get the other robot's pose/ball/opponents

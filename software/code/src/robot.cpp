@@ -15,6 +15,24 @@
 #include "include/subsystems/robot_tick.h"
 #include "include/subsystems/strategy.h"
 
+namespace {
+void haltBoot(const char *device, const char *check) {
+  Serial.print("BOOT FAILED: ");
+  Serial.println(device);
+  showBootStatus("BOOT FAILED", device);
+  delay(1200);
+  showBootStatus(device, check);
+
+  // Do not enter loop(): it would try to use subsystems that did not start.
+  // Keep every output stopped while the error remains visible on the OLED.
+  stopAllDriveMotors();
+  stopDribbler();
+  while (true) {
+    delay(250);
+  }
+}
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -39,11 +57,18 @@ void setup() {
   lastRunStateChangeMs = bootMillis;
 
   Wire2.begin();
+  Serial.println("BOOT 1/6: display");
   initDisplay();
+  showBootStatus("BOOT 2/6", "Ball UART");
   initBallTracking();
+  showBootStatus("BOOT 3/6", "LiDAR UART");
   initLocalization();
-  initCommunication();
+  showBootStatus("BOOT 4/6", "RF24 radio");
+  if (!initCommunication()) {
+    haltBoot("RF24 NOT FOUND", "Check SPI, CE/CSN");
+  }
 
+  showBootStatus("BOOT 5/6", "Dribbler ESC");
   initDribbler();
   setDribblerDirectionReverse();
 
@@ -52,10 +77,14 @@ void setup() {
   lastBatteryCheckMs = millis();
   checkBattery();
 
-  initIMU();
+  showBootStatus("BOOT 6/6", "BNO08x IMU");
+  if (!initIMU()) {
+    haltBoot("BNO08X NOT FOUND", "Check I2C/power");
+  }
 
   Serial.print("Initial Heading: ");
   Serial.println(currentYawDeg);
+  Serial.println("BOOT COMPLETE");
 }
 
 void loop() {

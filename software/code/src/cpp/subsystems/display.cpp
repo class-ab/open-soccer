@@ -17,12 +17,23 @@ void initDisplay() {
     return;
   }
 
-  display.clearDisplay();
   display.setRotation(2);
   display.setTextColor(SSD1306_WHITE);
+  showBootStatus("Booting...", "Display ready");
+}
+
+void showBootStatus(const char *line1, const char *line2) {
+  if (!displayAvailable) {
+    return;
+  }
+
+  display.clearDisplay();
   display.setTextSize(1);
   display.setCursor(0, 0);
-  display.println("Booting...");
+  display.println(line1);
+  if (line2 != nullptr) {
+    display.println(line2);
+  }
   display.display();
 }
 

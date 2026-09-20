@@ -426,12 +426,12 @@ static void transmitData(unsigned long now) {
 // Public Interface
 // ============================================================
 
-void initCommunication() {
+bool initCommunication() {
   Serial.println("Initializing RF24 communication...");
 
   if (!radio.begin()) {
     Serial.println("ERROR: nRF24L01+ not detected!");
-    while (1);
+    return false;
   }
 
   // Optimize for efficiency and reliability
@@ -452,6 +452,7 @@ void initCommunication() {
 
   Serial.print("RF24 initialized. Robot: ");
   Serial.println(currentRobotNumber);
+  return true;
 }
 
 void updateCommunication() {

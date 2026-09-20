@@ -89,7 +89,7 @@ constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 100;
 
 // LD14P UART. Serial8 uses Teensy 4.1 pins 34 (RX) and 35 (TX), which are
 // not shared with the motor pins used above. Connect the LiDAR TX to pin 34.
-#define LIDAR_UART      Serial8
+#define LIDAR_UART      Serial3
 #define LIDAR_UART_BAUD 230400
 
 constexpr uint8_t BALL_PACKET_LEN = 8;
