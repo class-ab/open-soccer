@@ -106,18 +106,13 @@ uint8_t getCurrentRobotNumber() {
   return currentRobotNumber;
 }
 
-static void updateRobotSelection() {
-  static bool lastButton2State = LOW;
-  if (!button2State || lastButton2State) {
-    lastButton2State = button2State;
+void selectCurrentRobotNumber(uint8_t robotNumber) {
+  if (robotNumber != 1 && robotNumber != 2) {
     return;
   }
 
-  lastButton2State = button2State;
-  uint8_t newRobotNumber = (currentRobotNumber == 1) ? 2 : 1;
-
-  if (newRobotNumber != currentRobotNumber) {
-    currentRobotNumber = newRobotNumber;
+  if (robotNumber != currentRobotNumber) {
+    currentRobotNumber = robotNumber;
     Serial.print("Robot number changed to: ");
     Serial.println(currentRobotNumber);
 
@@ -457,9 +452,6 @@ bool initCommunication() {
 
 void updateCommunication() {
   unsigned long now = millis();
-
-  // Check button for robot selection
-  updateRobotSelection();
 
   // Receive data from other robot
   receiveData();

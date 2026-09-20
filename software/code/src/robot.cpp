@@ -89,29 +89,6 @@ void setup() {
 
 void loop() {
   // main update system
-  systemTick();
-  // check if battery under-voltage shutdown has been latched
-  if (shutdownLatched) {
-    return;
-  }
-
-  updateStrategy();
-
-  if(!robotCurrentlyRunning) {
-    stopAllMotors();
-  }
-
-  /* OLD CODE
-  chaseBall();
-  if (robotCurrentlyRunning && dribblerShouldRun) {
-    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
-  } else {
-    stopDribbler();
-  }
-  */
-}
-
-void systemTick() {
   unsigned long now = millis();
   checkButtons();
   updateIMU();
@@ -119,36 +96,74 @@ void systemTick() {
   processBallPacket();
   updateLocalization();
   updateCommunication();
+  updateStrategy();
+  
+  if (robotCurrentlyRunning) {
+    move();
+  } else {
+    stopAllMotors();
+  }
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {
-    checkBattery();
+    checkBattery(); // check battery at time interval
   }
 
   if (now - lastDisplayUpdateMs >= DISPLAY_UPDATE_INTERVAL_MS) {
     lastDisplayUpdateMs = now;
-    updateDisplay();
+    updateDisplay(); // update display at time interval
+  }
+
+  if (shutdownLatched) {
+    return; // undervoltage check
   }
 }
 
 void checkEnabledButton(unsigned long now) {
   static bool lastButton1State = LOW;
+  static bool clickPending = false;
+  static unsigned long firstClickMs = 0;
+  static uint8_t nextRobot = 1;
 
-  if (button1State == HIGH && lastButton1State == LOW) {
-  robotCurrentlyRunning = !robotCurrentlyRunning;
-  updateLocalRobotMode();
-  lastRunStateChangeMs = now;
-  Serial.println(robotCurrentlyRunning ? "Robot RUNNING" : "Robot STOPPED");
-  updateDisplay();
+  const bool button1Pressed = button1State == HIGH && lastButton1State == LOW;
+  if (button1Pressed) {
+    if (clickPending && now - firstClickMs <= BUTTON_DOUBLE_CLICK_MS) {
+      LocalState localState;
+      getLocalState(localState);
+
+      if (localState.robotState == RobotState::damaged) {
+        selectCurrentRobotNumber(nextRobot);
+        selectLocalRobotRole(nextRobot);
+        Serial.print("Local robot restored as robot ");
+        Serial.println(nextRobot);
+        nextRobot = (nextRobot == 1) ? 2 : 1;
+      } else {
+        markLocalRobotDamaged();
+        Serial.println("Local robot DAMAGED");
+      }
+
+      clickPending = false;
+      updateDisplay();
+    } else {
+      // Wait for the double-click window to expire before treating this as a
+      // role-selection click, so a double-click never briefly changes roles.
+      clickPending = true;
+      firstClickMs = now;
+    }
+  }
+
+  if (clickPending && now - firstClickMs > BUTTON_DOUBLE_CLICK_MS) {
+    selectCurrentRobotNumber(nextRobot);
+    selectLocalRobotRole(nextRobot);
+    Serial.print("Selected robot ");
+    Serial.print(nextRobot);
+    Serial.println(nextRobot == 1 ? " (ATTACKER)" : " (DEFENDER)");
+    nextRobot = (nextRobot == 1) ? 2 : 1;
+    clickPending = false;
+    updateDisplay();
   }
 
   lastButton1State = button1State;
 
-  static bool lastButton3State = LOW;
-  if (button3State == HIGH && lastButton3State == LOW) {
-    updateLocalRobotMode();
-  }
-
-  lastButton3State = button3State;
 }
 
 void stopAllMotors() {

@@ -1,38 +1,41 @@
 #pragma once
 
-// Uncomment to print direction/yaw/vx/vy/wheel-speed diagnostics over
-// Serial (about 10x/sec) during every move() - useful for confirming
-// the YAW_SIGN convention and checking whether vx/vy are doing what you
-// expect as the robot rotates.
+// SPEED LIMITS
+constexpr float ROBOT_MAX_SPEED = 0.5f;
+constexpr float ROTATION_MAX_SPEED = 0.5f;
+
+// ACCELERATION LIMITS
+constexpr float ACCEL_LIMIT = 1.1f;
+constexpr float ROTATION_ACCEL_LIMIT = 1.8f;
+
+// moveTo() translation PID
+constexpr float POSITION_KP = 0.0012f;
+constexpr float POSITION_KI = 0.0000004f;
+constexpr float POSITION_KD = 0.00025f;
+constexpr float POSITION_INTEGRAL_MAX_MM = 500.0f;
+constexpr float POSITION_DERIVATIVE_FILTER = 0.2f;
+constexpr float POSITION_TOLERANCE_MM = 12.0f;
+constexpr float HEADING_TOLERANCE_DEG = 2.0f;
+
+// ROTATION PID
+constexpr float HEADING_KP = 0.005f;
+constexpr float HEADING_KI = 0.0f;
+constexpr float HEADING_KD = 0.001f;
+constexpr float HEADING_INTEGRAL_MAX = 0.20f;
+constexpr float YAW_SIGN = 1.0f;
+
+// ball sensing
+constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
+constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
+constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
+
 // #define DEBUG_MOVE
-
-// Uncomment to print ball-chase diagnostics (bearing, radius, size,
-// computed speed, packet age) over Serial about 10x/sec while
-// chaseTick() runs - useful for calibrating CAMERA_ROTATION_OFFSET_DEG
-// (on the OpenMV side), CAMERA_MOUNT_OFFSET_DEG, BALL_TARGET_DISTANCE_CM,
-// and BALL_CHASE_RAMP_RANGE_CM.
-
-//#define DEBUG_BALL_CHASE
-
-// Uncomment to print raw ball-link diagnostics (per-packet decode
-// results and checksum failures) over Serial - useful for debugging the
-// physical link itself (wiring, clock rate, sync/checksum issues),
-// independent of the ball-chase behavior above. Off by default since it
-// prints at packet rate, which is a lot busier than the throttled
-// DEBUG_BALL_CHASE output.
-
 // #define DEBUG_BALL_LINK
 
-// ============================================================
-// BNO08X IMU
-// ============================================================
-
+// IMU
 #define BNO08X_RESET -1
 
-// ============================================================
-// Motor Pins
-// ============================================================
-
+// motor pins
 constexpr int M1a = 2; // FRONT LEFT
 constexpr int M1b = 3;
 constexpr int M2a = 5; // FRONT RIGHT
@@ -42,72 +45,45 @@ constexpr int M3b = 8;
 constexpr int M4a = 7; // BACK RIGHT
 constexpr int M4b = 6;
 
-// ============================================================
-// Dribbler ESC
-// ============================================================
-
+// dribbler ESC
 constexpr int DRIBBLER_THROTTLE_PIN = 23;
 constexpr int DRIBBLER_REVERSE_PIN = 17;
-
 constexpr int DRIBBLER_PULSE_MIN = 1000;
 constexpr int DRIBBLER_PULSE_NEUTRAL = 1500;
 constexpr int DRIBBLER_PULSE_MAX = 2000;
-
 constexpr int DRIBBLER_FORWARD_US = 1000;
 constexpr int DRIBBLER_REVERSE_US = 2000;
-
 constexpr int DRIBBLER_RUN_THROTTLE_US = 1200;
 constexpr unsigned long DRIBBLER_SPIN_TIME_MS = 3000;
 constexpr unsigned long DRIBBLER_PAUSE_MS = 1000;
 
-// ============================================================
-// Buttons
-// ============================================================
-
+// buttons
 constexpr int button1 = A6;
 constexpr int button2 = A7;
 constexpr int button3 = A8;
 constexpr unsigned long BUTTON_DEBOUNCE_MS = 50;
+constexpr unsigned long BUTTON_DOUBLE_CLICK_MS = 500;
 
-// ============================================================
-// OLED Display (SSD1306 over I2C)
-// ============================================================
-
+// OLED
 constexpr int SCREEN_WIDTH = 128;
 constexpr int SCREEN_HEIGHT = 64;
 constexpr int OLED_RESET_PIN = -1;
 constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
-
 constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 100;
 
-// ============================================================
-// Ball Tracking (hardware UART link to OpenMV, Serial7)
-// ============================================================
-
+// OpenMV 
 #define BALL_UART      Serial7
 #define BALL_UART_BAUD 115200
+constexpr uint8_t BALL_PACKET_LEN = 8;
+constexpr uint8_t BALL_SYNC = 0xAA;
+constexpr uint8_t YELLOW_GOAL_SYNC = 0xAB; // not used currently
+constexpr uint8_t BLUE_GOAL_SYNC = 0xAC; // not used currently
 
-// LD14P UART. Serial8 uses Teensy 4.1 pins 34 (RX) and 35 (TX), which are
-// not shared with the motor pins used above. Connect the LiDAR TX to pin 34.
+// LD14P LiDAR
 #define LIDAR_UART      Serial3
 #define LIDAR_UART_BAUD 230400
 
-constexpr uint8_t BALL_PACKET_LEN = 8;
-constexpr uint8_t BALL_SYNC = 0xAA;
-constexpr uint8_t YELLOW_GOAL_SYNC = 0xAB;
-constexpr uint8_t BLUE_GOAL_SYNC = 0xAC;
-
-constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
-constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
-constexpr float BALL_CHASE_MAX_SPEED = 0.5f;
-constexpr float BALL_CHASE_MIN_SPEED = 0.20f;
-constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
-constexpr float BALL_CHASE_RAMP_RANGE_CM = 120.0f;
-
-// ============================================================
-// Battery Monitor
-// ============================================================
-
+// battery
 constexpr int BATTERY_PIN = A2;
 constexpr float BATTERY_DIVIDER_R1 = 4700.0f;
 constexpr float BATTERY_DIVIDER_R2 = 1000.0f;
@@ -122,10 +98,7 @@ constexpr float BATTERY_SHUTDOWN_VOLTAGE = 14.8f;
 constexpr unsigned long BATTERY_CHECK_INTERVAL_MS = 5000;
 constexpr int BATTERY_SAMPLE_COUNT = 3;
 
-// ============================================================
-// Motor Calibration
-// ============================================================
-
+// motor calibration (currently unused)
 constexpr float motorMult[5] = {
   1.0f,
   1.00f,
@@ -133,37 +106,3 @@ constexpr float motorMult[5] = {
   1.00f,
   1.00f
 };
-
-// ============================================================
-// Overall Speed Ceiling
-// ============================================================
-
-constexpr float ROBOT_MAX_SPEED = 0.5f;
-constexpr float ROTATION_MAX_SPEED = 0.5f;
-
-// ============================================================
-// Move / Acceleration Settings
-// ============================================================
-
-constexpr float ACCEL_LIMIT = 1.1f;
-constexpr float ROTATION_ACCEL_LIMIT = 1.8f;
-
-// Coordinate movement controller. Position error is in millimeters and the
-// controller output is normalized to the same range as drive() speed.
-constexpr float POSITION_KP = 0.0012f;
-constexpr float POSITION_KI = 0.0000004f;
-constexpr float POSITION_KD = 0.00025f;
-constexpr float POSITION_INTEGRAL_MAX_MM = 500.0f;
-constexpr float POSITION_DERIVATIVE_FILTER = 0.2f;
-constexpr float POSITION_TOLERANCE_MM = 12.0f;
-constexpr float HEADING_TOLERANCE_DEG = 2.0f;
-
-// ============================================================
-// Heading Hold Settings (PID)
-// ============================================================
-
-constexpr float HEADING_KP = 0.005f;
-constexpr float HEADING_KI = 0.0f;
-constexpr float HEADING_KD = 0.001f;
-constexpr float HEADING_INTEGRAL_MAX = 0.20f;
-constexpr float YAW_SIGN = 1.0f;

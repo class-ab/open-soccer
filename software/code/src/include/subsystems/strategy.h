@@ -9,6 +9,9 @@ void updateOpponentState();
 void updateRobotState();
 void updateRobotGoal();
 void updateLocalRobotMode();
+void selectLocalRobotRole(uint8_t robotNumber);
+void markLocalRobotDamaged();
+void move();
 
 // Opponent tracking
 extern OpponentRobot opponent1;
@@ -57,7 +60,7 @@ enum class RobotGoal {
     spinKick,
     kick,
     pass,
-    stayBorders,
+    awayBorders,
     backOff,
     defendBall,
     defendOpponent1,

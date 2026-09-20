@@ -4,6 +4,7 @@
 #include "include/subsystems/vision.h"
 #include "include/subsystems/communication.h"
 #include "include/subsystems/robot_config.h"
+#include "include/subsystems/drivebase.h"
 #include "string"
 #include "iostream"
 
@@ -19,6 +20,9 @@ LocalState remoteState = {RobotState::damaged, RobotGoal::none};
 const float MIDDLE_ZONE_X = 615.0;    // ±mm from center x
 const float MIDDLE_ZONE_Y = 500.0;    // ±mm from center y
 const float SIDE_ZONE_Y = 800.0;      // ±mm from center y for far sides
+const float BORDER_X = 965.0;
+const float BORDER_Y = 660.0;
+const float GOAL_Y = 425.0;
 
 // Opponent tracking
 OpponentRobot opponent1 = {false, 0.0, 0.0, 0.0, 0};
@@ -47,6 +51,12 @@ void updateStrategy() {
     updateOpponentState();
     updateRobotState();
     updateRobotGoal();
+}
+
+void move() {
+    if (localState.robotGoal == RobotGoal::awayBorders) {
+        moveTo(0, 0, ball.angleDeg, 0.1f , 0.4f, 1.0f, 1.0f);
+    }
 }
 
 void processOpponents() {
@@ -206,23 +216,25 @@ void updateOpponentState() {
 }
 
 void updateRobotState() {
-    if (remoteState.robotState == RobotState::damaged) {
-        if (!(localState.robotState == RobotState::damaged)) {
-            localState.robotState = RobotState::attacking;
-        }    
+    // Selected roles are fixed: robot 1 attacks and robot 2 defends. Damage
+    // remains latched until a role-selection button is pressed again.
+    if (localState.robotState == RobotState::damaged) {
+        return;
     }
+
+    localState.robotState = (getCurrentRobotNumber() == 1)
+                                ? RobotState::attacking
+                                : RobotState::defending;
 }
 
 void updateRobotGoal() {
     if (localState.robotState == RobotState::damaged) {
         localState.robotGoal = RobotGoal::none; // DAMAGED
-    } else if (ballState.ballPossession == BallPossession::mePossession) {
-        localState.robotState = RobotState::attacking;
-    } else if (ballState.ballPossession == BallPossession::himPossession) {
-        localState.robotState = RobotState::defending;
     }
 
-    if (localState.robotState == RobotState::attacking) { // IF ATTACKING:
+    if (abs(robotPose.yMm) >= BORDER_Y || (abs(robotPose.yMm) >= GOAL_Y && abs(robotPose.xMm) >= BORDER_X)) {
+        localState.robotGoal = RobotGoal::awayBorders; // FIRST CHECK BORDERS
+    } else if (localState.robotState == RobotState::attacking) { // IF ATTACKING:
         if (ballState.ballPossession == BallPossession::mePossession) { // IF I HAVE THE BALL:
             if (ballState.ballState == BallState::middle) {
                 localState.robotGoal = RobotGoal::pushForward;
@@ -240,7 +252,7 @@ void updateRobotGoal() {
                 }
             }
         } else if (ballState.ballPossession == BallPossession::himPossession) {
-            localState.robotState = RobotState::defending;
+            localState.robotGoal = RobotGoal::defendBall;
         } else if (ballState.ballPossession == BallPossession::none) {
             if (ballState.ballState == BallState::nearOwnGoal) {
                 localState.robotGoal = RobotGoal::backOff;
@@ -293,4 +305,18 @@ void getBallState(ballLocation &out) {
 
 void getLocalState(LocalState &out) {
     out = localState;
+}
+
+void selectLocalRobotRole(uint8_t robotNumber) {
+    if (robotNumber == 1) {
+        localState.robotState = RobotState::attacking;
+    } else if (robotNumber == 2) {
+        localState.robotState = RobotState::defending;
+    }
+    localState.robotGoal = RobotGoal::none;
+}
+
+void markLocalRobotDamaged() {
+    localState.robotState = RobotState::damaged;
+    localState.robotGoal = RobotGoal::none;
 }

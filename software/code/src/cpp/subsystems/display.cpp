@@ -42,10 +42,6 @@ void updateDisplay() {
     return;
   }
 
-  unsigned long now = millis();
-  unsigned long uptimeMs = now - bootMillis;
-  unsigned long runStateMs = now - lastRunStateChangeMs;
-
   display.clearDisplay();
   display.setTextSize(1);
   display.setCursor(0, 0);
@@ -55,6 +51,9 @@ void updateDisplay() {
   display.println("V");
 
   /* ROBOT TIMER
+  unsigned long now = millis();
+  unsigned long uptimeMs = now - bootMillis; 
+  unsigned long runStateMs = now - lastRunStateChangeMs;
   display.print("Uptime: ");
   display.println(formatDuration(uptimeMs));
 
