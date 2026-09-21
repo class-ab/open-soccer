@@ -4,7 +4,6 @@
 #include "include/subsystems/localization.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
-#include "include/subsystems/robot_tick.h"
 
 namespace {
 float clampMagnitude(float x, float y, float maxMagnitude) {

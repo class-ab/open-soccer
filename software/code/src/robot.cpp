@@ -12,7 +12,6 @@
 #include "include/subsystems/localization.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
-#include "include/subsystems/robot_tick.h"
 #include "include/subsystems/strategy.h"
 
 namespace {
@@ -57,18 +56,18 @@ void setup() {
   lastRunStateChangeMs = bootMillis;
 
   Wire2.begin();
-  Serial.println("BOOT 1/6: display");
+  Serial.println("BOOT 1/7: display");
   initDisplay();
-  showBootStatus("BOOT 2/6", "Ball UART");
+  showBootStatus("BOOT 2/7", "Ball UART");
   initBallTracking();
-  showBootStatus("BOOT 3/6", "LiDAR UART");
+  showBootStatus("BOOT 3/7", "LiDAR UART");
   initLocalization();
-  showBootStatus("BOOT 4/6", "RF24 radio");
+  showBootStatus("BOOT 4/7", "RF24 radio");
   if (!initCommunication()) {
     haltBoot("RF24 NOT FOUND", "Check SPI, CE/CSN");
   }
 
-  showBootStatus("BOOT 5/6", "Dribbler ESC");
+  showBootStatus("BOOT 5/7", "Dribbler ESC");
   initDribbler();
   setDribblerDirectionReverse();
 
@@ -77,10 +76,11 @@ void setup() {
   lastBatteryCheckMs = millis();
   checkBattery();
 
-  showBootStatus("BOOT 6/6", "BNO08x IMU");
+  showBootStatus("BOOT 6/7", "BNO08x IMU");
   if (!initIMU()) {
     haltBoot("BNO08X NOT FOUND", "Check I2C/power");
   }
+  initKicker();
 
   Serial.print("Initial Heading: ");
   Serial.println(currentYawDeg);
@@ -97,6 +97,7 @@ void loop() {
   updateLocalization();
   updateCommunication();
   updateStrategy();
+  updateKicker();
   
   if (robotCurrentlyRunning) {
     move();

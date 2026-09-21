@@ -1,12 +1,12 @@
 #pragma once
 
 // SPEED LIMITS
-constexpr float ROBOT_MAX_SPEED = 0.5f;
+constexpr float ROBOT_MAX_SPEED = 1.0f;
 constexpr float ROTATION_MAX_SPEED = 0.5f;
 
 // ACCELERATION LIMITS
 constexpr float ACCEL_LIMIT = 1.1f;
-constexpr float ROTATION_ACCEL_LIMIT = 1.8f;
+constexpr float ROTATION_ACCEL_LIMIT = 1.0f;
 
 // moveTo() translation PID
 constexpr float POSITION_KP = 0.0012f;
@@ -56,6 +56,10 @@ constexpr int DRIBBLER_REVERSE_US = 2000;
 constexpr int DRIBBLER_RUN_THROTTLE_US = 1200;
 constexpr unsigned long DRIBBLER_SPIN_TIME_MS = 3000;
 constexpr unsigned long DRIBBLER_PAUSE_MS = 1000;
+
+// kicker pins
+constexpr int kicker = 32;
+constexpr int charge = 31;
 
 // buttons
 constexpr int button1 = A6;
