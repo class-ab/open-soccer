@@ -42,9 +42,11 @@ OpponentState opponent1State;
 OpponentState opponent2State;
 
 namespace {
-constexpr float OPPONENT_GOAL_HEADING_DEG = 0.0f;
+constexpr float OPPONENT_GOAL_X_MM = 989.0f;
+constexpr float OPPONENT_GOAL_Y_MM = 0.0f;
+constexpr float OWN_GOAL_X_MM = -989.0f;
+constexpr float OWN_GOAL_Y_MM = 0.0f;
 constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
-constexpr float FORWARD_TRAVEL_MM = 1000.0f;
 constexpr float SPIN_KICK_HEADING_TOLERANCE_DEG = 15.0f;
 constexpr float SIDE_WALL_TARGET_Y_MM = 800.0f;
 const float DEFENCE_X_MM = -MIDDLE_ZONE_X;
@@ -52,6 +54,10 @@ const float DEFENCE_X_MM = -MIDDLE_ZONE_X;
 float headingTo(float targetXmm, float targetYmm) {
     return atan2f(targetYmm - robotPose.yMm,
                   targetXmm - robotPose.xMm) * 180.0f / PI;
+}
+
+float headingToOpponentGoal() {
+    return headingTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM);
 }
 
 float headingToBallOrCurrent() {
@@ -119,7 +125,7 @@ void move() {
             // Approach from the own-goal side, already facing the opponent goal.
             dribbleForward();
             moveTo(ball.xMm - BALL_APPROACH_OFFSET_MM, ball.yMm,
-                   OPPONENT_GOAL_HEADING_DEG, 0.8f, ACCEL_LIMIT,
+                   headingToOpponentGoal(), 0.8f, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -164,8 +170,8 @@ void move() {
 
         case RobotGoal::pushForward:
             dribbleForward();
-            moveTo(robotPose.xMm + FORWARD_TRAVEL_MM, robotPose.yMm,
-                   OPPONENT_GOAL_HEADING_DEG, 1.0f, ACCEL_LIMIT,
+            moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM,
+                   headingToOpponentGoal(), 1.0f, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -173,35 +179,37 @@ void move() {
             // At either side wall, head diagonally toward that wall and the own goal.
             const float side = robotPose.yMm >= 0.0f ? 1.0f : -1.0f;
             dribbleForward();
-            moveTo(robotPose.xMm - FORWARD_TRAVEL_MM, side * SIDE_WALL_TARGET_Y_MM,
+            moveTo(OWN_GOAL_X_MM, side * SIDE_WALL_TARGET_Y_MM,
                    atan2f(side, -1.0f) * 180.0f / PI,
                    0.8f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
 
-        case RobotGoal::spinKick:
+        case RobotGoal::spinKick: {
+            const float goalHeading = headingToOpponentGoal();
             stopDribbler();
-            moveTo(robotPose.xMm, robotPose.yMm, OPPONENT_GOAL_HEADING_DEG,
+            moveTo(robotPose.xMm, robotPose.yMm, goalHeading,
                    0.0f, 0.0f, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            if (!kickIssued && fabsf(angleError(OPPONENT_GOAL_HEADING_DEG,
-                                                robotPose.headingDeg)) <=
+            if (!kickIssued && fabsf(angleError(goalHeading, robotPose.headingDeg)) <=
                                    SPIN_KICK_HEADING_TOLERANCE_DEG) {
                 kick();
                 kickIssued = true;
             }
             break;
+        }
 
-        case RobotGoal::kick:
+        case RobotGoal::kick: {
+            const float goalHeading = headingToOpponentGoal();
             stopDribbler();
-            moveTo(robotPose.xMm, robotPose.yMm, OPPONENT_GOAL_HEADING_DEG,
+            moveTo(robotPose.xMm, robotPose.yMm, goalHeading,
                    0.0f, 0.0f, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            if (!kickIssued && fabsf(angleError(OPPONENT_GOAL_HEADING_DEG,
-                                                robotPose.headingDeg)) <=
+            if (!kickIssued && fabsf(angleError(goalHeading, robotPose.headingDeg)) <=
                                    SPIN_KICK_HEADING_TOLERANCE_DEG) {
                 kick();
                 kickIssued = true;
             }
             break;
+        }
 
         case RobotGoal::pass:
             if (!remotePose.valid) {
@@ -222,7 +230,7 @@ void move() {
 
         case RobotGoal::backOff:
             stopDribbler();
-            moveTo(DEFENCE_X_MM, 0.0f, headingToBallOrCurrent(),
+            moveTo(DEFENCE_X_MM, OWN_GOAL_Y_MM, headingToBallOrCurrent(),
                    0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
