@@ -53,9 +53,7 @@ constexpr int DRIBBLER_PULSE_NEUTRAL = 1500;
 constexpr int DRIBBLER_PULSE_MAX = 2000;
 constexpr int DRIBBLER_FORWARD_US = 1000;
 constexpr int DRIBBLER_REVERSE_US = 2000;
-constexpr int DRIBBLER_RUN_THROTTLE_US = 1200;
-constexpr unsigned long DRIBBLER_SPIN_TIME_MS = 3000;
-constexpr unsigned long DRIBBLER_PAUSE_MS = 1000;
+constexpr int DRIBBLER_RUN_THROTTLE_US = 1200; // MAIN SPEED CHANGE THIS
 
 // kicker pins
 constexpr int kicker = 32;
@@ -66,7 +64,7 @@ constexpr int button1 = A6;
 constexpr int button2 = A7;
 constexpr int button3 = A8;
 constexpr unsigned long BUTTON_DEBOUNCE_MS = 50;
-constexpr unsigned long BUTTON_DOUBLE_CLICK_MS = 500;
+constexpr unsigned long BUTTON_DOUBLE_CLICK_MS = 400; // may need to decrease?
 
 // OLED
 constexpr int SCREEN_WIDTH = 128;
@@ -84,7 +82,7 @@ constexpr uint8_t YELLOW_GOAL_SYNC = 0xAB; // not used currently
 constexpr uint8_t BLUE_GOAL_SYNC = 0xAC; // not used currently
 
 // LD14P LiDAR
-#define LIDAR_UART      Serial3
+#define LIDAR_UART      Serial3 // CHECK THIS SERIAL PORT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define LIDAR_UART_BAUD 230400
 
 // battery
