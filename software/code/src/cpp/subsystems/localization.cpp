@@ -12,6 +12,7 @@ namespace {
 constexpr uint8_t PACKET_SIZE = 47;
 constexpr uint8_t PACKET_HEADER = 0x54;
 constexpr uint8_t PACKET_VERLEN = 0x2C;
+constexpr size_t LIDAR_RX_BUFFER_SIZE = 8192;
 constexpr int POINTS_PER_PACKET = 12;
 constexpr int NUM_BINS = 72;
 constexpr float MAP_WIDTH_MM = 2430.0f;
@@ -57,9 +58,10 @@ constexpr float LOCKED_COARSE_STEP_MM = 20.0f;
 constexpr float LOCKED_FINE_HALF_RANGE_MM = 20.0f;
 constexpr float LOCKED_FINE_STEP_MM = 4.0f;
 
+constexpr bool OPPONENT_DETECTION_ENABLED = true;
+
 #ifdef DEBUG_LIDAR
-constexpr unsigned long LIDAR_DEBUG_SUMMARY_INTERVAL_MS = 1000;
-constexpr unsigned long LIDAR_DEBUG_PACKET_INTERVAL_MS = 250;
+constexpr unsigned long LIDAR_DEBUG_INTERVAL_MS = 1000;
 #endif
 
 // Opponent detection constants
@@ -168,6 +170,7 @@ float binDirX[NUM_BINS];  // world-frame ray direction, captured per-packet (des
 float binDirY[NUM_BINS];
 uint8_t rxBuffer[PACKET_SIZE];
 uint8_t rxIndex = 0;
+uint8_t lidarRxStorage[LIDAR_RX_BUFFER_SIZE];
 enum RxState { WAIT_HEADER, WAIT_VERLEN, READ_BODY };
 RxState rxState = WAIT_HEADER;
 int32_t lastStartAngle = -1;
@@ -201,82 +204,13 @@ int detectedOpponentCount_robot2 = 0;
 unsigned long lastOpponentTimestampMs = 0;
 
 #ifdef DEBUG_LIDAR
-struct LidarDebugStats {
-  unsigned long bytesReceived = 0;
-  unsigned long validPackets = 0;
-  unsigned long rejectedPackets = 0;
-  unsigned long completedSegments = 0;
-  unsigned long segmentsWithEnoughRays = 0;
-  unsigned long segmentsWithPoseFix = 0;
-  unsigned long totalRays = 0;
-  unsigned long lastPacketMs = 0;
-  unsigned long lastFixMs = 0;
-  unsigned long lastPacketDebugMs = 0;
-  unsigned long lastDropDebugMs = 0;
-  unsigned long lastSummaryMs = 0;
-  int lastSegmentRays = 0;
-  bool lastSegmentHadFix = false;
-} lidarDebug;
-
-void printLidarDebugSummary() {
-  unsigned long now = millis();
-  if (now - lidarDebug.lastSummaryMs < LIDAR_DEBUG_SUMMARY_INTERVAL_MS) {
-    return;
-  }
-  lidarDebug.lastSummaryMs = now;
-
-  Serial.print("[LIDAR HEALTH] bytes=");
-  Serial.print(lidarDebug.bytesReceived);
-  Serial.print(" packets=");
-  Serial.print(lidarDebug.validPackets);
-  Serial.print(" rejected=");
-  Serial.print(lidarDebug.rejectedPackets);
-  Serial.print(" lastPacketAgeMs=");
-  Serial.print(lidarDebug.lastPacketMs == 0 ? 0 : now - lidarDebug.lastPacketMs);
-  Serial.print(" segments=");
-  Serial.print(lidarDebug.completedSegments);
-  Serial.print(" raysLast=");
-  Serial.print(lidarDebug.lastSegmentRays);
-  Serial.print(" raysTotal=");
-  Serial.print(lidarDebug.totalRays);
-  Serial.print(" fixes=");
-  Serial.print(lidarDebug.segmentsWithPoseFix);
-  Serial.print(" fixAgeMs=");
-  Serial.print(lidarDebug.lastFixMs == 0 ? 0 : now - lidarDebug.lastFixMs);
-  Serial.print(" pose=");
-  Serial.print(poseInitialized ? "OK" : "NO");
-  Serial.print(" (x=");
-  Serial.print(fusedX, 0);
-  Serial.print(" y=");
-  Serial.print(fusedY, 0);
-  Serial.print(" q=");
-  Serial.print(lastFixQuality, 3);
-  Serial.print(") opponents=");
-  Serial.print(detectedOpponentCount_robot1 + detectedOpponentCount_robot2);
-  Serial.print(" ball=");
-  Serial.println(fieldBall.valid ? "OK" : "NO");
-}
-
-void printLidarPacketDebug(const LidarPacket &packet) {
-  unsigned long now = millis();
-  if (now - lidarDebug.lastPacketDebugMs < LIDAR_DEBUG_PACKET_INTERVAL_MS) {
-    return;
-  }
-  lidarDebug.lastPacketDebugMs = now;
-
-  Serial.print("[LIDAR PACKET] speed=");
-  Serial.print(packet.speed);
-  Serial.print(" start=");
-  Serial.print(packet.startAngle / 100.0f, 2);
-  Serial.print("deg end=");
-  Serial.print(packet.endAngle / 100.0f, 2);
-  Serial.print("deg distances=");
-  for (int i = 0; i < POINTS_PER_PACKET; i++) {
-    Serial.print(packet.distanceMm[i]);
-    if (i + 1 < POINTS_PER_PACKET) Serial.print(",");
-  }
-  Serial.println();
-}
+unsigned long debugBytes = 0;
+unsigned long debugPackets = 0;
+unsigned long debugRejected = 0;
+unsigned long debugFixes = 0;
+unsigned long debugLastPrintMs = 0;
+unsigned long debugLastFixMs = 0;
+int debugLastRayCount = 0;
 #endif
 
 float angleDifference(float first, float second) {
@@ -659,16 +593,6 @@ void transformAndClusterPendingPoints() {
   }
 
   detectOpponentClusters();
-
-#ifdef DEBUG_LIDAR
-  Serial.print("[LIDAR OPPONENTS] transformedPoints=");
-  Serial.print(lidarPointCount);
-  Serial.print(" detected=");
-  Serial.print(detectedOpponentCount_robot1 + detectedOpponentCount_robot2);
-  Serial.println(lidarPointCount < MIN_POINTS_FOR_CLUSTER
-                     ? " status=too_few_points"
-                     : " status=processed");
-#endif
 }
 
 PoseCandidate searchPose(float centerX, float centerY, float halfRange,
@@ -708,6 +632,8 @@ void resetBins() {
   for (int i = 0; i < NUM_BINS; i++) {
     binDistance[i] = 0.0f;
     binWeight[i] = 0.0f;
+    binDirX[i] = 0.0f;
+    binDirY[i] = 0.0f;
   }
 }
 
@@ -724,30 +650,25 @@ void finalizeRevolution() {
     }
     measurements[count] = binDistance[bin] / binWeight[bin];
     weights[count] = binWeight[bin];
-    dirX[count] = binDirX[bin];
-    dirY[count] = binDirY[bin];
+    float directionLength = sqrtf(binDirX[bin] * binDirX[bin] +
+                                  binDirY[bin] * binDirY[bin]);
+    if (directionLength <= 1e-6f) {
+      continue;
+    }
+    dirX[count] = binDirX[bin] / directionLength;
+    dirY[count] = binDirY[bin] / directionLength;
     count++;
   }
 
   if (count < MIN_RAYS_FOR_FIX) {
 #ifdef DEBUG_LIDAR
-    lidarDebug.lastSegmentRays = count;
-    lidarDebug.lastSegmentHadFix = false;
-    lidarDebug.completedSegments++;
-    Serial.print("[LIDAR SEGMENT] rays=");
-    Serial.print(count);
-    Serial.print("/ ");
-    Serial.print(MIN_RAYS_FOR_FIX);
-    Serial.println(" FIX=NO reason=too_few_rays");
+    debugLastRayCount = count;
 #endif
     return;
   }
 
 #ifdef DEBUG_LIDAR
-  lidarDebug.lastSegmentRays = count;
-  lidarDebug.totalRays += count;
-  lidarDebug.segmentsWithEnoughRays++;
-  lidarDebug.completedSegments++;
+  debugLastRayCount = count;
 #endif
 
   // Precompute the per-ray/per-edge denominator once for this revolution
@@ -788,11 +709,9 @@ void finalizeRevolution() {
     fusedY = fine.y;
     poseInitialized = true;
   } else {
-    // Previously alpha = 0.6*quality was clamped to a max of 0.9 that could
-    // never be reached (quality < 1 always), so a very good fix and a
-    // mediocre one got nearly the same trust. Scaling by 1.0 instead lets a
-    // near-perfect fix (quality > 0.9) actually reach the 0.9 ceiling.
-    float alpha = constrain(quality, 0.05f, 0.9f);
+    // Blend scan matches conservatively so small per-scan range variations
+    // do not become visible pose jumps.
+    float alpha = constrain(0.6f * quality, 0.05f, 0.6f);
     fusedX += alpha * (fine.x - fusedX);
     fusedY += alpha * (fine.y - fusedY);
   }
@@ -800,33 +719,13 @@ void finalizeRevolution() {
   robotPose = {true, fusedX - MAP_WIDTH_MM / 2.0f,
                fusedY - MAP_HEIGHT_MM / 2.0f,
                YAW_SIGN * currentYawDeg, quality, millis()};
-
 #ifdef DEBUG_LIDAR
-  lidarDebug.lastSegmentHadFix = true;
-  lidarDebug.segmentsWithPoseFix++;
-  lidarDebug.lastFixMs = millis();
-  Serial.print("[LIDAR SEGMENT] rays=");
-  Serial.print(count);
-  Serial.print(" FIX=YES x=");
-  Serial.print(robotPose.xMm, 0);
-  Serial.print(" y=");
-  Serial.print(robotPose.yMm, 0);
-  Serial.print(" heading=");
-  Serial.print(robotPose.headingDeg, 1);
-  Serial.print(" cost=");
-  Serial.print(fine.cost, 0);
-  Serial.print(" quality=");
-  Serial.println(quality, 3);
+  debugFixes++;
+  debugLastFixMs = millis();
 #endif
 }
 
 void handlePacket(const LidarPacket &packet) {
-#ifdef DEBUG_LIDAR
-  lidarDebug.validPackets++;
-  lidarDebug.lastPacketMs = millis();
-  printLidarPacketDebug(packet);
-#endif
-
   // Fire a fix every time the scan crosses a segment boundary (every
   // 36000/SEGMENTS_PER_REVOLUTION packet-angle units), not just once per full
   // wrap back to 0. The explicit wrap check is still needed alongside the
@@ -839,7 +738,9 @@ void handlePacket(const LidarPacket &packet) {
     bool wrapped = packet.startAngle < lastStartAngle;
     if (wrapped || curSegment != prevSegment) {
       finalizeRevolution();
-      transformAndClusterPendingPoints();
+      if (OPPONENT_DETECTION_ENABLED) {
+        transformAndClusterPendingPoints();
+      }
       pendingPointCount = 0;
       resetBins();
     }
@@ -870,7 +771,7 @@ void handlePacket(const LidarPacket &packet) {
 
     // Sensor-frame point for opponent detection; transformed to world frame
     // once the revolution's pose fix is known (see transformAndClusterPendingPoints).
-    if (pendingPointCount < MAX_LIDAR_POINTS) {
+    if (OPPONENT_DETECTION_ENABLED && pendingPointCount < MAX_LIDAR_POINTS) {
       pendingPoints[pendingPointCount] = {
         packet.distanceMm[i] * cosf(localAngleRad),
         packet.distanceMm[i] * sinf(localAngleRad),
@@ -882,12 +783,16 @@ void handlePacket(const LidarPacket &packet) {
 
     // Localization bin: world-frame ray direction captured with this
     // packet's fresh heading (deskews the scan-match against fast rotation).
-    int bin = static_cast<int>((angle / 100.0f) / (360.0f / NUM_BINS)) % NUM_BINS;
     float worldAngleRad = (localAngle + packetWorldHeadingDeg) * PI / 180.0f;
+    float worldAngleDeg = fmodf(localAngle + packetWorldHeadingDeg, 360.0f);
+    if (worldAngleDeg < 0.0f) {
+      worldAngleDeg += 360.0f;
+    }
+    int bin = static_cast<int>(worldAngleDeg / (360.0f / NUM_BINS));
     binDistance[bin] += weight * packet.distanceMm[i];
     binWeight[bin] += weight;
-    binDirX[bin] = cosf(worldAngleRad);
-    binDirY[bin] = sinf(worldAngleRad);
+    binDirX[bin] += weight * cosf(worldAngleRad);
+    binDirY[bin] += weight * sinf(worldAngleRad);
   }
 }
 
@@ -895,7 +800,7 @@ void pollLidar() {
   while (LIDAR_UART.available()) {
     uint8_t byteValue = LIDAR_UART.read();
 #ifdef DEBUG_LIDAR
-    lidarDebug.bytesReceived++;
+    debugBytes++;
 #endif
     if (rxState == WAIT_HEADER) {
       if (byteValue == PACKET_HEADER) {
@@ -919,16 +824,13 @@ void pollLidar() {
       if (rxIndex >= PACKET_SIZE) {
         LidarPacket packet;
         if (parsePacket(rxBuffer, packet)) {
+#ifdef DEBUG_LIDAR
+          debugPackets++;
+#endif
           handlePacket(packet);
 #ifdef DEBUG_LIDAR
         } else {
-          lidarDebug.rejectedPackets++;
-          unsigned long now = millis();
-          if (now - lidarDebug.lastDropDebugMs >=
-              LIDAR_DEBUG_PACKET_INTERVAL_MS) {
-            lidarDebug.lastDropDebugMs = now;
-            Serial.println("[LIDAR DROP] packet rejected: bad header/version/CRC");
-          }
+          debugRejected++;
 #endif
         }
         rxIndex = 0;
@@ -959,6 +861,9 @@ void updateFieldBall() {
 }  // namespace
 
 void initLocalization() {
+  // Use a dedicated large RX ring so short localization work bursts do not
+  // overrun the default Teensy HardwareSerial buffer at 230400 baud.
+  LIDAR_UART.addMemoryForRead(lidarRxStorage, sizeof(lidarRxStorage));
   LIDAR_UART.begin(LIDAR_UART_BAUD);
 
   for (int i = 0; i < 12; i++) {
@@ -979,7 +884,30 @@ void updateLocalization() {
   pollLidar();
   updateFieldBall();
 #ifdef DEBUG_LIDAR
-  printLidarDebugSummary();
+  const unsigned long now = millis();
+  if (now - debugLastPrintMs >= LIDAR_DEBUG_INTERVAL_MS) {
+    debugLastPrintMs = now;
+    Serial.print("[LIDAR] bytes=");
+    Serial.print(debugBytes);
+    Serial.print(" packets=");
+    Serial.print(debugPackets);
+    Serial.print(" rejected=");
+    Serial.print(debugRejected);
+    Serial.print(" rays=");
+    Serial.print(debugLastRayCount);
+    Serial.print(" fixes=");
+    Serial.print(debugFixes);
+    Serial.print(" fixAgeMs=");
+    Serial.print(debugLastFixMs ? now - debugLastFixMs : 0);
+    Serial.print(" pose=");
+    Serial.print(robotPose.valid ? "OK" : "NO");
+    Serial.print(" quality=");
+    Serial.print(robotPose.quality, 3);
+    Serial.print(" opponents=");
+    Serial.print(detectedOpponentCount_robot1 + detectedOpponentCount_robot2);
+    Serial.print(" rxBuffer=");
+    Serial.println(LIDAR_RX_BUFFER_SIZE);
+  }
 #endif
 }
 

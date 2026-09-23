@@ -72,7 +72,7 @@ constexpr int SCREEN_WIDTH = 128;
 constexpr int SCREEN_HEIGHT = 64;
 constexpr int OLED_RESET_PIN = -1;
 constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
-constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 100;
+constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 80;
 
 // OpenMV 
 #define BALL_UART      Serial7

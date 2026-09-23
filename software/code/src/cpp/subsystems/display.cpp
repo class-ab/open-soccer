@@ -61,27 +61,28 @@ void updateDisplay() {
   display.print("Uptime: ");
   display.println(formatDuration(uptimeMs));
 
-  display.print("Status: ");
-  display.println(robotCurrentlyRunning ? "RUNNING" : "STOPPED");
+  
 
   display.print(robotCurrentlyRunning ? "Run tmr: " : "Idle tmr:");
   display.println(formatDuration(runStateMs));
   */
+  display.print("Status: ");
+  display.println(robotCurrentlyRunning ? "RUNNING" : "STOPPED");
 
   display.print("LclPos: ");
   RobotPose pose;
   getRobotPose(pose);
   if (pose.valid) {
     display.print("X=" );
-    display.print(pose.xMm, 0);
+    display.println(pose.xMm, 0);
     display.print(" Y=" );
-    display.print(pose.yMm, 0);
+    display.println(pose.yMm, 0);
     display.print(" H= ");
-    display.print(pose.headingDeg, 1);
+    display.println(pose.headingDeg, 1);
   } else {
     display.println("INVALID");
   }
-  display.print("RemPos: ");
+  /* display.print("RemPos: ");
   RobotPose remotePose;
   getRemoteRobotPose(remotePose);
   if (pose.valid) {
@@ -94,12 +95,13 @@ void updateDisplay() {
   } else {
     display.println("INVALID");
   }
+  */
   LocalState localState;
   getLocalState(localState);
   std::string_view printRobotState = magic_enum::enum_name(localState.robotState);
   std::string_view printRobotGoal = magic_enum::enum_name(localState.robotGoal);
   display.print("State: ");
-  display.print(printRobotState.data());
+  display.println(printRobotState.data());
   display.print("    Goal: ");
   display.println(printRobotGoal.data());
   display.display();
