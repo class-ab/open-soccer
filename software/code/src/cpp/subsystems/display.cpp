@@ -1,11 +1,15 @@
 #include "include/subsystems/display.h"
 
 #include <Wire.h>
+#include <string>
+#include <iostream>
+#include <magic_enum.hpp>
 
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
 #include "include/subsystems/localization.h"
 #include "include/subsystems/communication.h"
+#include "include/subsystems/strategy.h"
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire2, OLED_RESET_PIN);
 
@@ -88,9 +92,16 @@ void updateDisplay() {
     display.print(" H= ");
     display.print(pose.headingDeg, 1);
   } else {
-    display.print("INVALID");
+    display.println("INVALID");
   }
-  
+  LocalState localState;
+  getLocalState(localState);
+  std::string_view printRobotState = magic_enum::enum_name(localState.robotState);
+  std::string_view printRobotGoal = magic_enum::enum_name(localState.robotGoal);
+  display.print("State: ");
+  display.print(printRobotState.data());
+  display.print("    Goal: ");
+  display.println(printRobotGoal.data());
   display.display();
 }
 
