@@ -31,6 +31,7 @@ constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
 
 // #define DEBUG_MOVE
 // #define DEBUG_BALL_LINK
+#define DEBUG_LIDAR
 
 // IMU
 #define BNO08X_RESET -1
@@ -82,7 +83,7 @@ constexpr uint8_t YELLOW_GOAL_SYNC = 0xAB; // not used currently
 constexpr uint8_t BLUE_GOAL_SYNC = 0xAC; // not used currently
 
 // LD14P LiDAR
-#define LIDAR_UART      Serial3 // CHECK THIS SERIAL PORT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#define LIDAR_UART      Serial3
 #define LIDAR_UART_BAUD 230400
 
 // battery
