@@ -44,9 +44,9 @@ void setup() {
   pinMode(M4a, OUTPUT);
   pinMode(M4b, OUTPUT);
 
-  pinMode(button1, INPUT);
-  pinMode(button2, INPUT);
-  pinMode(button3, INPUT);
+  pinMode(button1, INPUT_PULLUP);
+  pinMode(button2, INPUT_PULLUP);
+  pinMode(button3, INPUT_PULLUP);
 
   delay(100);
 
@@ -92,7 +92,6 @@ void loop() {
   unsigned long now = millis();
   checkButtons();
   updateIMU();
-  checkEnabledButton(now);
   processBallPacket();
   updateLocalization();
   updateCommunication();
@@ -117,54 +116,6 @@ void loop() {
   if (shutdownLatched) {
     return; // undervoltage check
   }
-}
-
-void checkEnabledButton(unsigned long now) {
-  static bool lastButton1State = LOW;
-  static bool clickPending = false;
-  static unsigned long firstClickMs = 0;
-  static uint8_t nextRobot = 1;
-
-  const bool button1Pressed = button1State == HIGH && lastButton1State == LOW;
-  if (button1Pressed) {
-    if (clickPending && now - firstClickMs <= BUTTON_DOUBLE_CLICK_MS) {
-      LocalState localState;
-      getLocalState(localState);
-
-      if (localState.robotState == RobotState::damaged) {
-        selectCurrentRobotNumber(nextRobot);
-        selectLocalRobotRole(nextRobot);
-        Serial.print("Local robot restored as robot ");
-        Serial.println(nextRobot);
-        nextRobot = (nextRobot == 1) ? 2 : 1;
-      } else {
-        markLocalRobotDamaged();
-        Serial.println("Local robot DAMAGED");
-      }
-
-      clickPending = false;
-      updateDisplay();
-    } else {
-      // Wait for the double-click window to expire before treating this as a
-      // role-selection click, so a double-click never briefly changes roles.
-      clickPending = true;
-      firstClickMs = now;
-    }
-  }
-
-  if (clickPending && now - firstClickMs > BUTTON_DOUBLE_CLICK_MS) {
-    selectCurrentRobotNumber(nextRobot);
-    selectLocalRobotRole(nextRobot);
-    Serial.print("Selected robot ");
-    Serial.print(nextRobot);
-    Serial.println(nextRobot == 1 ? " (ATTACKER)" : " (DEFENDER)");
-    nextRobot = (nextRobot == 1) ? 2 : 1;
-    clickPending = false;
-    updateDisplay();
-  }
-
-  lastButton1State = button1State;
-
 }
 
 void stopAllMotors() {
