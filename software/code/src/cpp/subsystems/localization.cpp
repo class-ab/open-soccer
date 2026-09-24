@@ -456,9 +456,12 @@ void addPacket(const LidarPacket &packet) {
     const float weight = pointWeight(range, packet.intensity[i]);
     if (weight <= 0.0f) continue;
 
+    // LD14P angles increase clockwise in its left-handed sensor frame, while
+    // field coordinates and IMU yaw are counterclockwise with +Y upward.
+    // Reflect the local angle when converting it into the field frame.
     const float localRad = localAngle * LOCAL_DEG_TO_RAD;
-    const float worldRad = (localAngle + headingDeg) * LOCAL_DEG_TO_RAD;
-    const float worldAngle = wrap360(localAngle + headingDeg);
+    const float worldRad = (headingDeg - localAngle) * LOCAL_DEG_TO_RAD;
+    const float worldAngle = wrap360(headingDeg - localAngle);
     int binIndex = static_cast<int>(worldAngle / (360.0f / BIN_COUNT));
     if (binIndex >= BIN_COUNT) binIndex = BIN_COUNT - 1;
     RayBin &bin = scanBins[binIndex];
@@ -469,7 +472,7 @@ void addPacket(const LidarPacket &packet) {
 
     if (scanPointCount < MAX_SCAN_POINTS) {
       scanPoints[scanPointCount++] = {
-        range * cosf(localRad), range * sinf(localRad),
+        range * cosf(localRad), -range * sinf(localRad),
         static_cast<float>(range), weight, headingDeg
       };
     }
