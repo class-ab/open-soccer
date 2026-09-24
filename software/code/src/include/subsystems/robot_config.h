@@ -61,11 +61,10 @@ constexpr int kicker = 32;
 constexpr int charge = 31;
 
 // buttons
-constexpr int button1 = A6;
-constexpr int button2 = A7;
+constexpr int button1 = A7;
+constexpr int button2 = A6;
 constexpr int button3 = A8;
-constexpr unsigned long BUTTON_DEBOUNCE_MS = 50;
-constexpr unsigned long BUTTON_DOUBLE_CLICK_MS = 400; // may need to decrease?
+constexpr unsigned long BUTTON_DEBOUNCE_MS = 1;
 
 // OLED
 constexpr int SCREEN_WIDTH = 128;

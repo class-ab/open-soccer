@@ -44,9 +44,9 @@ void setup() {
   pinMode(M4a, OUTPUT);
   pinMode(M4b, OUTPUT);
 
-  pinMode(button1, INPUT_PULLUP);
-  pinMode(button2, INPUT_PULLUP);
-  pinMode(button3, INPUT_PULLUP);
+  pinMode(button1, INPUT);
+  pinMode(button2, INPUT);
+  pinMode(button3, INPUT);
 
   delay(100);
 

@@ -102,7 +102,7 @@ void updateDisplay() {
   std::string_view printRobotGoal = magic_enum::enum_name(localState.robotGoal);
   display.print("State: ");
   display.println(printRobotState.data());
-  display.print("    Goal: ");
+  display.print("Goal: ");
   display.println(printRobotGoal.data());
   display.display();
 }
