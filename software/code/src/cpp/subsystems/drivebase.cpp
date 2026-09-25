@@ -51,6 +51,9 @@ struct CoordinateController {
   float integralYmm = 0.0f;
   float lastErrorXmm = 0.0f;
   float lastErrorYmm = 0.0f;
+  float integralHeadingDeg = 0.0f;
+  float lastHeadingErrorDeg = 0.0f;
+  float filteredDerivativeHeading = 0.0f;
   float filteredDerivativeX = 0.0f;
   float filteredDerivativeY = 0.0f;
   float velocityX = 0.0f;
@@ -85,14 +88,22 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
   dt = constrain(dt, 0.001f, 0.1f);
 
   bool newTarget = !coordinateController.initialized ||
-                   targetXmm != coordinateController.targetXmm ||
-                   targetYmm != coordinateController.targetYmm ||
-                   targetHeadingDeg != coordinateController.targetHeadingDeg;
+                   fabsf(targetXmm - coordinateController.targetXmm) >
+                       POSITION_TARGET_RESET_MM ||
+                   fabsf(targetYmm - coordinateController.targetYmm) >
+                       POSITION_TARGET_RESET_MM ||
+                   fabsf(angleError(targetHeadingDeg,
+                                    coordinateController.targetHeadingDeg)) >
+                       HEADING_TARGET_RESET_DEG;
   if (newTarget) {
     coordinateController.integralXmm = 0.0f;
     coordinateController.integralYmm = 0.0f;
+    coordinateController.integralHeadingDeg = 0.0f;
     coordinateController.lastErrorXmm = targetXmm - pose.xMm;
     coordinateController.lastErrorYmm = targetYmm - pose.yMm;
+    coordinateController.lastHeadingErrorDeg =
+        angleError(targetHeadingDeg, pose.headingDeg);
+    coordinateController.filteredDerivativeHeading = 0.0f;
     coordinateController.filteredDerivativeX = 0.0f;
     coordinateController.filteredDerivativeY = 0.0f;
   }
@@ -132,9 +143,20 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
              coordinateController.velocityY, accelerationLimit * dt);
 
   float headingError = angleError(targetHeadingDeg, pose.headingDeg);
+  float headingDerivative =
+      angleError(headingError, coordinateController.lastHeadingErrorDeg) / dt;
+  coordinateController.filteredDerivativeHeading +=
+      POSITION_DERIVATIVE_FILTER *
+      (headingDerivative - coordinateController.filteredDerivativeHeading);
+  coordinateController.integralHeadingDeg = constrain(
+      coordinateController.integralHeadingDeg + headingError * dt,
+      -HEADING_INTEGRAL_MAX, HEADING_INTEGRAL_MAX);
   maxRotationSpeed = constrain(maxRotationSpeed, 0.0f, ROTATION_MAX_SPEED);
-  float targetRotation = constrain(headingError * HEADING_KP,
-                                   -maxRotationSpeed, maxRotationSpeed);
+  float targetRotation =
+      headingError * HEADING_KP +
+      coordinateController.integralHeadingDeg * HEADING_KI +
+      coordinateController.filteredDerivativeHeading * HEADING_KD;
+  targetRotation = constrain(targetRotation, -maxRotationSpeed, maxRotationSpeed);
   if (fabsf(headingError) <= HEADING_TOLERANCE_DEG) {
     targetRotation = 0.0f;
   }
@@ -159,6 +181,7 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
   coordinateController.targetHeadingDeg = targetHeadingDeg;
   coordinateController.lastErrorXmm = errorXmm;
   coordinateController.lastErrorYmm = errorYmm;
+  coordinateController.lastHeadingErrorDeg = headingError;
   coordinateController.lastUpdateMs = now;
 }
 
@@ -250,6 +273,11 @@ void stopAllDriveMotors() {
   SetSpeed(2, 0);
   SetSpeed(3, 0);
   SetSpeed(4, 0);
+  coordinateController.initialized = false;
+  coordinateController.velocityX = 0.0f;
+  coordinateController.velocityY = 0.0f;
+  coordinateController.rotation = 0.0f;
+  currentMoveProfile.active = false;
 }
 
 void SetSpeed(int motor, int pwm) {

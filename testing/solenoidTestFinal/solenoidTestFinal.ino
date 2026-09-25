@@ -35,7 +35,7 @@ void loop() {
       delay(pulseTime);
       digitalWrite(kick, LOW);
       delay(switchDelay);
-      //digitalWrite(charge, HIGH);
+      digitalWrite(charge, HIGH);
       delay(200);
     }
   }

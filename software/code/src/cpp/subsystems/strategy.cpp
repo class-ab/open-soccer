@@ -18,7 +18,7 @@ LocalState remoteState = {RobotState::damaged, RobotGoal::none};
 
 // Define field zones in millimeters (0,0 is center)
 // Adjust these thresholds based on actual field dimensions
-// X DIRECTION IS LONG SIDE OF FIELD (i think)
+// Field frame: +X points toward the opponent goal; +Y is perpendicular.
 const float MIDDLE_ZONE_X = 615.0;    // ±mm from center x
 const float MIDDLE_ZONE_Y = 500.0;    // ±mm from center y
 const float SIDE_ZONE_Y = 800.0;      // ±mm from center y for far sides
@@ -48,6 +48,8 @@ constexpr float OWN_GOAL_X_MM = -989.0f;
 constexpr float OWN_GOAL_Y_MM = 0.0f;
 constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
 constexpr float SPIN_KICK_HEADING_TOLERANCE_DEG = 15.0f;
+// Keep the chassis aligned with the field's +X axis during normal play.
+constexpr float PARALLEL_HEADING_DEG = 0.0f;
 constexpr float SIDE_WALL_TARGET_Y_MM = 800.0f;
 const float DEFENCE_X_MM = -MIDDLE_ZONE_X;
 
@@ -58,10 +60,6 @@ float headingTo(float targetXmm, float targetYmm) {
 
 float headingToOpponentGoal() {
     return headingTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM);
-}
-
-float headingToBallOrCurrent() {
-    return ball.valid ? headingTo(ball.xMm, ball.yMm) : robotPose.headingDeg;
 }
 
 void dribbleForward() {
@@ -102,7 +100,7 @@ void move() {
     // A border escape always takes priority over every other goal.
     if (localState.robotGoal == RobotGoal::awayBorders) {
         stopDribbler();
-        moveTo(0.0f, 0.0f, headingToBallOrCurrent(),
+        moveTo(0.0f, 0.0f, PARALLEL_HEADING_DEG,
                0.4f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
         return;
     }
@@ -125,7 +123,7 @@ void move() {
             // Approach from the own-goal side, already facing the opponent goal.
             dribbleForward();
             moveTo(ball.xMm - BALL_APPROACH_OFFSET_MM, ball.yMm,
-                   headingToOpponentGoal(), 0.8f, ACCEL_LIMIT,
+                   PARALLEL_HEADING_DEG, 0.8f, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -135,7 +133,7 @@ void move() {
                 break;
             }
             dribbleForward();
-            moveTo(ball.xMm, ball.yMm, headingToBallOrCurrent(),
+            moveTo(ball.xMm, ball.yMm, PARALLEL_HEADING_DEG,
                    0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -147,7 +145,7 @@ void move() {
             // Continue through the ball in the +X (opponent-goal) direction.
             dribbleForward();
             moveTo(ball.xMm + BALL_APPROACH_OFFSET_MM, ball.yMm,
-                   headingToBallOrCurrent(), 0.8f, ACCEL_LIMIT,
+                   PARALLEL_HEADING_DEG, 0.8f, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -161,9 +159,7 @@ void move() {
             }
             dribbleForward();
             // When the ball is visible, face its side while driving into the opponent.
-            const float heading = ball.valid ? headingToBallOrCurrent()
-                                             : headingTo(opponent.xMm, opponent.yMm);
-            moveTo(opponent.xMm, opponent.yMm, heading, 1.0f, ACCEL_LIMIT,
+            moveTo(opponent.xMm, opponent.yMm, PARALLEL_HEADING_DEG, 1.0f, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
@@ -171,7 +167,7 @@ void move() {
         case RobotGoal::pushForward:
             dribbleForward();
             moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM,
-                   headingToOpponentGoal(), 1.0f, ACCEL_LIMIT,
+                   PARALLEL_HEADING_DEG, 1.0f, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -180,7 +176,7 @@ void move() {
             const float side = robotPose.yMm >= 0.0f ? 1.0f : -1.0f;
             dribbleForward();
             moveTo(OWN_GOAL_X_MM, side * SIDE_WALL_TARGET_Y_MM,
-                   atan2f(side, -1.0f) * 180.0f / PI,
+                   PARALLEL_HEADING_DEG,
                    0.8f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
@@ -218,9 +214,9 @@ void move() {
             }
             stopDribbler();
             moveTo(robotPose.xMm, robotPose.yMm,
-                   headingTo(remotePose.xMm, remotePose.yMm), 0.0f, 0.0f,
+                   PARALLEL_HEADING_DEG, 0.0f, 0.0f,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            if (!kickIssued && fabsf(angleError(headingTo(remotePose.xMm, remotePose.yMm),
+            if (!kickIssued && fabsf(angleError(PARALLEL_HEADING_DEG,
                                                 robotPose.headingDeg)) <=
                                    SPIN_KICK_HEADING_TOLERANCE_DEG) {
                 kick();
@@ -230,7 +226,7 @@ void move() {
 
         case RobotGoal::backOff:
             stopDribbler();
-            moveTo(DEFENCE_X_MM, OWN_GOAL_Y_MM, headingToBallOrCurrent(),
+            moveTo(DEFENCE_X_MM, OWN_GOAL_Y_MM, PARALLEL_HEADING_DEG,
                    0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -240,7 +236,7 @@ void move() {
                 break;
             }
             stopDribbler();
-            moveTo(ball.xMm, ball.yMm, headingToBallOrCurrent(),
+            moveTo(ball.xMm, ball.yMm, PARALLEL_HEADING_DEG,
                    0.9f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -253,15 +249,14 @@ void move() {
                 break;
             }
             stopDribbler();
-            moveTo(opponent.xMm, opponent.yMm, headingTo(opponent.xMm, opponent.yMm),
+            moveTo(opponent.xMm, opponent.yMm, PARALLEL_HEADING_DEG,
                    0.9f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
 
         case RobotGoal::searchBall:
             stopDribbler();
-            // Keep the heading target ahead of the current pose so it continues to spin.
-            moveTo(0.0f, 0.0f, robotPose.headingDeg + 45.0f,
+            moveTo(0.0f, 0.0f, PARALLEL_HEADING_DEG,
                    0.5f, ACCEL_LIMIT, 0.15f, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -307,23 +302,23 @@ void processOpponents() {
     // Assign second opponent if available
     if (count >= 2) {
        if ((opponentsLocal[1].valid == true) && (opponentsRemote[1].valid == true)) {
-            opponent1.valid = true;
-            opponent1.confidence = (opponentsLocal[1].confidence + opponentsRemote[1].confidence) / 2;
-            opponent1.xMm = (opponentsLocal[1].xMm + opponentsRemote[1].xMm) / 2;
-            opponent1.yMm = (opponentsLocal[1].yMm + opponentsRemote[1].yMm) / 2;
-            opponent1.timestampMs = 0;
+            opponent2.valid = true;
+            opponent2.confidence = (opponentsLocal[1].confidence + opponentsRemote[1].confidence) / 2;
+            opponent2.xMm = (opponentsLocal[1].xMm + opponentsRemote[1].xMm) / 2;
+            opponent2.yMm = (opponentsLocal[1].yMm + opponentsRemote[1].yMm) / 2;
+            opponent2.timestampMs = 0;
         } else if (opponentsLocal[1].valid == true) {
-            opponent1.valid = true;
-            opponent1.confidence = opponentsLocal[1].confidence;
-            opponent1.xMm = opponentsLocal[1].xMm;
-            opponent1.yMm = opponentsLocal[1].yMm;
-            opponent1.timestampMs = 0;
+            opponent2.valid = true;
+            opponent2.confidence = opponentsLocal[1].confidence;
+            opponent2.xMm = opponentsLocal[1].xMm;
+            opponent2.yMm = opponentsLocal[1].yMm;
+            opponent2.timestampMs = 0;
         } else {
-            opponent1.valid = true;
-            opponent1.confidence = opponentsRemote[1].confidence;
-            opponent1.xMm = opponentsRemote[1].xMm;
-            opponent1.yMm = opponentsRemote[1].yMm;
-            opponent1.timestampMs = 0;
+            opponent2.valid = true;
+            opponent2.confidence = opponentsRemote[1].confidence;
+            opponent2.xMm = opponentsRemote[1].xMm;
+            opponent2.yMm = opponentsRemote[1].yMm;
+            opponent2.timestampMs = 0;
         }   
     } else {
         opponent2.valid = false;
@@ -394,14 +389,16 @@ void updateOpponentState() {
         opponent1State = OpponentState::damaged;
     } else {
         if (opponent1State == OpponentState::hidingBall) { // checks if hiding ball first
-            if (opponent1.xMm >= -MIDDLE_ZONE_X) { // CHECK POSITIVE / NEGATIVE X/Y DIRECTIONS !!!!
-                opponent1State = OpponentState::shooting; // if hiding ball, then can only be shooting
+            if (opponent1.xMm >= MIDDLE_ZONE_X) {
+                opponent1State = OpponentState::goalie;
+            } else if (opponent1.xMm >= -MIDDLE_ZONE_X) {
+                opponent1State = OpponentState::shooting;
             } 
         } else {
-            if (opponent1.xMm >= -MIDDLE_ZONE_X) { // CHECK POSITIVE / NEGATIVE X/Y DIRECTIONS !!!!
-                opponent1State = OpponentState::shooting; // else just check normally 
-            } else if (opponent1.xMm >= MIDDLE_ZONE_X) {
+            if (opponent1.xMm >= MIDDLE_ZONE_X) {
                 opponent1State = OpponentState::goalie;
+            } else if (opponent1.xMm >= -MIDDLE_ZONE_X) {
+                opponent1State = OpponentState::shooting;
             } else {
                 opponent1State = OpponentState::chasingBall;
             }
@@ -411,14 +408,16 @@ void updateOpponentState() {
         opponent2State = OpponentState::damaged;
     } else {
         if (opponent2State == OpponentState::hidingBall) {
-            if (opponent2.xMm >= -MIDDLE_ZONE_X) { // CHECK POSITIVE / NEGATIVE X/Y DIRECTIONS !!!!
+            if (opponent2.xMm >= MIDDLE_ZONE_X) {
+                opponent2State = OpponentState::goalie;
+            } else if (opponent2.xMm >= -MIDDLE_ZONE_X) {
                 opponent2State = OpponentState::shooting;
             } 
         } else {
-            if (opponent2.xMm >= -MIDDLE_ZONE_X) { // CHECK POSITIVE / NEGATIVE X/Y DIRECTIONS !!!!
-                opponent2State = OpponentState::shooting;
-            } else if (opponent2.xMm >= MIDDLE_ZONE_X) {
+            if (opponent2.xMm >= MIDDLE_ZONE_X) {
                 opponent2State = OpponentState::goalie;
+            } else if (opponent2.xMm >= -MIDDLE_ZONE_X) {
+                opponent2State = OpponentState::shooting;
             } else {
                 opponent2State = OpponentState::chasingBall;
             }

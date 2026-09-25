@@ -15,7 +15,9 @@ constexpr float POSITION_KD = 0.00025f;
 constexpr float POSITION_INTEGRAL_MAX_MM = 500.0f;
 constexpr float POSITION_DERIVATIVE_FILTER = 0.2f;
 constexpr float POSITION_TOLERANCE_MM = 12.0f;
+constexpr float POSITION_TARGET_RESET_MM = 20.0f;
 constexpr float HEADING_TOLERANCE_DEG = 2.0f;
+constexpr float HEADING_TARGET_RESET_DEG = 2.0f;
 
 // ROTATION PID
 constexpr float HEADING_KP = 0.005f;

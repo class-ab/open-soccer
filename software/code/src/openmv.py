@@ -17,11 +17,11 @@ BALL_THRESHOLD = (64, 100, 14, 127, -128, 127)  # MHS tuning
 # !! These were calibrated at HVGA. At VGA the centre and the
 # !! pixels_to_cm_* polynomials below need to be re-measured.
 
-CENTER_X = 336  # WHITE BOT
-CENTER_Y = 268
+# CENTER_X = 336  # WHITE BOT
+# CENTER_Y = 268
 
-# CENTER_X = 298  # BLACK BOT
-# CENTER_Y = 254
+CENTER_X = 298  # BLACK BOT
+CENTER_Y = 254
 
 # Your tape-measure "0 cm" during calibration was the physical edge of the
 # robot, not the camera's optical centre -- the two are 110 mm apart. This

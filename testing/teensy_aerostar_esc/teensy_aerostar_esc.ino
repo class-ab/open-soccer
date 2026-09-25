@@ -37,7 +37,7 @@ const int REVERSE_FORWARD_US = 1000;   // one direction
 const int REVERSE_REVERSE_US = 2000;   // other direction
 
 // ---- Run parameters ----
-const int RUN_THROTTLE_US = 1160;   // gentle throttle above neutral; tune to taste
+const int RUN_THROTTLE_US = 1200;   // gentle throttle above neutral; tune to taste
 const int SPIN_TIME_MS    = 15000;   // how long to spin each direction
 const int PAUSE_MS        = 1000;   // pause at zero throttle between direction changes
 
