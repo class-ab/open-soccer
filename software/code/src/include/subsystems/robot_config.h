@@ -3,6 +3,8 @@
 // SPEED LIMITS
 constexpr float ROBOT_MAX_SPEED = 1.0f;
 constexpr float ROTATION_MAX_SPEED = 0.5f;
+// Calibrate against measured full-command robot speed on the actual field.
+constexpr float ROBOT_LINEAR_SPEED_MM_S = 1400.0f;
 
 // ACCELERATION LIMITS
 constexpr float ACCEL_LIMIT = 1.1f;
@@ -10,14 +12,8 @@ constexpr float ROTATION_ACCEL_LIMIT = 1.0f;
 
 // moveTo() translation PID
 constexpr float POSITION_KP = 0.0012f;
-constexpr float POSITION_KI = 0.0000004f;
-constexpr float POSITION_KD = 0.00025f;
-constexpr float POSITION_INTEGRAL_MAX_MM = 500.0f;
-constexpr float POSITION_DERIVATIVE_FILTER = 0.2f;
 constexpr float POSITION_TOLERANCE_MM = 12.0f;
-constexpr float POSITION_TARGET_RESET_MM = 20.0f;
 constexpr float HEADING_TOLERANCE_DEG = 2.0f;
-constexpr float HEADING_TARGET_RESET_DEG = 2.0f;
 
 // ROTATION PID
 constexpr float HEADING_KP = 0.005f;

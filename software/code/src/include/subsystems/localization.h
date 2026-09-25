@@ -30,9 +30,10 @@ struct OpponentRobot {
 
 void initLocalization();
 void updateLocalization();
+// Supply the latest field-frame velocity command for continuous pose prediction.
+void setLocalizationMotionCommand(float directionDeg, float speed);
 void getRobotPose(RobotPose &out);
-// Returns the latest LiDAR pose projected forward by recent measured motion.
-// Intended for the motion controller between slower LiDAR scan fixes.
+// Returns the latest predicted and LiDAR-corrected pose.
 void getPredictedRobotPose(RobotPose &out);
 void getFieldBall(FieldBall &out);
 void getOpponents(OpponentRobot *out, int maxOpponents, int &count);
