@@ -29,6 +29,9 @@ constexpr int BIN_COUNT = 72;  // 5-degree world-frame rays
 constexpr int MIN_VALID_BINS = 18;
 constexpr unsigned long POSE_TIMEOUT_MS = 1500;
 constexpr unsigned long OPPONENT_TIMEOUT_MS = 500;
+constexpr unsigned long POSE_PREDICTION_HORIZON_MS = 250;
+constexpr float MAX_POSE_SPEED_MM_S = 1800.0f;
+constexpr float POSE_VELOCITY_FILTER = 0.5f;
 
 // Chassis occlusion angles are measured in the LiDAR's local frame.
 constexpr float POLE_ANGLES_DEG[4] = {-135.0f, -45.0f, 45.0f, 135.0f};
@@ -116,6 +119,8 @@ unsigned long opponentTimestampMs = 0;
 bool poseInitialized = false;
 float fusedX = FIELD_WIDTH_MM * 0.5f;
 float fusedY = FIELD_HEIGHT_MM * 0.5f;
+float poseVelocityX = 0.0f;
+float poseVelocityY = 0.0f;
 int32_t lastPacketStartAngle = -1;
 
 #ifdef DEBUG_LIDAR
@@ -231,6 +236,7 @@ float pointWeight(uint16_t range, uint8_t intensity) {
 }
 
 void emitPose() {
+  /*
   Serial.print("POSE,1,");
   Serial.print(robotPose.xMm, 1);
   Serial.print(',');
@@ -241,6 +247,7 @@ void emitPose() {
   Serial.print(robotPose.quality, 3);
   Serial.print(',');
   Serial.println(robotPose.timestampMs);
+  */
 }
 
 float robustResidualCost(float residual) {
@@ -414,14 +421,35 @@ void finishScan() {
 
     if (best.cost <= 50000.0f &&
         (oldPoseExpired || jump <= 400.0f || quality >= 0.8f)) {
+      const bool canEstimateVelocity = poseInitialized && !oldPoseExpired &&
+          now > robotPose.timestampMs;
+      const float previousX = fusedX;
+      const float previousY = fusedY;
       if (!poseInitialized || oldPoseExpired) {
         fusedX = best.x;
         fusedY = best.y;
         poseInitialized = true;
+        poseVelocityX = 0.0f;
+        poseVelocityY = 0.0f;
       } else {
         const float alpha = fminf(0.75f, fmaxf(0.12f, 0.75f * quality));
         fusedX += alpha * (best.x - fusedX);
         fusedY += alpha * (best.y - fusedY);
+        if (canEstimateVelocity) {
+          const float elapsed = (now - robotPose.timestampMs) / 1000.0f;
+          float measuredVelocityX = (fusedX - previousX) / elapsed;
+          float measuredVelocityY = (fusedY - previousY) / elapsed;
+          const float velocity = hypotf(measuredVelocityX, measuredVelocityY);
+          if (velocity > MAX_POSE_SPEED_MM_S) {
+            const float scale = MAX_POSE_SPEED_MM_S / velocity;
+            measuredVelocityX *= scale;
+            measuredVelocityY *= scale;
+          }
+          poseVelocityX += POSE_VELOCITY_FILTER *
+              (measuredVelocityX - poseVelocityX);
+          poseVelocityY += POSE_VELOCITY_FILTER *
+              (measuredVelocityY - poseVelocityY);
+        }
       }
       robotPose = {true, fusedX - FIELD_WIDTH_MM * 0.5f,
                    fusedY - FIELD_HEIGHT_MM * 0.5f,
@@ -586,7 +614,7 @@ void updateLocalization() {
     robotPose.headingDeg = YAW_SIGN * currentYawDeg;
   }
   updateFieldBall();
-
+/*
 #ifdef DEBUG_LIDAR
   if (now - debugPrintMs >= 1000) {
     debugPrintMs = now;
@@ -606,10 +634,42 @@ void updateLocalization() {
     Serial.println(LIDAR_RX_BUFFER_SIZE);
   }
 #endif
+*/
+
+#ifdef DEBUG_FIELDBALL
+  if (now - debugPrintMs >= 1000) {
+    debugPrintMs = now;
+    Serial.print("FieldBall: ");
+    Serial.print("angle: ");
+    Serial.print(fieldBall.angleDeg);
+    Serial.print(" distance: ");
+    Serial.print(fieldBall.distanceCm);
+    Serial.print(" xMm: ");
+    Serial.print(fieldBall.xMm);
+    Serial.print(" yMm: ");
+    Serial.print(fieldBall.yMm);
+    Serial.print(" VALID?: ");
+    Serial.println(fieldBall.valid);
+  }
+#endif
 }
 
 void getRobotPose(RobotPose &out) {
   out = robotPose;
+}
+
+void getPredictedRobotPose(RobotPose &out) {
+  out = robotPose;
+  if (!out.valid) return;
+
+  const unsigned long ageMs = millis() - robotPose.timestampMs;
+  const unsigned long predictionMs =
+      ageMs < POSE_PREDICTION_HORIZON_MS
+          ? ageMs
+          : POSE_PREDICTION_HORIZON_MS;
+  const float predictionSeconds = predictionMs / 1000.0f;
+  out.xMm += poseVelocityX * predictionSeconds;
+  out.yMm += poseVelocityY * predictionSeconds;
 }
 
 void getFieldBall(FieldBall &out) {

@@ -31,7 +31,9 @@ constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
 
 // #define DEBUG_MOVE
 // #define DEBUG_BALL_LINK
-#define DEBUG_LIDAR
+// #define DEBUG_LIDAR
+// #define DEBUG_FIELDBALL // requires DEBUG_LIDAR
+#define LOCAL_STATE
 
 // IMU
 #define BNO08X_RESET -1

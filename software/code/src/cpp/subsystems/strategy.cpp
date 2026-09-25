@@ -349,8 +349,8 @@ void updateBallState() {
         ballState.sinceCurrent = 0.0;
         if (ball.distanceCm <= BALL_TARGET_DISTANCE_CM && ball.angleDeg < 5 && ball.angleDeg > -5) {
             ballState.ballPossession = BallPossession::mePossession;
-        } else if (remoteBall.distanceCm <= BALL_TARGET_DISTANCE_CM && remoteBall.angleDeg < 5 && remoteBall.angleDeg > -5) {
-			ballState.ballPossession = BallPossession::himPossession;
+      //  } else if (remoteBall.distanceCm <= BALL_TARGET_DISTANCE_CM && remoteBall.angleDeg < 5 && remoteBall.angleDeg > -5) {
+		//	ballState.ballPossession = BallPossession::himPossession;
 		} else if ((opponent1.valid && fabs(ball.xMm - opponent1.xMm) <= opponentBallDistance && fabs(ball.yMm - opponent1.yMm) <= opponentBallDistance)) {
             ballState.ballPossession = BallPossession::theirPossession1; // in possession of opponent 1
         } else if ((opponent2.valid && fabs(ball.xMm - opponent2.xMm) <= opponentBallDistance && fabs(ball.yMm - opponent2.yMm) <= opponentBallDistance)) {
@@ -387,7 +387,6 @@ void updateBallState() {
         // Calculate elapsed time since last valid reading
         ballState.sinceCurrent = lastBallPacketMs;
     }
-
 }
 
 void updateOpponentState() {
@@ -463,8 +462,8 @@ void updateRobotGoal() {
                     localState.robotGoal = RobotGoal::none;
                 }
             }
-        } else if (ballState.ballPossession == BallPossession::himPossession) {
-            localState.robotGoal = RobotGoal::defendBall;
+       // } else if (ballState.ballPossession == BallPossession::himPossession) {
+            // localState.robotGoal = RobotGoal::defendBall;
         } else if (ballState.ballPossession == BallPossession::none) {
             if (ballState.ballState == BallState::nearOwnGoal) {
                 localState.robotGoal = RobotGoal::backOff;

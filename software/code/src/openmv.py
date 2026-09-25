@@ -11,17 +11,24 @@ CAMERA_ROTATION_OFFSET_DEG = 90
 # Ball threshold (L Min, L Max, A Min, A Max, B Min, B Max)
 # BALL_THRESHOLD = (30, 65, 10, 45, 25, 50)   # competition tuning
 # BALL_THRESHOLD = (40, 75, 25, 45, 15, 45)     # home tuning
-BALL_THRESHOLD = (44, 78, 27, 67, 12, 46)   # MHS tuning
+BALL_THRESHOLD = (64, 100, 14, 127, -128, 127)  # MHS tuning
 
 # Mirror / frame centre in pixels.
 # !! These were calibrated at HVGA. At VGA the centre and the
 # !! pixels_to_cm_* polynomials below need to be re-measured.
 
-# CENTER_X = 336 # WHITE BOT
-# CENTER_Y = 268
+CENTER_X = 336  # WHITE BOT
+CENTER_Y = 268
 
-CENTER_X = 298 # BLACK BOT
-CENTER_Y = 254
+# CENTER_X = 298  # BLACK BOT
+# CENTER_Y = 254
+
+# Your tape-measure "0 cm" during calibration was the physical edge of the
+# robot, not the camera's optical centre -- the two are 110 mm apart. This
+# is a pure radial offset (added along the ray from centre to ball), so it
+# is applied once to the final radius, never to dx/dy individually (doing
+# that would double-count it once dx and dy are combined with Pythagoras).
+ROBOT_EDGE_TO_CENTER_CM = 11.0  # 110 mm
 
 # --- Speed knobs for find_blobs() -----------------------------------------
 # Restrict the search to the part of the frame that can contain the ball,
@@ -38,8 +45,8 @@ Y_STRIDE = 2
 
 # Noise rejection. These are 2x the old HVGA values (VGA has ~2x the pixels).
 # Higher = fewer junk blobs for Python to loop over.
-BLOB_PIXELS_THRESHOLD = 5
-BLOB_AREA_THRESHOLD = 10
+BLOB_PIXELS_THRESHOLD = 2
+BLOB_AREA_THRESHOLD = 5
 
 # merge=True glues nearby fragments of the ball together (e.g. if a glare spot
 # splits it) but costs extra time per frame. With merge off we simply take the
@@ -86,24 +93,28 @@ BLOB_THRESHOLDS = [BALL_THRESHOLD]
 # single uart.write() -- no per-frame allocation.
 tx_buf = bytearray(PACKET_LEN * 3)
 
-
-def pixels_to_cm_y(py):
-    """Vertical pixel-distance -> cm, using pre-rotation calibration."""
-    sign = 1.0 if py >= 0 else -1.0
-    x = abs(py)
-    cm = 0.0102221 * x * x - 0.252213 * x + 10.85662
-    return sign * cm
-
-
-def pixels_to_cm_x(px):
-    """Horizontal pixel-distance -> cm, using pre-rotation calibration."""
-    sign = 1.0 if px >= 0 else -1.0
-    x = abs(px)
-    cm = -0.00398991 * x * x + 1.73715 * x - 33.05303
-    return sign * cm
+# ---------------------------------------------------------------------------
+# Pixel -> cm calibration
+#
+# These coefficients are FORWARD fits: pixel = a*d^2 + b*d + c, where d (cm)
+# was the value you set with a ruler and pixel was what the camera measured.
+# That's the statistically correct direction to fit in -- but it means you
+# must INVERT the quadratic at runtime (solve for d given a measured pixel),
+# not evaluate it directly with the pixel as if it were d.
+# ---------------------------------------------------------------------------
+AY, BY, CY = 0.0127, -2.9899, 17.6903    # dy: pixel = f(distance)
+AX, BX, CX = 0.0087, 1.7772, 31.8414     # dx: pixel = f(distance)
 
 
-def pack_ball_packet(buf, offset, sync_byte, detected, angle_deg, radius_px,
+def to_cm_r(input_value):
+    """Solve 0.0087*x^2 + 1.7772*x + 31.8414 = input_value for the positive x (cm)."""
+    a, b, c = 0.0087, 1.7772, 31.8414
+    disc = max(b * b - 4.0 * a * (c - input_value), 0.0)
+    x = (-b + math.sqrt(disc)) / (2.0 * a)
+    return x if x > 0.0 else 0.0
+
+
+def pack_ball_packet(buf, offset, sync_byte, detected, angle_deg, radius_cm,
                      pixel_count, shift=SIZE_SHIFT):
     """Pack one 8-byte packet into buf at offset, in place."""
     if detected:
@@ -115,7 +126,7 @@ def pack_ball_packet(buf, offset, sync_byte, detected, angle_deg, radius_px,
         elif angle_x100 > 32767:
             angle_x100 = 32767
 
-        radius_i = int(radius_px)
+        radius_i = int(radius_cm)
         if radius_i < 0:
             radius_i = 0
         elif radius_i > 65535:
@@ -151,12 +162,14 @@ def process_frame(img, thresholds_list, buf,
                   # Default-arg binding makes these fast locals instead of
                   # slower global/module lookups -- this runs every frame.
                   atan2=math.atan2, degrees=math.degrees, sqrt=math.sqrt,
-                  to_cm_x=pixels_to_cm_x, to_cm_y=pixels_to_cm_y,
+                  to_cm_r=to_cm_r,
                   pack=pack_ball_packet,
-                  CX=CENTER_X, CY=CENTER_Y, ROT=CAMERA_ROTATION_OFFSET_DEG,
+                  CENTRE_X=CENTER_X, CENTRE_Y=CENTER_Y, ROT=CAMERA_ROTATION_OFFSET_DEG,
+                  EDGE_OFFSET=ROBOT_EDGE_TO_CENTER_CM,
                   SYNC=PACKET_SYNC_BYTE_A):
     """Find the largest ball blob and fill the ball packet (slot 0) of buf.
-    Returns its pixel count."""
+    Returns (pixel_count, angle_deg, radius_cm) -- radius_cm is measured
+    from the camera's true optical centre."""
     best_pixels = 0
     best_blob = None
 
@@ -178,19 +191,31 @@ def process_frame(img, thresholds_list, buf,
 
     if best_blob is None:
         pack(buf, 0, SYNC, False, 0.0, 0.0, 0)
-        return 0
+        return 0, 0.0, 0.0
 
     if DEBUG_DRAW:
         img.draw_detection(best_blob)
 
-    dx = best_blob.cx - CX
-    dy = best_blob.cy - CY
-    dx_cm = to_cm_x(dx)
-    dy_cm = to_cm_y(dy)
-    angle_deg = degrees(atan2(dx, dy)) + ROT
-    radius_cm = sqrt(dx_cm * dx_cm + dy_cm * dy_cm)
+    # Step 1: pixel coordinates of the ball relative to the mirror/frame
+    # centre (CENTRE_X, CENTRE_Y) as the origin. Still pure pixels here --
+    # no cm conversion yet.
+    dx_px = best_blob.cx - CENTRE_X
+    dy_px = best_blob.cy - CENTRE_Y
+
+    # Step 2: convert that (dx_px, dy_px) pair to polar form -- angle is
+    # purely a function of direction, so it doesn't matter whether it's
+    # measured in pixels or cm; radius is still in pixels at this point.
+    angle_deg = degrees(atan2(dx_px, dy_px)) + ROT
+    r_px = sqrt(dx_px * dx_px + dy_px * dy_px)
+
+    # Step 3: only now, on the combined polar radius, apply the
+    # pixel-to-cm conversion. For now this reuses the dy (pixels_to_cm_y)
+    # equation for the radial distance -- swap in a dedicated radial fit
+    # later if one is calibrated.
+    radius_cm = to_cm_r(r_px) + EDGE_OFFSET
+
     pack(buf, 0, SYNC, True, angle_deg, radius_cm, best_pixels)
-    return best_pixels
+    return best_pixels, angle_deg, radius_cm
 
 
 # Packets B and C never change (goals are no longer tracked), so they are
@@ -206,11 +231,11 @@ while True:
     clock.tick()
     img = csi0.snapshot()
 
-    ball_pixels = process_frame(img, BLOB_THRESHOLDS, tx_buf)
+    ball_pixels, angle_deg, radius_cm = process_frame(img, BLOB_THRESHOLDS, tx_buf)
     uart.write(tx_buf)
 
     if DEBUG_PRINT:
         frame_count += 1
         if frame_count >= DEBUG_PRINT_EVERY:
             frame_count = 0
-            print(clock.fps(), "ball px:", ball_pixels)
+            print(clock.fps(), "ball px:", ball_pixels, "angle:", angle_deg, "radius_cm:", radius_cm)

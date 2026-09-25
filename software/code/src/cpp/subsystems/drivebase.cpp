@@ -66,7 +66,7 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
             float maxSpeed, float accelerationLimit,
             float maxRotationSpeed, float rotationAccelerationLimit) {
   RobotPose pose;
-  getRobotPose(pose);
+  getPredictedRobotPose(pose);
 
   unsigned long now = millis();
   if (!pose.valid) {

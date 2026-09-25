@@ -96,15 +96,33 @@ void updateDisplay() {
     display.println("INVALID");
   }
   */
+ // get localState from strategy
   LocalState localState;
   getLocalState(localState);
   std::string_view printRobotState = magic_enum::enum_name(localState.robotState);
   std::string_view printRobotGoal = magic_enum::enum_name(localState.robotGoal);
+  // get ballState from strategy
+  ballLocation ballState;
+  getBallState(ballState);
+  std::string_view printBallState = magic_enum::enum_name(ballState.ballState);
+  std::string_view printBallPossession = magic_enum::enum_name(ballState.ballPossession);
+  // update display
   display.print("State: ");
   display.println(printRobotState.data());
   display.print("Goal: ");
   display.println(printRobotGoal.data());
   display.display();
+
+  #ifdef LOCAL_STATE // update serial 
+    Serial.print(printRobotState.data());
+    Serial.print(" ");
+    Serial.print(printRobotGoal.data());
+    Serial.print(" ");
+    Serial.print(printBallState.data());
+    Serial.print(" ");
+    Serial.print(printBallPossession.data());
+    Serial.println(" ");
+  #endif
 }
 
 String formatDuration(unsigned long ms) {
