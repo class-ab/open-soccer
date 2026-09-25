@@ -12,8 +12,25 @@
 #include "include/subsystems/localization.h"
 #include "include/subsystems/robot_config.h"
 #include "include/subsystems/robot_state.h"
-#include "include/subsystems/robot_tick.h"
 #include "include/subsystems/strategy.h"
+
+namespace {
+void haltBoot(const char *device, const char *check) {
+  Serial.print("BOOT FAILED: ");
+  Serial.println(device);
+  showBootStatus("BOOT FAILED", device);
+  delay(1200);
+  showBootStatus(device, check);
+
+  // Do not enter loop(): it would try to use subsystems that did not start.
+  // Keep every output stopped while the error remains visible on the OLED.
+  stopAllDriveMotors();
+  stopDribbler();
+  while (true) {
+    delay(250);
+  }
+}
+}
 
 void setup() {
   Serial.begin(115200);
@@ -39,11 +56,18 @@ void setup() {
   lastRunStateChangeMs = bootMillis;
 
   Wire2.begin();
+  Serial.println("BOOT 1/7: display");
   initDisplay();
+  showBootStatus("BOOT 2/7", "Ball UART");
   initBallTracking();
+  showBootStatus("BOOT 3/7", "LiDAR UART");
   initLocalization();
-  initCommunication();
+  showBootStatus("BOOT 4/7", "RF24 radio");
+  if (!initCommunication()) {
+    haltBoot("RF24 NOT FOUND", "Check SPI, CE/CSN");
+  }
 
+  showBootStatus("BOOT 5/7", "Dribbler ESC");
   initDribbler();
   setDribblerDirectionReverse();
 
@@ -52,74 +76,46 @@ void setup() {
   lastBatteryCheckMs = millis();
   checkBattery();
 
-  initIMU();
+  showBootStatus("BOOT 6/7", "BNO08x IMU");
+  if (!initIMU()) {
+    haltBoot("BNO08X NOT FOUND", "Check I2C/power");
+  }
+  initKicker();
 
   Serial.print("Initial Heading: ");
   Serial.println(currentYawDeg);
+  Serial.println("BOOT COMPLETE");
 }
 
 void loop() {
   // main update system
-  systemTick();
-  // check if battery under-voltage shutdown has been latched
-  if (shutdownLatched) {
-    return;
-  }
-
-  updateStrategy();
-
-  if(!robotCurrentlyRunning) {
-    stopAllMotors();
-  }
-
-  /* OLD CODE
-  chaseBall();
-  if (robotCurrentlyRunning && dribblerShouldRun) {
-    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
-  } else {
-    stopDribbler();
-  }
-  */
-}
-
-void systemTick() {
   unsigned long now = millis();
   checkButtons();
   updateIMU();
-  checkEnabledButton(now);
   processBallPacket();
   updateLocalization();
   updateCommunication();
+  updateStrategy();
+  updateKicker();
+  
+  if (robotCurrentlyRunning) {
+    move();
+  } else {
+    stopAllMotors();
+  }
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {
-    checkBattery();
+    checkBattery(); // check battery at time interval
   }
 
   if (now - lastDisplayUpdateMs >= DISPLAY_UPDATE_INTERVAL_MS) {
     lastDisplayUpdateMs = now;
-    updateDisplay();
-  }
-}
-
-void checkEnabledButton(unsigned long now) {
-  static bool lastButton1State = LOW;
-
-  if (button1State == HIGH && lastButton1State == LOW) {
-  robotCurrentlyRunning = !robotCurrentlyRunning;
-  updateLocalRobotMode();
-  lastRunStateChangeMs = now;
-  Serial.println(robotCurrentlyRunning ? "Robot RUNNING" : "Robot STOPPED");
-  updateDisplay();
+    updateDisplay(); // update display at time interval
   }
 
-  lastButton1State = button1State;
-
-  static bool lastButton3State = LOW;
-  if (button3State == HIGH && lastButton3State == LOW) {
-    updateLocalRobotMode();
+  if (shutdownLatched) {
+    return; // undervoltage check
   }
-
-  lastButton3State = button3State;
 }
 
 void stopAllMotors() {

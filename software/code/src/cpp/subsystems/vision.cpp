@@ -85,7 +85,7 @@ void getLatestBallData(BallPacket &out) {
   out = latestBallPacket;
 }
 
-void chaseTick() {
+/* void chaseTick() {
   BallPacket ball;
   getLatestBallData(ball);
 
@@ -149,4 +149,4 @@ void chaseTick() {
     Serial.println(age_ms);
   }
 #endif
-}
+} */

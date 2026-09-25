@@ -1,5 +1,6 @@
 #include "include/subsystems/imu.h"
 
+#include <math.h>
 #include <Wire.h>
 
 #include "include/subsystems/robot_config.h"
@@ -8,19 +9,43 @@
 Adafruit_BNO08x bno08x(BNO08X_RESET);
 sh2_SensorValue_t sensorValue;
 
-void initIMU() {
+namespace {
+float rawYawDeg = 0.0f;
+float yawZeroDeg = 0.0f;
+bool yawZeroCaptured = false;
+
+float wrapDegrees(float angle) {
+  angle = fmodf(angle + 180.0f, 360.0f);
+  if (angle < 0.0f) {
+    angle += 360.0f;
+  }
+  return angle - 180.0f;
+}
+}  // namespace
+
+bool initIMU() {
   if (!bno08x.begin_I2C()) {
     Serial.println("BNO08x not found!");
-
-    while (1) {
-      delay(10);
-    }
+    return false;
   }
 
   Serial.println("BNO08x Found");
   setReports();
   delay(500);
-  updateIMU();
+
+  // Capture a real sensor sample during startup and define that orientation
+  // as zero for every subsystem that reads currentYawDeg.
+  const unsigned long sampleWaitStartMs = millis();
+  while (!yawZeroCaptured && millis() - sampleWaitStartMs < 1000) {
+    updateIMU();
+    delay(1);
+  }
+  if (!yawZeroCaptured) {
+    Serial.println("IMU yaw zero pending first sample");
+  } else {
+    Serial.println("IMU yaw zeroed at startup");
+  }
+  return true;
 }
 
 void setReports() {
@@ -48,12 +73,18 @@ void updateIMU() {
   }
 
   if (sensorValue.sensorId == SH2_GAME_ROTATION_VECTOR) {
-    currentYawDeg =
+    rawYawDeg =
       quaternionToYawDegrees(
         sensorValue.un.gameRotationVector.real,
         sensorValue.un.gameRotationVector.i,
         sensorValue.un.gameRotationVector.j,
         sensorValue.un.gameRotationVector.k);
+
+    if (!yawZeroCaptured) {
+      yawZeroDeg = rawYawDeg;
+      yawZeroCaptured = true;
+    }
+    currentYawDeg = wrapDegrees(rawYawDeg - yawZeroDeg);
   }
 }
 
@@ -81,7 +112,7 @@ void resetHeadingPID() {
 float headingCorrection() {
   unsigned long now = millis();
 
-  float error = angleError(desiredHeadingDeg, currentYawDeg);
+  float error = angleError(desiredHeadingDeg, YAW_SIGN * currentYawDeg);
 
   float dt = 0.0f;
 

@@ -106,18 +106,13 @@ uint8_t getCurrentRobotNumber() {
   return currentRobotNumber;
 }
 
-static void updateRobotSelection() {
-  static bool lastButton2State = LOW;
-  if (!button2State || lastButton2State) {
-    lastButton2State = button2State;
+void selectCurrentRobotNumber(uint8_t robotNumber) {
+  if (robotNumber != 1 && robotNumber != 2) {
     return;
   }
 
-  lastButton2State = button2State;
-  uint8_t newRobotNumber = (currentRobotNumber == 1) ? 2 : 1;
-
-  if (newRobotNumber != currentRobotNumber) {
-    currentRobotNumber = newRobotNumber;
+  if (robotNumber != currentRobotNumber) {
+    currentRobotNumber = robotNumber;
     Serial.print("Robot number changed to: ");
     Serial.println(currentRobotNumber);
 
@@ -426,12 +421,12 @@ static void transmitData(unsigned long now) {
 // Public Interface
 // ============================================================
 
-void initCommunication() {
+bool initCommunication() {
   Serial.println("Initializing RF24 communication...");
 
   if (!radio.begin()) {
     Serial.println("ERROR: nRF24L01+ not detected!");
-    while (1);
+    return false;
   }
 
   // Optimize for efficiency and reliability
@@ -452,13 +447,11 @@ void initCommunication() {
 
   Serial.print("RF24 initialized. Robot: ");
   Serial.println(currentRobotNumber);
+  return true;
 }
 
 void updateCommunication() {
   unsigned long now = millis();
-
-  // Check button for robot selection
-  updateRobotSelection();
 
   // Receive data from other robot
   receiveData();
