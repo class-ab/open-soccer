@@ -4,6 +4,9 @@
 #include "include/subsystems/vision.h"
 #include "include/subsystems/communication.h"
 #include "include/subsystems/robot_config.h"
+#include "include/subsystems/drivebase.h"
+#include "include/subsystems/dribbler.h"
+#include "include/subsystems/imu.h"
 #include "string"
 #include "iostream"
 
@@ -19,6 +22,9 @@ LocalState remoteState = {RobotState::damaged, RobotGoal::none};
 const float MIDDLE_ZONE_X = 615.0;    // ±mm from center x
 const float MIDDLE_ZONE_Y = 500.0;    // ±mm from center y
 const float SIDE_ZONE_Y = 800.0;      // ±mm from center y for far sides
+const float BORDER_X = 965.0;
+const float BORDER_Y = 660.0;
+const float GOAL_Y = 425.0;
 
 // Opponent tracking
 OpponentRobot opponent1 = {false, 0.0, 0.0, 0.0, 0};
@@ -35,6 +41,40 @@ RobotPose remotePose;
 OpponentState opponent1State;
 OpponentState opponent2State;
 
+namespace {
+constexpr float OPPONENT_GOAL_X_MM = 989.0f;
+constexpr float OPPONENT_GOAL_Y_MM = 0.0f;
+constexpr float OWN_GOAL_X_MM = -989.0f;
+constexpr float OWN_GOAL_Y_MM = 0.0f;
+constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
+constexpr float SPIN_KICK_HEADING_TOLERANCE_DEG = 15.0f;
+constexpr float SIDE_WALL_TARGET_Y_MM = 800.0f;
+const float DEFENCE_X_MM = -MIDDLE_ZONE_X;
+
+float headingTo(float targetXmm, float targetYmm) {
+    return atan2f(targetYmm - robotPose.yMm,
+                  targetXmm - robotPose.xMm) * 180.0f / PI;
+}
+
+float headingToOpponentGoal() {
+    return headingTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM);
+}
+
+float headingToBallOrCurrent() {
+    return ball.valid ? headingTo(ball.xMm, ball.yMm) : robotPose.headingDeg;
+}
+
+void dribbleForward() {
+    setDribblerDirectionForward();
+    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
+}
+
+void stopMotionAndDribbler() {
+    stopAllDriveMotors();
+    stopDribbler();
+}
+}
+
 void updateStrategy() {
     getFieldBall(ball);
     getRobotPose(robotPose);
@@ -47,6 +87,188 @@ void updateStrategy() {
     updateOpponentState();
     updateRobotState();
     updateRobotGoal();
+}
+
+void move() {
+    // Kicking is edge-triggered: repeatedly calling kick() restarts its timer
+    // and would prevent the kicker sequence from completing.
+    static RobotGoal previousGoal = RobotGoal::none;
+    static bool kickIssued = false;
+    if (localState.robotGoal != previousGoal) {
+        kickIssued = false;
+        previousGoal = localState.robotGoal;
+    }
+
+    // A border escape always takes priority over every other goal.
+    if (localState.robotGoal == RobotGoal::awayBorders) {
+        stopDribbler();
+        moveTo(0.0f, 0.0f, headingToBallOrCurrent(),
+               0.4f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+        return;
+    }
+
+    if (!robotPose.valid) {
+        stopMotionAndDribbler();
+        return;
+    }
+
+    switch (localState.robotGoal) {
+        case RobotGoal::none:
+            stopMotionAndDribbler();
+            break;
+
+        case RobotGoal::getBallPush:
+            if (!ball.valid) {
+                stopMotionAndDribbler();
+                break;
+            }
+            // Approach from the own-goal side, already facing the opponent goal.
+            dribbleForward();
+            moveTo(ball.xMm - BALL_APPROACH_OFFSET_MM, ball.yMm,
+                   headingToOpponentGoal(), 0.8f, ACCEL_LIMIT,
+                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+
+        case RobotGoal::getBallDribble:
+            if (!ball.valid) {
+                stopMotionAndDribbler();
+                break;
+            }
+            dribbleForward();
+            moveTo(ball.xMm, ball.yMm, headingToBallOrCurrent(),
+                   0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+
+        case RobotGoal::getBallDribbleAway:
+            if (!ball.valid) {
+                stopMotionAndDribbler();
+                break;
+            }
+            // Continue through the ball in the +X (opponent-goal) direction.
+            dribbleForward();
+            moveTo(ball.xMm + BALL_APPROACH_OFFSET_MM, ball.yMm,
+                   headingToBallOrCurrent(), 0.8f, ACCEL_LIMIT,
+                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+
+        case RobotGoal::interceptBall1:
+        case RobotGoal::interceptBall2: {
+            const OpponentRobot &opponent =
+                localState.robotGoal == RobotGoal::interceptBall1 ? opponent1 : opponent2;
+            if (!opponent.valid) {
+                stopMotionAndDribbler();
+                break;
+            }
+            dribbleForward();
+            // When the ball is visible, face its side while driving into the opponent.
+            const float heading = ball.valid ? headingToBallOrCurrent()
+                                             : headingTo(opponent.xMm, opponent.yMm);
+            moveTo(opponent.xMm, opponent.yMm, heading, 1.0f, ACCEL_LIMIT,
+                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+        }
+
+        case RobotGoal::pushForward:
+            dribbleForward();
+            moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM,
+                   headingToOpponentGoal(), 1.0f, ACCEL_LIMIT,
+                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+
+        case RobotGoal::hideForward: {
+            // At either side wall, head diagonally toward that wall and the own goal.
+            const float side = robotPose.yMm >= 0.0f ? 1.0f : -1.0f;
+            dribbleForward();
+            moveTo(OWN_GOAL_X_MM, side * SIDE_WALL_TARGET_Y_MM,
+                   atan2f(side, -1.0f) * 180.0f / PI,
+                   0.8f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+        }
+
+        case RobotGoal::spinKick: {
+            const float goalHeading = headingToOpponentGoal();
+            stopDribbler();
+            moveTo(robotPose.xMm, robotPose.yMm, goalHeading,
+                   0.0f, 0.0f, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            if (!kickIssued && fabsf(angleError(goalHeading, robotPose.headingDeg)) <=
+                                   SPIN_KICK_HEADING_TOLERANCE_DEG) {
+                kick();
+                kickIssued = true;
+            }
+            break;
+        }
+
+        case RobotGoal::kick: {
+            const float goalHeading = headingToOpponentGoal();
+            stopDribbler();
+            moveTo(robotPose.xMm, robotPose.yMm, goalHeading,
+                   0.0f, 0.0f, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            if (!kickIssued && fabsf(angleError(goalHeading, robotPose.headingDeg)) <=
+                                   SPIN_KICK_HEADING_TOLERANCE_DEG) {
+                kick();
+                kickIssued = true;
+            }
+            break;
+        }
+
+        case RobotGoal::pass:
+            if (!remotePose.valid) {
+                stopMotionAndDribbler();
+                break;
+            }
+            stopDribbler();
+            moveTo(robotPose.xMm, robotPose.yMm,
+                   headingTo(remotePose.xMm, remotePose.yMm), 0.0f, 0.0f,
+                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            if (!kickIssued && fabsf(angleError(headingTo(remotePose.xMm, remotePose.yMm),
+                                                robotPose.headingDeg)) <=
+                                   SPIN_KICK_HEADING_TOLERANCE_DEG) {
+                kick();
+                kickIssued = true;
+            }
+            break;
+
+        case RobotGoal::backOff:
+            stopDribbler();
+            moveTo(DEFENCE_X_MM, OWN_GOAL_Y_MM, headingToBallOrCurrent(),
+                   0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+
+        case RobotGoal::defendBall:
+            if (!ball.valid) {
+                stopMotionAndDribbler();
+                break;
+            }
+            stopDribbler();
+            moveTo(ball.xMm, ball.yMm, headingToBallOrCurrent(),
+                   0.9f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+
+        case RobotGoal::defendOpponent1:
+        case RobotGoal::defendOpponent2: {
+            const OpponentRobot &opponent =
+                localState.robotGoal == RobotGoal::defendOpponent1 ? opponent1 : opponent2;
+            if (!opponent.valid) {
+                stopMotionAndDribbler();
+                break;
+            }
+            stopDribbler();
+            moveTo(opponent.xMm, opponent.yMm, headingTo(opponent.xMm, opponent.yMm),
+                   0.9f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            break;
+        }
+
+        case RobotGoal::searchBall:
+            stopDribbler();
+            // Keep the heading target ahead of the current pose so it continues to spin.
+            moveTo(0.0f, 0.0f, robotPose.headingDeg + 45.0f,
+                   0.5f, ACCEL_LIMIT, 0.15f, ROTATION_ACCEL_LIMIT);
+            break;
+
+        case RobotGoal::awayBorders:
+            // Handled above so it cannot be pre-empted by another action.
+            break;
+    }
 }
 
 void processOpponents() {
@@ -206,23 +428,25 @@ void updateOpponentState() {
 }
 
 void updateRobotState() {
-    if (remoteState.robotState == RobotState::damaged) {
-        if (!(localState.robotState == RobotState::damaged)) {
-            localState.robotState = RobotState::attacking;
-        }    
+    // Selected roles are fixed: robot 1 attacks and robot 2 defends. Damage
+    // remains latched until a role-selection button is pressed again.
+    if (localState.robotState == RobotState::damaged) {
+        return;
     }
+
+    localState.robotState = (getCurrentRobotNumber() == 1)
+                                ? RobotState::attacking
+                                : RobotState::defending;
 }
 
 void updateRobotGoal() {
     if (localState.robotState == RobotState::damaged) {
         localState.robotGoal = RobotGoal::none; // DAMAGED
-    } else if (ballState.ballPossession == BallPossession::mePossession) {
-        localState.robotState = RobotState::attacking;
-    } else if (ballState.ballPossession == BallPossession::himPossession) {
-        localState.robotState = RobotState::defending;
     }
 
-    if (localState.robotState == RobotState::attacking) { // IF ATTACKING:
+    if (abs(robotPose.yMm) >= BORDER_Y || (abs(robotPose.yMm) >= GOAL_Y && abs(robotPose.xMm) >= BORDER_X)) {
+        localState.robotGoal = RobotGoal::awayBorders; // FIRST CHECK BORDERS
+    } else if (localState.robotState == RobotState::attacking) { // IF ATTACKING:
         if (ballState.ballPossession == BallPossession::mePossession) { // IF I HAVE THE BALL:
             if (ballState.ballState == BallState::middle) {
                 localState.robotGoal = RobotGoal::pushForward;
@@ -240,7 +464,7 @@ void updateRobotGoal() {
                 }
             }
         } else if (ballState.ballPossession == BallPossession::himPossession) {
-            localState.robotState = RobotState::defending;
+            localState.robotGoal = RobotGoal::defendBall;
         } else if (ballState.ballPossession == BallPossession::none) {
             if (ballState.ballState == BallState::nearOwnGoal) {
                 localState.robotGoal = RobotGoal::backOff;
@@ -293,4 +517,18 @@ void getBallState(ballLocation &out) {
 
 void getLocalState(LocalState &out) {
     out = localState;
+}
+
+void selectLocalRobotRole(uint8_t robotNumber) {
+    if (robotNumber == 1) {
+        localState.robotState = RobotState::attacking;
+    } else if (robotNumber == 2) {
+        localState.robotState = RobotState::defending;
+    }
+    localState.robotGoal = RobotGoal::none;
+}
+
+void markLocalRobotDamaged() {
+    localState.robotState = RobotState::damaged;
+    localState.robotGoal = RobotGoal::none;
 }
