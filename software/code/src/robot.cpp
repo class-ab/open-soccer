@@ -103,7 +103,7 @@ void loop() {
   updateIMU();
   
   if (robotCurrentlyRunning) {
-    moveTo(0,0,0,1,1,1,1);
+    move();
   } else {
     stopAllMotors();
   }

@@ -461,7 +461,7 @@ void updateCommunication() {
 }
 
 void getRemoteRobotPose(RobotPose &out) {
-  out = {true, 20, 20, 20, 100, 0};
+  out = remoteRobotPose;
 }
 
 void getRemoteRobotState(LocalState &out) {
