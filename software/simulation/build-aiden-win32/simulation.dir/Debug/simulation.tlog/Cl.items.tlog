@@ -1,0 +1,14 @@
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\main.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\main.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\robot_wrapper.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\robot_wrapper.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_hal\sim_hal.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\sim_hal.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_display_stub.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\sim_display_stub.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_imu_stub.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\sim_imu_stub.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_dribbler_stub.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\sim_dribbler_stub.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_battery_stub.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\sim_battery_stub.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_localization_stub.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\sim_localization_stub.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_communication_stub.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\sim_communication_stub.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\robot.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\robot.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\vision.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\vision.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\drivebase.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\drivebase.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\robot_state.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\robot_state.obj
+C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\strategy.cpp;C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\simulation.dir\Debug\strategy.obj

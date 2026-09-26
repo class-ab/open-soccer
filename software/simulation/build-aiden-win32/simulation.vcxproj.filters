@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\robot_wrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_hal\sim_hal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_display_stub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_imu_stub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_dribbler_stub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_battery_stub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_localization_stub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_communication_stub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\robot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\vision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\drivebase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\robot_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\cpp\subsystems\strategy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{D5C39661-5270-35C9-8FF3-084CE83896CC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,2385 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineSystem.cmake:218 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The system is: Windows - 10.0.26200 - AMD64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:501 (find_file)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:538 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCCompilerId.c.in"
+    candidate_directories:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/"
+    found: "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeCCompilerId.c.in"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild version 17.14.40+3e7442088 for .NET Framework
+      Build started 26/09/2026 9:27:17 PM.
+      
+      Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\4.4.3\\CompilerIdC\\CompilerIdC.vcxproj" on node 1 (default targets).
+      PrepareForBuild:
+        Creating directory "Debug\\".
+        Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+        Creating directory "Debug\\CompilerIdC.tlog\\".
+      InitializeBuildStatus:
+        Creating "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+        Touching "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
+        CMakeCCompilerId.c
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
+        CompilerIdC.vcxproj -> C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\4.4.3\\CompilerIdC\\CompilerIdC.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_C_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Deleting file "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+        Touching "Debug\\CompilerIdC.tlog\\CompilerIdC.lastbuildstate".
+      Done Building Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\4.4.3\\CompilerIdC\\CompilerIdC.vcxproj" (default targets).
+      
+      Build succeeded.
+          0 Warning(s)
+          0 Error(s)
+      
+      Time Elapsed 00:00:01.03
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+      
+      The C compiler identification is MSVC, found in:
+        C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/4.4.3/CompilerIdC/CompilerIdC.exe
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:64 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:102 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/PuTTY/"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Program Files/Calibre2/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/aiden/AppData/Roaming/beets/"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/"
+      - "C:/Users/aiden/AppData/Roaming/npm/"
+      - "C:/Users/aiden/.lmstudio/bin/"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:64 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:103 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lld-link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/PuTTY/"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Program Files/Calibre2/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/aiden/AppData/Roaming/beets/"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/"
+      - "C:/Users/aiden/AppData/Roaming/npm/"
+      - "C:/Users/aiden/.lmstudio/bin/"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lld-link"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/lld-link.com"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/lld-link.exe"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/lld-link"
+      - "C:/Windows/System32/lld-link.com"
+      - "C:/Windows/System32/lld-link.exe"
+      - "C:/Windows/System32/lld-link"
+      - "C:/Windows/lld-link.com"
+      - "C:/Windows/lld-link.exe"
+      - "C:/Windows/lld-link"
+      - "C:/Windows/System32/wbem/lld-link.com"
+      - "C:/Windows/System32/wbem/lld-link.exe"
+      - "C:/Windows/System32/wbem/lld-link"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link"
+      - "C:/Windows/System32/OpenSSH/lld-link.com"
+      - "C:/Windows/System32/OpenSSH/lld-link.exe"
+      - "C:/Windows/System32/OpenSSH/lld-link"
+      - "C:/Program Files/PuTTY/lld-link.com"
+      - "C:/Program Files/PuTTY/lld-link.exe"
+      - "C:/Program Files/PuTTY/lld-link"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/lld-link.com"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/lld-link.exe"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/lld-link"
+      - "C:/Program Files/dotnet/lld-link.com"
+      - "C:/Program Files/dotnet/lld-link.exe"
+      - "C:/Program Files/dotnet/lld-link"
+      - "C:/Program Files/Git/cmd/lld-link.com"
+      - "C:/Program Files/Git/cmd/lld-link.exe"
+      - "C:/Program Files/Git/cmd/lld-link"
+      - "C:/Program Files/Calibre2/lld-link.com"
+      - "C:/Program Files/Calibre2/lld-link.exe"
+      - "C:/Program Files/Calibre2/lld-link"
+      - "C:/Program Files/nodejs/lld-link.com"
+      - "C:/Program Files/nodejs/lld-link.exe"
+      - "C:/Program Files/nodejs/lld-link"
+      - "C:/Program Files/CMake/bin/lld-link.com"
+      - "C:/Program Files/CMake/bin/lld-link.exe"
+      - "C:/Program Files/CMake/bin/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lld-link"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lld-link"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/lld-link.com"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/lld-link.exe"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/lld-link"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lld-link.com"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lld-link.exe"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/beets/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/beets/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/beets/lld-link"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/lld-link"
+      - "C:/msys64/ucrt64/bin/lld-link.com"
+      - "C:/msys64/ucrt64/bin/lld-link.exe"
+      - "C:/msys64/ucrt64/bin/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/npm/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/npm/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/npm/lld-link"
+      - "C:/Users/aiden/.lmstudio/bin/lld-link.com"
+      - "C:/Users/aiden/.lmstudio/bin/lld-link.exe"
+      - "C:/Users/aiden/.lmstudio/bin/lld-link"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lld-link.com"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lld-link.exe"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lld-link"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lld-link.com"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lld-link.exe"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lld-link"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_LINKER"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/PuTTY/"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Program Files/Calibre2/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/aiden/AppData/Roaming/beets/"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/"
+      - "C:/Users/aiden/AppData/Roaming/npm/"
+      - "C:/Users/aiden/.lmstudio/bin/"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_MT"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "mt"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/PuTTY/"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Program Files/Calibre2/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/aiden/AppData/Roaming/beets/"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/"
+      - "C:/Users/aiden/AppData/Roaming/npm/"
+      - "C:/Users/aiden/.lmstudio/bin/"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/mt.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/mt.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/mt"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/mt.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/mt.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/mt"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/mt.com"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/mt.exe"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/mt"
+      - "C:/Windows/System32/mt.com"
+      - "C:/Windows/System32/mt.exe"
+      - "C:/Windows/System32/mt"
+      - "C:/Windows/mt.com"
+      - "C:/Windows/mt.exe"
+      - "C:/Windows/mt"
+      - "C:/Windows/System32/wbem/mt.com"
+      - "C:/Windows/System32/wbem/mt.exe"
+      - "C:/Windows/System32/wbem/mt"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt"
+      - "C:/Windows/System32/OpenSSH/mt.com"
+      - "C:/Windows/System32/OpenSSH/mt.exe"
+      - "C:/Windows/System32/OpenSSH/mt"
+      - "C:/Program Files/PuTTY/mt.com"
+      - "C:/Program Files/PuTTY/mt.exe"
+      - "C:/Program Files/PuTTY/mt"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/mt.com"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/mt.exe"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/mt"
+      - "C:/Program Files/dotnet/mt.com"
+      - "C:/Program Files/dotnet/mt.exe"
+      - "C:/Program Files/dotnet/mt"
+      - "C:/Program Files/Git/cmd/mt.com"
+      - "C:/Program Files/Git/cmd/mt.exe"
+      - "C:/Program Files/Git/cmd/mt"
+      - "C:/Program Files/Calibre2/mt.com"
+      - "C:/Program Files/Calibre2/mt.exe"
+      - "C:/Program Files/Calibre2/mt"
+      - "C:/Program Files/nodejs/mt.com"
+      - "C:/Program Files/nodejs/mt.exe"
+      - "C:/Program Files/nodejs/mt"
+      - "C:/Program Files/CMake/bin/mt.com"
+      - "C:/Program Files/CMake/bin/mt.exe"
+      - "C:/Program Files/CMake/bin/mt"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/mt.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/mt.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/mt"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/mt.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/mt.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/mt"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/mt.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/mt.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/mt"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/mt.com"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/mt.exe"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/mt"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/mt.com"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/mt.exe"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/mt"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/mt.com"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/mt.exe"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/mt"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/mt.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/mt.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/mt"
+      - "C:/Users/aiden/AppData/Roaming/beets/mt.com"
+      - "C:/Users/aiden/AppData/Roaming/beets/mt.exe"
+      - "C:/Users/aiden/AppData/Roaming/beets/mt"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/mt.com"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/mt.exe"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/mt"
+      - "C:/msys64/ucrt64/bin/mt.com"
+      - "C:/msys64/ucrt64/bin/mt.exe"
+      - "C:/msys64/ucrt64/bin/mt"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/mt.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/mt.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/mt"
+      - "C:/Users/aiden/AppData/Roaming/npm/mt.com"
+      - "C:/Users/aiden/AppData/Roaming/npm/mt.exe"
+      - "C:/Users/aiden/AppData/Roaming/npm/mt"
+      - "C:/Users/aiden/.lmstudio/bin/mt.com"
+      - "C:/Users/aiden/.lmstudio/bin/mt.exe"
+      - "C:/Users/aiden/.lmstudio/bin/mt"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/mt.com"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/mt.exe"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/mt"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/mt.com"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/mt.exe"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/mt"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_AR"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lib"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/PuTTY/"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Program Files/Calibre2/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/aiden/AppData/Roaming/beets/"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/"
+      - "C:/Users/aiden/AppData/Roaming/npm/"
+      - "C:/Users/aiden/.lmstudio/bin/"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.exe"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:501 (find_file)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:538 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/"
+    found: "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild version 17.14.40+3e7442088 for .NET Framework
+      Build started 26/09/2026 9:27:18 PM.
+      
+      Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\4.4.3\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
+      PrepareForBuild:
+        Creating directory "Debug\\".
+        Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+        Creating directory "Debug\\CompilerIdCXX.tlog\\".
+      InitializeBuildStatus:
+        Creating "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+        Touching "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+        CMakeCXXCompilerId.cpp
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        CompilerIdCXX.vcxproj -> C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\4.4.3\\CompilerIdCXX\\CompilerIdCXX.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_CXX_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Deleting file "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+        Touching "Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate".
+      Done Building Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\4.4.3\\CompilerIdCXX\\CompilerIdCXX.vcxproj" (default targets).
+      
+      Build succeeded.
+          0 Warning(s)
+          0 Error(s)
+      
+      Time Elapsed 00:00:00.62
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+      
+      The CXX compiler identification is MSVC, found in:
+        C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/4.4.3/CompilerIdCXX/CompilerIdCXX.exe
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:64 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindBinUtils.cmake:103 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lld-link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/PuTTY/"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Program Files/Calibre2/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/aiden/AppData/Roaming/beets/"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/"
+      - "C:/Users/aiden/AppData/Roaming/npm/"
+      - "C:/Users/aiden/.lmstudio/bin/"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lld-link"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/lld-link.com"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/lld-link.exe"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/lld-link"
+      - "C:/Windows/System32/lld-link.com"
+      - "C:/Windows/System32/lld-link.exe"
+      - "C:/Windows/System32/lld-link"
+      - "C:/Windows/lld-link.com"
+      - "C:/Windows/lld-link.exe"
+      - "C:/Windows/lld-link"
+      - "C:/Windows/System32/wbem/lld-link.com"
+      - "C:/Windows/System32/wbem/lld-link.exe"
+      - "C:/Windows/System32/wbem/lld-link"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link"
+      - "C:/Windows/System32/OpenSSH/lld-link.com"
+      - "C:/Windows/System32/OpenSSH/lld-link.exe"
+      - "C:/Windows/System32/OpenSSH/lld-link"
+      - "C:/Program Files/PuTTY/lld-link.com"
+      - "C:/Program Files/PuTTY/lld-link.exe"
+      - "C:/Program Files/PuTTY/lld-link"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/lld-link.com"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/lld-link.exe"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/lld-link"
+      - "C:/Program Files/dotnet/lld-link.com"
+      - "C:/Program Files/dotnet/lld-link.exe"
+      - "C:/Program Files/dotnet/lld-link"
+      - "C:/Program Files/Git/cmd/lld-link.com"
+      - "C:/Program Files/Git/cmd/lld-link.exe"
+      - "C:/Program Files/Git/cmd/lld-link"
+      - "C:/Program Files/Calibre2/lld-link.com"
+      - "C:/Program Files/Calibre2/lld-link.exe"
+      - "C:/Program Files/Calibre2/lld-link"
+      - "C:/Program Files/nodejs/lld-link.com"
+      - "C:/Program Files/nodejs/lld-link.exe"
+      - "C:/Program Files/nodejs/lld-link"
+      - "C:/Program Files/CMake/bin/lld-link.com"
+      - "C:/Program Files/CMake/bin/lld-link.exe"
+      - "C:/Program Files/CMake/bin/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lld-link"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lld-link"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/lld-link.com"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/lld-link.exe"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/lld-link"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lld-link.com"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lld-link.exe"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/beets/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/beets/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/beets/lld-link"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/lld-link"
+      - "C:/msys64/ucrt64/bin/lld-link.com"
+      - "C:/msys64/ucrt64/bin/lld-link.exe"
+      - "C:/msys64/ucrt64/bin/lld-link"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/lld-link.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/lld-link.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/lld-link"
+      - "C:/Users/aiden/AppData/Roaming/npm/lld-link.com"
+      - "C:/Users/aiden/AppData/Roaming/npm/lld-link.exe"
+      - "C:/Users/aiden/AppData/Roaming/npm/lld-link"
+      - "C:/Users/aiden/.lmstudio/bin/lld-link.com"
+      - "C:/Users/aiden/.lmstudio/bin/lld-link.exe"
+      - "C:/Users/aiden/.lmstudio/bin/lld-link"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lld-link.com"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lld-link.exe"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lld-link"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lld-link.com"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lld-link.exe"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lld-link"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineRCCompiler.cmake:40 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/Platform/Windows-MSVC.cmake:592 (enable_language)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/Platform/Windows-MSVC.cmake:565 (__windows_compiler_msvc_enable_rc)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/Platform/Windows-MSVC-C.cmake:5 (__windows_compiler_msvc)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeCInformation.cmake:48 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_RC_COMPILER"
+    description: "RC compiler"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "rc"
+    candidate_directories:
+      - "C:/Program Files/SFML/2.6.2/bin/"
+      - "C:/Program Files/SFML/2.6.2/sbin/"
+      - "C:/Program Files/SFML/2.6.2/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/PuTTY/"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Program Files/Calibre2/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/aiden/AppData/Roaming/beets/"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/"
+      - "C:/Users/aiden/AppData/Roaming/npm/"
+      - "C:/Users/aiden/.lmstudio/bin/"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/"
+      - "C:/Program Files/bin/"
+      - "C:/Program Files/sbin/"
+      - "C:/Program Files/"
+      - "C:/Program Files (x86)/bin/"
+      - "C:/Program Files (x86)/sbin/"
+      - "C:/Program Files (x86)/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files/CMake/sbin/"
+      - "C:/Program Files/CMake/"
+      - "C:/Program Files (x86)/rcj_simulation/bin/"
+      - "C:/Program Files (x86)/rcj_simulation/sbin/"
+      - "C:/Program Files (x86)/rcj_simulation/"
+    searched_directories:
+      - "C:/Program Files/SFML/2.6.2/bin/rc.com"
+      - "C:/Program Files/SFML/2.6.2/bin/rc.exe"
+      - "C:/Program Files/SFML/2.6.2/bin/rc"
+      - "C:/Program Files/SFML/2.6.2/sbin/rc.com"
+      - "C:/Program Files/SFML/2.6.2/sbin/rc.exe"
+      - "C:/Program Files/SFML/2.6.2/sbin/rc"
+      - "C:/Program Files/SFML/2.6.2/rc.com"
+      - "C:/Program Files/SFML/2.6.2/rc.exe"
+      - "C:/Program Files/SFML/2.6.2/rc"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/rc.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/rc.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/rc"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/rc.com"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/rc.exe"
+      - "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/rc"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/rc.com"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/rc.exe"
+      - "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/rc"
+      - "C:/Windows/System32/rc.com"
+      - "C:/Windows/System32/rc.exe"
+      - "C:/Windows/System32/rc"
+      - "C:/Windows/rc.com"
+      - "C:/Windows/rc.exe"
+      - "C:/Windows/rc"
+      - "C:/Windows/System32/wbem/rc.com"
+      - "C:/Windows/System32/wbem/rc.exe"
+      - "C:/Windows/System32/wbem/rc"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc"
+      - "C:/Windows/System32/OpenSSH/rc.com"
+      - "C:/Windows/System32/OpenSSH/rc.exe"
+      - "C:/Windows/System32/OpenSSH/rc"
+      - "C:/Program Files/PuTTY/rc.com"
+      - "C:/Program Files/PuTTY/rc.exe"
+      - "C:/Program Files/PuTTY/rc"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/rc.com"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/rc.exe"
+      - "C:/Program Files/Cloudflare/Cloudflare WARP/rc"
+      - "C:/Program Files/dotnet/rc.com"
+      - "C:/Program Files/dotnet/rc.exe"
+      - "C:/Program Files/dotnet/rc"
+      - "C:/Program Files/Git/cmd/rc.com"
+      - "C:/Program Files/Git/cmd/rc.exe"
+      - "C:/Program Files/Git/cmd/rc"
+      - "C:/Program Files/Calibre2/rc.com"
+      - "C:/Program Files/Calibre2/rc.exe"
+      - "C:/Program Files/Calibre2/rc"
+      - "C:/Program Files/nodejs/rc.com"
+      - "C:/Program Files/nodejs/rc.exe"
+      - "C:/Program Files/nodejs/rc"
+      - "C:/Program Files/CMake/bin/rc.com"
+      - "C:/Program Files/CMake/bin/rc.exe"
+      - "C:/Program Files/CMake/bin/rc"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/rc.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/rc.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/rc"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/rc.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/rc.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Python313/rc"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/rc.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/rc.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/rc"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/rc.com"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/rc.exe"
+      - "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/rc"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/rc.com"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/rc.exe"
+      - "C:/Program Files/ffmpeg-7.1.1-essentials_build/bin/rc"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/rc.com"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/rc.exe"
+      - "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/rc"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/rc.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/rc.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/bin/rc"
+      - "C:/Users/aiden/AppData/Roaming/beets/rc.com"
+      - "C:/Users/aiden/AppData/Roaming/beets/rc.exe"
+      - "C:/Users/aiden/AppData/Roaming/beets/rc"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/rc.com"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/rc.exe"
+      - "C:/Users/aiden/AppData/Local/GitHubDesktop/bin/rc"
+      - "C:/msys64/ucrt64/bin/rc.com"
+      - "C:/msys64/ucrt64/bin/rc.exe"
+      - "C:/msys64/ucrt64/bin/rc"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/rc.com"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/rc.exe"
+      - "C:/Users/aiden/AppData/Local/Programs/Ollama/rc"
+      - "C:/Users/aiden/AppData/Roaming/npm/rc.com"
+      - "C:/Users/aiden/AppData/Roaming/npm/rc.exe"
+      - "C:/Users/aiden/AppData/Roaming/npm/rc"
+      - "C:/Users/aiden/.lmstudio/bin/rc.com"
+      - "C:/Users/aiden/.lmstudio/bin/rc.exe"
+      - "C:/Users/aiden/.lmstudio/bin/rc"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/rc.com"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/rc.exe"
+      - "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/rc"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/rc.com"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/rc.exe"
+      - "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/rc"
+      - "C:/Program Files/bin/rc.com"
+      - "C:/Program Files/bin/rc.exe"
+      - "C:/Program Files/bin/rc"
+      - "C:/Program Files/sbin/rc.com"
+      - "C:/Program Files/sbin/rc.exe"
+      - "C:/Program Files/sbin/rc"
+      - "C:/Program Files/rc.com"
+      - "C:/Program Files/rc.exe"
+      - "C:/Program Files/rc"
+      - "C:/Program Files (x86)/bin/rc.com"
+      - "C:/Program Files (x86)/bin/rc.exe"
+      - "C:/Program Files (x86)/bin/rc"
+      - "C:/Program Files (x86)/sbin/rc.com"
+      - "C:/Program Files (x86)/sbin/rc.exe"
+      - "C:/Program Files (x86)/sbin/rc"
+      - "C:/Program Files (x86)/rc.com"
+      - "C:/Program Files (x86)/rc.exe"
+      - "C:/Program Files (x86)/rc"
+      - "C:/Program Files/CMake/bin/rc.com"
+      - "C:/Program Files/CMake/bin/rc.exe"
+      - "C:/Program Files/CMake/bin/rc"
+      - "C:/Program Files/CMake/sbin/rc.com"
+      - "C:/Program Files/CMake/sbin/rc.exe"
+      - "C:/Program Files/CMake/sbin/rc"
+      - "C:/Program Files/CMake/rc.com"
+      - "C:/Program Files/CMake/rc.exe"
+      - "C:/Program Files/CMake/rc"
+      - "C:/Program Files (x86)/rcj_simulation/bin/rc.com"
+      - "C:/Program Files (x86)/rcj_simulation/bin/rc.exe"
+      - "C:/Program Files (x86)/rcj_simulation/bin/rc"
+      - "C:/Program Files (x86)/rcj_simulation/sbin/rc.com"
+      - "C:/Program Files (x86)/rcj_simulation/sbin/rc.exe"
+      - "C:/Program Files (x86)/rcj_simulation/sbin/rc"
+      - "C:/Program Files (x86)/rcj_simulation/rc.com"
+      - "C:/Program Files (x86)/rcj_simulation/rc.exe"
+      - "C:/Program Files (x86)/rcj_simulation/rc"
+    found: false
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/rcj_simulation"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/rcj_simulation"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerABI.cmake:123 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-lnezjv"
+      binary: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-lnezjv"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+      CMAKE_C_FLAGS_DEBUG: "/MDd /Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: false
+      stdout: |
+        Change Dir: 'C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-lnezjv'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_1ccab.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.14.40+3e7442088 for .NET Framework
+        Build started 26/09/2026 9:27:19 PM.
+        
+        Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-lnezjv\\cmTC_1ccab.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-lnezjv\\Debug\\".
+          Creating directory "cmTC_1ccab.dir\\Debug\\cmTC_1ccab.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_1ccab.dir\\Debug\\cmTC_1ccab.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_1ccab.dir\\Debug\\cmTC_1ccab.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_1ccab.dir\\Debug\\\\" /Fd"cmTC_1ccab.dir\\Debug\\vc143.pdb" /external:W3 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.4\\Modules\\CMakeCCompilerABI.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35224 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_1ccab.dir\\Debug\\\\" /Fd"cmTC_1ccab.dir\\Debug\\vc143.pdb" /external:W3 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.4\\Modules\\CMakeCCompilerABI.c"
+          CMakeCCompilerABI.c
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-lnezjv\\Debug\\cmTC_1ccab.exe" /INCREMENTAL /ILK:"cmTC_1ccab.dir\\Debug\\cmTC_1ccab.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-lnezjv/Debug/cmTC_1ccab.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-lnezjv/Debug/cmTC_1ccab.lib" /MACHINE:X64  /machine:x64 cmTC_1ccab.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_1ccab.vcxproj -> C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-lnezjv\\Debug\\cmTC_1ccab.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_1ccab.dir\\Debug\\cmTC_1ccab.tlog\\unsuccessfulbuild".
+          Touching "cmTC_1ccab.dir\\Debug\\cmTC_1ccab.tlog\\cmTC_1ccab.lastbuildstate".
+        Done Building Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-lnezjv\\cmTC_1ccab.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.57
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerABI.cmake:291 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        link line: [  C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-lnezjv\\Debug\\cmTC_1ccab.exe" /INCREMENTAL /ILK:"cmTC_1ccab.dir\\Debug\\cmTC_1ccab.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-lnezjv/Debug/cmTC_1ccab.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-lnezjv/Debug/cmTC_1ccab.lib" /MACHINE:X64  /machine:x64 cmTC_1ccab.dir\\Debug\\CMakeCCompilerABI.obj] ==> linker [C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe]
+        linker tool for 'C': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe 
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/Internal/CMakeDetermineLinkerId.cmake:41 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerABI.cmake:337 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the C compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.44.35224.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerABI.cmake:123 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-5i94iz"
+      binary: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-5i94iz"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/MDd /Zi /Ob0 /Od /RTC1"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: false
+      stdout: |
+        Change Dir: 'C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-5i94iz'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_cbff3.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.14.40+3e7442088 for .NET Framework
+        Build started 26/09/2026 9:27:20 PM.
+        
+        Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-5i94iz\\cmTC_cbff3.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-5i94iz\\Debug\\".
+          Creating directory "cmTC_cbff3.dir\\Debug\\cmTC_cbff3.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_cbff3.dir\\Debug\\cmTC_cbff3.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_cbff3.dir\\Debug\\cmTC_cbff3.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GR /Fo"cmTC_cbff3.dir\\Debug\\\\" /Fd"cmTC_cbff3.dir\\Debug\\vc143.pdb" /external:W3 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.4\\Modules\\CMakeCXXCompilerABI.cpp"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35224 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GR /Fo"cmTC_cbff3.dir\\Debug\\\\" /Fd"cmTC_cbff3.dir\\Debug\\vc143.pdb" /external:W3 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.4\\Modules\\CMakeCXXCompilerABI.cpp"
+          CMakeCXXCompilerABI.cpp
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-5i94iz\\Debug\\cmTC_cbff3.exe" /INCREMENTAL /ILK:"cmTC_cbff3.dir\\Debug\\cmTC_cbff3.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-5i94iz/Debug/cmTC_cbff3.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-5i94iz/Debug/cmTC_cbff3.lib" /MACHINE:X64  /machine:x64 cmTC_cbff3.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_cbff3.vcxproj -> C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-5i94iz\\Debug\\cmTC_cbff3.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_cbff3.dir\\Debug\\cmTC_cbff3.tlog\\unsuccessfulbuild".
+          Touching "cmTC_cbff3.dir\\Debug\\cmTC_cbff3.tlog\\cmTC_cbff3.lastbuildstate".
+        Done Building Project "C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-5i94iz\\cmTC_cbff3.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.57
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerABI.cmake:291 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        link line: [  C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\build-aiden\\CMakeFiles\\CMakeScratch\\TryCompile-5i94iz\\Debug\\cmTC_cbff3.exe" /INCREMENTAL /ILK:"cmTC_cbff3.dir\\Debug\\cmTC_cbff3.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-5i94iz/Debug/cmTC_cbff3.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/CMakeScratch/TryCompile-5i94iz/Debug/cmTC_cbff3.lib" /MACHINE:X64  /machine:x64 cmTC_cbff3.dir\\Debug\\CMakeCXXCompilerABI.obj] ==> linker [C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe]
+        linker tool for 'CXX': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe 
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/Internal/CMakeDetermineLinkerId.cmake:41 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeDetermineCompilerABI.cmake:337 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the CXX compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.44.35224.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "CMakeLists.txt:7 (find_package)"
+    name: "SFML"
+    components:
+      -
+        name: "Graphics"
+        required: true
+        found: false
+      -
+        name: "Window"
+        required: true
+        found: false
+      -
+        name: "System"
+        required: true
+        found: false
+    configs:
+      -
+        filename: "SFML.cps"
+        kind: "cps"
+      -
+        filename: "sfml.cps"
+        kind: "cps"
+      -
+        filename: "SFMLConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "sfml-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "required_explicit"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "SFML"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/pkgRedirects/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/pkgRedirects/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/pkgRedirects/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/pkgRedirects/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/pkgRedirects/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden/CMakeFiles/pkgRedirects/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/2.6.2/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/2.6.2/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/2.6.2/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/2.6.2/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/2.6.2/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/2.6.2/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/2.6.2/lib/cmake/SFML/SFMLConfig.cmake"
+        mode: "config"
+        reason: "insufficient_version"
+        message: "The version found is not compatible with the version requested."
+      -
+        path: "C:/Program Files/SFML/2.6.2/lib/cmake/SFML/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PuTTY/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PuTTY/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PuTTY/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PuTTY/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PuTTY/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PuTTY/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Cloudflare/Cloudflare WARP/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Cloudflare/Cloudflare WARP/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Cloudflare/Cloudflare WARP/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Cloudflare/Cloudflare WARP/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Cloudflare/Cloudflare WARP/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Cloudflare/Cloudflare WARP/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Calibre2/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Calibre2/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Calibre2/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Calibre2/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Calibre2/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Calibre2/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/Scripts/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Python313/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Python/Launcher/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Microsoft/WindowsApps/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/ffmpeg-7.1.1-essentials_build/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/ffmpeg-7.1.1-essentials_build/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/ffmpeg-7.1.1-essentials_build/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/ffmpeg-7.1.1-essentials_build/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/ffmpeg-7.1.1-essentials_build/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/ffmpeg-7.1.1-essentials_build/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/rclone-current-windows-amd64/rclone-v1.70.3-windows-amd64/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/Programs/Microsoft VS Code/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/beets/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/beets/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/beets/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/beets/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/beets/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/beets/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/GitHubDesktop/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/GitHubDesktop/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/GitHubDesktop/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/GitHubDesktop/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/GitHubDesktop/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Local/GitHubDesktop/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/msys64/ucrt64/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/msys64/ucrt64/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/msys64/ucrt64/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/msys64/ucrt64/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/msys64/ucrt64/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/msys64/ucrt64/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/npm/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/npm/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/npm/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/npm/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/npm/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/AppData/Roaming/npm/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.lmstudio/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.lmstudio/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.lmstudio/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.lmstudio/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.lmstudio/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.lmstudio/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/vscjava.vscode-java-debug-0.59.0/bundled/scripts/noConfigScripts/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/aiden/.vscode/extensions/ms-python.debugpy-2026.6.0-win32-x64/bundled/scripts/noConfigScripts/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/SFML/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found: null
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:\\Program Files\\SFML\\2.6.2"
+      ENV{PATH}:
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\aiden\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\Program Files\\Microsoft\\jdk-21.0.5.11-hotspot\\bin"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\PuTTY\\"
+        - "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\Calibre2\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\aiden\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Program Files\\ffmpeg-7.1.1-essentials_build\\bin"
+        - "C:\\Program Files\\rclone-current-windows-amd64\\rclone-v1.70.3-windows-amd64"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\beets"
+        - "C:\\Users\\aiden\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\Users\\aiden\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\aiden\\AppData\\Roaming\\npm"
+        - "C:\\Users\\aiden\\.lmstudio\\bin"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\vscjava.vscode-java-debug-0.59.0\\bundled\\scripts\\noConfigScripts"
+        - "c:\\Users\\aiden\\.vscode\\extensions\\ms-python.debugpy-2026.6.0-win32-x64\\bundled\\scripts\\noConfigScripts"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/rcj_simulation"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/rcj_simulation"
+...
