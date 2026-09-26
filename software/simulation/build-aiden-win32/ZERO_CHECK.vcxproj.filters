@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\build-aiden-win32\CMakeFiles\05e17379cf5ea5e07e8a2eac7f748982\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{73E50AAA-F95D-3F15-9838-D01D7F998772}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

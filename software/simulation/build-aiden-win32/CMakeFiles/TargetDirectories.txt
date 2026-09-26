@@ -1,0 +1,3 @@
+C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden-win32/CMakeFiles/simulation.dir
+C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden-win32/CMakeFiles/ALL_BUILD.dir
+C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden-win32/CMakeFiles/ZERO_CHECK.dir

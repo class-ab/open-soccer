@@ -20,6 +20,10 @@ static std::condition_variable sim_time_cv;
 static unsigned long sim_millis = 0; // simulator-driven epoch (ms)
 static std::atomic<bool> sim_robot_exit(false);
 static std::atomic<bool> sim_robot_enabled(true);
+static uint64_t sim_tick_generation = 0;
+static unsigned sim_ready_mask = 0;
+static unsigned sim_completed_mask = 0;
+constexpr unsigned kAllRobotSlotsMask = 0x3; // 2 simulated robot threads
 
 void HardwareSerial::begin(unsigned long) { /* no-op */ }
 
@@ -77,6 +81,49 @@ void sim_set_millis(unsigned long ms) {
     sim_millis = ms;
   }
   sim_time_cv.notify_all();
+}
+
+void sim_step(unsigned long ms) {
+  std::unique_lock<std::mutex> lk(sim_time_mutex);
+  sim_millis = ms;
+  const uint64_t generation = ++sim_tick_generation;
+  sim_completed_mask = 0;
+  sim_time_cv.notify_all();
+  const unsigned expectedMask = sim_ready_mask & kAllRobotSlotsMask;
+  if (expectedMask != 0) {
+    sim_time_cv.wait(lk, [&] {
+      return (sim_completed_mask & expectedMask) == expectedMask || sim_robot_exit.load();
+    });
+  }
+}
+
+void sim_wait_for_tick(uint64_t &generation) {
+  std::unique_lock<std::mutex> lk(sim_time_mutex);
+  sim_time_cv.wait(lk, [&] {
+    return sim_tick_generation > generation || sim_robot_exit.load();
+  });
+  generation = sim_tick_generation;
+}
+
+void sim_complete_tick(int slot, uint64_t generation) {
+  {
+    std::lock_guard<std::mutex> lk(sim_time_mutex);
+    if (generation == sim_tick_generation) {
+      sim_completed_mask |= (1u << slot);
+    }
+  }
+  sim_time_cv.notify_all();
+}
+
+uint64_t sim_robot_setup_complete(int slot) {
+  uint64_t generation;
+  {
+    std::lock_guard<std::mutex> lk(sim_time_mutex);
+    sim_ready_mask |= (1u << slot);
+    generation = sim_tick_generation;
+  }
+  sim_time_cv.notify_all();
+  return generation;
 }
 
 void sim_set_robot_enabled(bool enabled) {

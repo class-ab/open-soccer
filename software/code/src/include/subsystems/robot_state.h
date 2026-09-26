@@ -10,6 +10,8 @@
 using uint8_t = std::uint8_t;
 #endif
 
+#include "robot_config.h"
+
 struct BallPacket {
   bool detected;
   float angleDeg;   // degrees (relative to robot front/dribbler direction)
@@ -26,35 +28,35 @@ struct MoveProfile {
   unsigned long lastUpdateMs;    // millis() when last updated
 };
 
-extern BallPacket latestBallPacket;
-extern unsigned long lastBallPacketMs;
-extern uint8_t ballPacketBuf[];
-extern uint8_t ballPacketIdx;
-extern bool ballSyncFound;
+extern SIM_TLS BallPacket latestBallPacket;
+extern SIM_TLS unsigned long lastBallPacketMs;
+extern SIM_TLS uint8_t ballPacketBuf[];
+extern SIM_TLS uint8_t ballPacketIdx;
+extern SIM_TLS bool ballSyncFound;
 
-extern MoveProfile currentMoveProfile;
+extern SIM_TLS MoveProfile currentMoveProfile;
 
-extern unsigned long bootMillis;
-extern unsigned long lastRunStateChangeMs;
-extern bool robotCurrentlyRunning;
+extern SIM_TLS unsigned long bootMillis;
+extern SIM_TLS unsigned long lastRunStateChangeMs;
+extern SIM_TLS bool robotCurrentlyRunning;
 
-extern unsigned long lastBatteryCheckMs;
-extern float lastBatteryVoltage;
-extern bool shutdownLatched;
-extern bool dribblerShouldRun;
+extern SIM_TLS unsigned long lastBatteryCheckMs;
+extern SIM_TLS float lastBatteryVoltage;
+extern SIM_TLS bool shutdownLatched;
+extern SIM_TLS bool dribblerShouldRun;
 
-extern unsigned long lastDisplayUpdateMs;
-extern bool displayAvailable;
+extern SIM_TLS unsigned long lastDisplayUpdateMs;
+extern SIM_TLS bool displayAvailable;
 
-extern float currentYawDeg;
-extern float desiredHeadingDeg;
-extern float headingIntegral;
-extern float headingLastError;
-extern unsigned long headingLastTimeMs;
-extern bool headingPidInitialized;
+extern SIM_TLS float currentYawDeg;
+extern SIM_TLS float desiredHeadingDeg;
+extern SIM_TLS float headingIntegral;
+extern SIM_TLS float headingLastError;
+extern SIM_TLS unsigned long headingLastTimeMs;
+extern SIM_TLS bool headingPidInitialized;
 
 void checkButtons();
 
-extern bool button1State;
-extern bool button2State;
-extern bool button3State;
+extern SIM_TLS bool button1State;
+extern SIM_TLS bool button2State;
+extern SIM_TLS bool button3State;

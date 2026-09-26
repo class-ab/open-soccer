@@ -1,0 +1,10 @@
+^C:\USERS\AIDEN\DOCUMENTS\GITHUB\OPEN-SOCCER\SOFTWARE\SIMULATION\BUILD-AIDEN-WIN32\CMAKEFILES\05E17379CF5EA5E07E8A2EAC7F748982\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/aiden/Documents/GitHub/open-soccer/software/simulation -BC:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden-win32 --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/build-aiden-win32/rcj_simulation.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

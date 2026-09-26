@@ -7,11 +7,11 @@ loop animates the field.
 
 ## Field constants
 
-- Total green area: 1430 mm (width) x 1820 mm (height)
+- Total green area: 2430 mm (width) x 1820 mm (height), matching robot localization
 - White lines: 50 mm thick, positioned 250 mm from the walls on every side
   (these form the play border)
-- Goals: 450 mm wide, centered on the short sides, 74 mm deep from the inner
-  edge of the white line
+- Goals: 450 mm wide, centered on the left and right short sides, 74 mm deep
+  from the inner edge of the white line
 - Robot: 180 mm diameter (configurable) with a 40 mm wide frontal dribbler bar
 - Ball: 40 mm diameter
 
@@ -45,10 +45,11 @@ cmake --build build --config Release
 Then run `build\Release\simulation.exe` (Windows) or `build/simulation`
 (Linux/macOS).
 
-> The sim links against a selected subset of the robot code
-> (`../code/src/robot.cpp`, `vision.cpp`, `drivebase.cpp`, `robot_state.cpp`)
-> and uses `sim_hal/Arduino.h` + the `sim_stubs/` shims so firmware compiles
-> unmodified outside Arduino. No robot code is changed to make the sim work.
+> The sim runs the current robot entry point, vision, drivebase, state, and
+> strategy modules from `../code/src`. Simulator localization, IMU, radio,
+> display, battery, dribbler, and kicker adapters replace hardware I/O while
+> preserving the firmware interfaces. Robot control runs once per simulation
+> frame; the position and heading PID values come from `robot_config.h`.
 
 If CMake cannot find SFML, install it for your platform (vcpkg, apt, brew, …)
 and make sure it is discoverable by CMake.
@@ -66,8 +67,9 @@ Keyboard:
 
 HUD panel (right side):
 - **Enable / Disable** buttons toggle the robot firmware run state.
-- **Move** and **Rot** fields set the move/rotation speed scale used when
-  applying the robot's active `MoveProfile` to simulated motion.
+- **Move** and **Rot** fields set calibration scales (default `1.0`) when
+  applying the robot's active `MoveProfile`. Linear motion uses the configured
+  robot speed and a `0.9` slip modifier.
 - Readouts: BallPacket (detected / angle / distance), MoveProfile (active /
   direction / speed / rotation), and Dribbler + Ball held state.
 

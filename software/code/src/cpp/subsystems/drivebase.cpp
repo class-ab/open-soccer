@@ -42,7 +42,7 @@ struct CoordinateController {
   unsigned long lastUpdateMs = 0;
 };
 
-CoordinateController coordinateController;
+SIM_TLS CoordinateController coordinateController;
 }
 
 void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,

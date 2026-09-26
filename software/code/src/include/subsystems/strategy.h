@@ -1,6 +1,7 @@
 #pragma once
 
 #include "localization.h"
+#include "robot_config.h"
 
 void updateStrategy();
 void updateBallState();
@@ -14,8 +15,8 @@ void markLocalRobotDamaged();
 void move();
 
 // Opponent tracking
-extern OpponentRobot opponent1;
-extern OpponentRobot opponent2;
+extern SIM_TLS OpponentRobot opponent1;
+extern SIM_TLS OpponentRobot opponent2;
 
 enum class OpponentState {
     damaged, // ALSO "UNKNOWN" !!!
