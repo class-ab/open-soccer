@@ -19,18 +19,17 @@ static void robot_thread_func() {
   } catch (...) {
     std::cerr << "Exception in robot setup()" << std::endl;
   }
-
-  // Run loop() until requested to stop. The firmware may call delay(), which will block on
-  // the simulator-driven condition variable implemented in sim_hal.
+  uint64_t generation = sim_robot_setup_complete();
   while (!robot_request_stop.load()) {
+    sim_wait_for_tick(generation);
+    if (robot_request_stop.load()) break;
     try {
       loop();
     } catch (...) {
       std::cerr << "Exception in robot loop()" << std::endl;
       break;
     }
-    // If the robot code doesn't call delay() frequently, yield a little to avoid busy spin
-    std::this_thread::yield();
+    sim_complete_tick(generation);
   }
 }
 
@@ -46,7 +45,7 @@ void robot_init() {
 void robot_stop() {
   if (!robot_thread_running.load()) return;
   robot_request_stop.store(true);
-  // notify simulator waiters in case robot thread is blocked inside delay()
+  sim_request_robot_exit();
   sim_set_millis(millis());
   if (robot_thread.joinable()) robot_thread.join();
   robot_thread_running.store(false);

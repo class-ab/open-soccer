@@ -1,9 +1,17 @@
 #pragma once
 
-// Minimal IMU header stub for simulator builds. Avoids including Adafruit_BNO08x.
+#include <Adafruit_BNO08x.h>
 
-extern void initIMU();
-extern void setReports();
-extern void updateIMU();
+extern Adafruit_BNO08x bno08x;
+extern sh2_SensorValue_t sensorValue;
 
-extern float headingCorrection();
+bool initIMU();
+void setReports();
+void updateIMU();
+float getIMUHeadingDeg();
+float getIMUYawRateDegPerSec();
+bool isIMUHeadingFresh();
+float quaternionToYawDegrees(float real, float i, float j, float k);
+float angleError(float target, float current);
+float headingCorrection();
+void resetHeadingPID();

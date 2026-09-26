@@ -11,6 +11,11 @@ void updateDisplay() {
   // no-op in sim
 }
 
+void showBootStatus(const char *line1, const char *line2) {
+  (void)line1;
+  (void)line2;
+}
+
 String formatDuration(unsigned long ms) {
   unsigned long totalSeconds = ms / 1000UL;
   unsigned long hours = totalSeconds / 3600UL;

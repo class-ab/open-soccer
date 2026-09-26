@@ -1,10 +1,22 @@
-#include "../sim_hal/Arduino.h"
-#include "../../include/subsystems/imu.h"
-#include "../../code/src/include/subsystems/robot_state.h"
+#include "sim_hal/Arduino.h"
+#include "sim_hal/sim_robot_io.h"
+#include "subsystems/imu.h"
+#include "subsystems/robot_config.h"
+#include "subsystems/robot_state.h"
 
-void initIMU() {
-  // start with yaw = 0
-  currentYawDeg = 0.0f;
+#include <cmath>
+#include <mutex>
+
+namespace {
+std::mutex imuMutex;
+float simulatedHeadingDeg = 0.0f;
+float simulatedYawRateDegPerSec = 0.0f;
+}
+
+bool initIMU() {
+  std::lock_guard<std::mutex> lock(imuMutex);
+  currentYawDeg = simulatedHeadingDeg;
+  return true;
 }
 
 void setReports() {
@@ -12,18 +24,49 @@ void setReports() {
 }
 
 void updateIMU() {
-  // no-op; leave currentYawDeg as-is
+  std::lock_guard<std::mutex> lock(imuMutex);
+  currentYawDeg = simulatedHeadingDeg;
+}
+
+float getIMUHeadingDeg() {
+  return currentYawDeg;
+}
+
+float getIMUYawRateDegPerSec() {
+  std::lock_guard<std::mutex> lock(imuMutex);
+  return simulatedYawRateDegPerSec;
+}
+
+bool isIMUHeadingFresh() {
+  return true;
+}
+
+float quaternionToYawDegrees(float real, float i, float j, float k) {
+  const float yaw = std::atan2(2.0f * (real * k + i * j),
+                               1.0f - 2.0f * (j * j + k * k));
+  return yaw * 180.0f / 3.14159265358979323846f;
+}
+
+float angleError(float target, float current) {
+  float error = std::fmod(target - current + 540.0f, 360.0f) - 180.0f;
+  return error;
+}
+
+void resetHeadingPID() {
+  headingIntegral = 0.0f;
+  headingLastError = 0.0f;
+  headingPidInitialized = false;
 }
 
 float headingCorrection() {
-  // simple stub: use existing logic from imu but without sensors
-  unsigned long now = millis();
-  float error = desiredHeadingDeg - currentYawDeg;
-  while (error > 180.0f) error -= 360.0f;
-  while (error < -180.0f) error += 360.0f;
-  // very simple proportional correction
-  float correction = (error * 0.005f);
-  if (correction > 0.40f) correction = 0.40f;
-  if (correction < -0.40f) correction = -0.40f;
-  return correction;
+  const float error = angleError(desiredHeadingDeg, currentYawDeg);
+  return constrain(error * HEADING_KP -
+                       YAW_SIGN * getIMUYawRateDegPerSec() * HEADING_KD,
+                   -0.40f, 0.40f);
+}
+
+void sim_set_imu_state(float headingDeg, float yawRateDegPerSec) {
+  std::lock_guard<std::mutex> lock(imuMutex);
+  simulatedHeadingDeg = headingDeg;
+  simulatedYawRateDegPerSec = yawRateDegPerSec;
 }

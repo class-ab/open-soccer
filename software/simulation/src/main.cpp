@@ -5,13 +5,16 @@
 #include <iostream>
 
 #include "subsystems/robot_state.h"
+#include "subsystems/localization.h"
+#include "subsystems/robot_config.h"
+#include "sim_hal/sim_robot_io.h"
 
 // Simple 2D RCJ Open Soccer simulation
 // - Units in this file are millimetres (mm) for field/robot constants
 // - The graphics scale converts mm -> pixels (PX_PER_MM)
 
-// Field constants (from user)
-constexpr float FIELD_WIDTH_MM = 1430.0f;   // x dimension (mm)
+// Field geometry matches the robot localization map.
+constexpr float FIELD_WIDTH_MM = 2430.0f;   // x dimension (mm)
 constexpr float FIELD_HEIGHT_MM = 1820.0f;  // y dimension (mm)
 constexpr float WHITE_LINE_THICKNESS_MM = 50.0f;
 constexpr float WHITE_LINE_INSET_FROM_WALL_MM = 250.0f; // distance from outer wall to the white line
@@ -51,17 +54,17 @@ struct AxisAlignedRect {
 // Goals are solid rectangular obstacles in simulation coordinates. Keeping
 // these bounds in millimetres makes their collision independent of rendering
 // scale and matches the rectangles drawn later in main().
-const AxisAlignedRect TOP_GOAL_BOUNDS = {
-    (FIELD_WIDTH_MM - GOAL_WIDTH_MM) / 2.0f,
+const AxisAlignedRect LEFT_GOAL_BOUNDS = {
     WHITE_LINE_INSET_FROM_WALL_MM + WHITE_LINE_THICKNESS_MM / 2.0f - GOAL_DEPTH_MM,
-    GOAL_WIDTH_MM,
-    GOAL_DEPTH_MM
+    (FIELD_HEIGHT_MM - GOAL_WIDTH_MM) / 2.0f,
+    GOAL_DEPTH_MM,
+    GOAL_WIDTH_MM
 };
-const AxisAlignedRect BOTTOM_GOAL_BOUNDS = {
-    (FIELD_WIDTH_MM - GOAL_WIDTH_MM) / 2.0f,
-    FIELD_HEIGHT_MM - WHITE_LINE_INSET_FROM_WALL_MM - WHITE_LINE_THICKNESS_MM / 2.0f,
-    GOAL_WIDTH_MM,
-    GOAL_DEPTH_MM
+const AxisAlignedRect RIGHT_GOAL_BOUNDS = {
+    FIELD_WIDTH_MM - WHITE_LINE_INSET_FROM_WALL_MM - WHITE_LINE_THICKNESS_MM / 2.0f,
+    (FIELD_HEIGHT_MM - GOAL_WIDTH_MM) / 2.0f,
+    GOAL_DEPTH_MM,
+    GOAL_WIDTH_MM
 };
 
 float clampFloat(float value, float minimum, float maximum) {
@@ -105,8 +108,8 @@ void resolveCircleAgainstRect(sf::Vector2f& position, float radius, const AxisAl
 void constrainToFieldAndGoals(sf::Vector2f& position, float radius) {
     position.x = clampFloat(position.x, radius, FIELD_WIDTH_MM - radius);
     position.y = clampFloat(position.y, radius, FIELD_HEIGHT_MM - radius);
-    resolveCircleAgainstRect(position, radius, TOP_GOAL_BOUNDS);
-    resolveCircleAgainstRect(position, radius, BOTTOM_GOAL_BOUNDS);
+    resolveCircleAgainstRect(position, radius, LEFT_GOAL_BOUNDS);
+    resolveCircleAgainstRect(position, radius, RIGHT_GOAL_BOUNDS);
 }
 
 void moveWithGoalCollision(sf::Vector2f& position, const sf::Vector2f& target, float radius) {
@@ -144,13 +147,13 @@ void moveBallWithCollision(sf::Vector2f& position, const sf::Vector2f& target) {
 // physics step, never while the user is dragging, so it cannot snap a ball to
 // the goal surface as it is being dropped in the open field.
 void containBallInGoalBoxes(sf::Vector2f& position) {
-    if (position.x > BOTTOM_GOAL_BOUNDS.left && position.x < BOTTOM_GOAL_BOUNDS.left + BOTTOM_GOAL_BOUNDS.width &&
-        position.y > BOTTOM_GOAL_BOUNDS.top && position.y < BOTTOM_GOAL_BOUNDS.top + BOTTOM_GOAL_BOUNDS.height) {
-        position.y = BOTTOM_GOAL_BOUNDS.top - BALL_RADIUS_MM;
+    if (position.x > LEFT_GOAL_BOUNDS.left && position.x < LEFT_GOAL_BOUNDS.left + LEFT_GOAL_BOUNDS.width &&
+        position.y > LEFT_GOAL_BOUNDS.top && position.y < LEFT_GOAL_BOUNDS.top + LEFT_GOAL_BOUNDS.height) {
+        position.x = LEFT_GOAL_BOUNDS.left + LEFT_GOAL_BOUNDS.width + BALL_RADIUS_MM;
     }
-    if (position.x > TOP_GOAL_BOUNDS.left && position.x < TOP_GOAL_BOUNDS.left + TOP_GOAL_BOUNDS.width &&
-        position.y > TOP_GOAL_BOUNDS.top && position.y < TOP_GOAL_BOUNDS.top + TOP_GOAL_BOUNDS.height) {
-        position.y = TOP_GOAL_BOUNDS.top + TOP_GOAL_BOUNDS.height + BALL_RADIUS_MM;
+    if (position.x > RIGHT_GOAL_BOUNDS.left && position.x < RIGHT_GOAL_BOUNDS.left + RIGHT_GOAL_BOUNDS.width &&
+        position.y > RIGHT_GOAL_BOUNDS.top && position.y < RIGHT_GOAL_BOUNDS.top + RIGHT_GOAL_BOUNDS.height) {
+        position.x = RIGHT_GOAL_BOUNDS.left - BALL_RADIUS_MM;
     }
 }
 
@@ -226,8 +229,8 @@ void moveBall(sf::Vector2f& position, sf::Vector2f& velocity, float dt) {
         }
 
         // Goals (treated as solid boxes, consistent with the robot)
-        resolveBallAgainstRect(position, velocity, TOP_GOAL_BOUNDS);
-        resolveBallAgainstRect(position, velocity, BOTTOM_GOAL_BOUNDS);
+        resolveBallAgainstRect(position, velocity, LEFT_GOAL_BOUNDS);
+        resolveBallAgainstRect(position, velocity, RIGHT_GOAL_BOUNDS);
     }
 }
 
@@ -252,8 +255,8 @@ bool updateBallDribbling(sf::Vector2f& ballPosMm, sf::Vector2f& ballVelMmS,
     const float halfDepth = DRIBBLER_DEPTH_MM * 0.5f;
     const float halfWidth = DRIBBLER_WIDTH_MM * 0.5f;
 
-    // Robot front direction (0 deg = up / negative screen-y)
-    const float angleRad = (headingDeg - 90.0f) * 3.14159265f / 180.0f;
+    // Firmware heading uses +X as zero; screen Y is inverted.
+    const float angleRad = -headingDeg * 3.14159265f / 180.0f;
     const sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
 
     // Ball position relative to the robot, in the dribbler bar's local frame
@@ -308,7 +311,7 @@ void resolveRobotBallCollision(sf::Vector2f& ballPos, sf::Vector2f& ballVel,
 
 struct Robot {
     sf::Vector2f pos; // in mm
-    float headingDeg; // 0 = up (toward negative y in screen coords)
+    float headingDeg; // 0 = right, matching the firmware field frame
     float diameterMm;
 
     Robot(): pos(FIELD_WIDTH_MM/2.0f, FIELD_HEIGHT_MM/2.0f), headingDeg(0.0f), diameterMm(ROBOT_DIAMETER_MM) {}
@@ -324,7 +327,7 @@ struct Robot {
         rt.draw(body);
 
         // draw heading indicator
-        float angleRad = (headingDeg - 90.0f) * 3.14159265f / 180.0f; // convert to screen angle
+        float angleRad = -headingDeg * 3.14159265f / 180.0f;
         sf::Vector2f dir(std::cos(angleRad), std::sin(angleRad));
         sf::VertexArray line(sf::PrimitiveType::Lines, 2);
         line[0].position = body.getPosition();
@@ -341,7 +344,7 @@ struct Robot {
         // position the dribbler at robot front
         sf::Vector2f front = body.getPosition() + dir * (r_px + dribblerD_px*0.5f + 1.0f);
         drib.setPosition(front);
-        drib.setRotation(sf::degrees(headingDeg));
+        drib.setRotation(sf::degrees(90.0f - headingDeg));
         drib.setFillColor(sf::Color(120,120,120));
         rt.draw(drib);
     }
@@ -411,36 +414,25 @@ int main() {
     rightLine.setPosition(sf::Vector2f(WINDOW_MARGIN_PX + outerW_px - inset_px - lineThickness_px/2.0f, WINDOW_MARGIN_PX + inset_px));
     rightLine.setFillColor(sf::Color::White);
 
-    // Goals: centered on short sides (top and bottom). We'll draw simple goal rectangles (opening width GOAL_WIDTH_MM and depth GOAL_DEPTH_MM)
+    // Goals follow the firmware field map and sit on the short left/right ends.
     float goalW_px = mmToPx(GOAL_WIDTH_MM);
     float goalD_px = mmToPx(GOAL_DEPTH_MM);
-    float centerX_px = WINDOW_MARGIN_PX + outerW_px/2.0f;
+    const float centerY_px = WINDOW_MARGIN_PX + outerH_px / 2.0f;
+    const float leftGoalInnerX_px = WINDOW_MARGIN_PX + inset_px + lineThickness_px / 2.0f;
+    const float rightGoalInnerX_px = WINDOW_MARGIN_PX + outerW_px - inset_px - lineThickness_px / 2.0f;
+    sf::RectangleShape leftGoal(sf::Vector2f(goalD_px, goalW_px));
+    leftGoal.setOrigin(sf::Vector2f(goalD_px, goalW_px / 2.0f));
+    leftGoal.setPosition(sf::Vector2f(leftGoalInnerX_px, centerY_px));
+    leftGoal.setFillColor(sf::Color(255, 255, 0));
+    leftGoal.setOutlineThickness(2.0f);
+    leftGoal.setOutlineColor(sf::Color::Black);
 
-    // Goals begin at the inner edge of each white line and extend away from
-    // the centre of the field.
-    // Compute the inner edge of the white top line in pixels.
-    float whiteTopInnerY_px = WINDOW_MARGIN_PX + inset_px + (lineThickness_px/2.0f);
-    float topGoalInnerY_px = whiteTopInnerY_px;
-    sf::RectangleShape topGoal(sf::Vector2f(goalW_px, goalD_px));
-    topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px)); // inner edge is the bottom edge
-    topGoal.setPosition(sf::Vector2f(centerX_px, topGoalInnerY_px));
-    topGoal.setFillColor(sf::Color(255,255,0)); // CMYK Yellow -> RGB (255,255,0)
-    topGoal.setOutlineThickness(2.0f);
-    topGoal.setOutlineColor(sf::Color::Black);
-
-    // Bottom goal (symmetrical)
-    float whiteBottomInnerY_px = WINDOW_MARGIN_PX + outerH_px - inset_px - (lineThickness_px/2.0f);
-    float bottomGoalInnerY_px = whiteBottomInnerY_px;
-    sf::RectangleShape bottomGoal(sf::Vector2f(goalW_px, goalD_px));
-    bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f)); // inner edge is the top edge
-    bottomGoal.setPosition(sf::Vector2f(centerX_px, bottomGoalInnerY_px));
-    bottomGoal.setFillColor(sf::Color(0,255,255)); // CMYK Cyan -> RGB (0,255,255)
-    bottomGoal.setOutlineThickness(2.0f);
-    bottomGoal.setOutlineColor(sf::Color::Black);
-
-    // Basic control variables
-    const float ROBOT_SPEED_MM_S = 220.0f; // forward speed mm per second
-    const float ROTATION_SPEED_DEG_S = 120.0f;
+    sf::RectangleShape rightGoal(sf::Vector2f(goalD_px, goalW_px));
+    rightGoal.setOrigin(sf::Vector2f(0.0f, goalW_px / 2.0f));
+    rightGoal.setPosition(sf::Vector2f(rightGoalInnerX_px, centerY_px));
+    rightGoal.setFillColor(sf::Color(0, 255, 255));
+    rightGoal.setOutlineThickness(2.0f);
+    rightGoal.setOutlineColor(sf::Color::Black);
 
     sf::Clock clock;
     bool dragging = false;
@@ -450,7 +442,7 @@ int main() {
     bool robotEnabled = true; // initial state
     extern void robot_init();
     extern void robot_stop();
-    extern void sim_set_millis(unsigned long ms);
+    extern void sim_step(unsigned long ms);
 
     // Start robot code thread (it will call setup() and then loop())
     robot_init();
@@ -468,15 +460,14 @@ int main() {
     const unsigned long SIM_MS_PER_FRAME = 16; // ~60Hz sim time step (16ms)
 
     // Movement scaling controls (HUD adjustable)
-    float moveSpeedScale = 8.0f;   // user-editable multiplier for linear speed (default 8.0)
-    float rotSpeedScale = 8.0f;    // user-editable multiplier for rotation speed (default 8.0)
+    float moveSpeedScale = 1.0f;
+    float rotSpeedScale = 1.0f;
     std::string moveSpeedStr = std::to_string(moveSpeedScale);
     std::string rotSpeedStr = std::to_string(rotSpeedScale);
     bool editMove = false;
     bool editRot = false;
 
     // Max physical speeds used by simulator (mm/s and deg/s)
-    const float SIM_MAX_LINEAR_MM_S = 220.0f; // base max linear speed
     const float SIM_MAX_ROT_DEG_S = 120.0f;   // base max rotation speed
 
     while (window.isOpen()) {
@@ -644,7 +635,7 @@ int main() {
 
         // Advance simulator time (fixed-step to keep deterministic behavior)
         simMs += SIM_MS_PER_FRAME;
-        sim_set_millis(simMs);
+        sim_step(simMs);
 
         // Clear and draw
         window.clear(sf::Color(60,60,60)); // background outside field
@@ -663,17 +654,15 @@ int main() {
         // goals update
         goalW_px = mmToPx(GOAL_WIDTH_MM);
         goalD_px = mmToPx(GOAL_DEPTH_MM);
-        centerX_px = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM)/2.0f;
-        float whiteTopY = WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) + (mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
-        float topGoalInnerY = whiteTopY;
-        topGoal.setSize(sf::Vector2f(goalW_px, goalD_px));
-        topGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, goalD_px));
-        topGoal.setPosition(sf::Vector2f(centerX_px, topGoalInnerY));
-        float whiteBottomY = WINDOW_MARGIN_PX + mmToPx(FIELD_HEIGHT_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - (mmToPx(WHITE_LINE_THICKNESS_MM)/2.0f);
-        float bottomGoalInnerY = whiteBottomY;
-        bottomGoal.setSize(sf::Vector2f(goalW_px, goalD_px));
-        bottomGoal.setOrigin(sf::Vector2f(goalW_px/2.0f, 0.0f));
-        bottomGoal.setPosition(sf::Vector2f(centerX_px, bottomGoalInnerY));
+        const float currentCenterY_px = WINDOW_MARGIN_PX + mmToPx(FIELD_HEIGHT_MM) / 2.0f;
+        const float leftInnerX_px = WINDOW_MARGIN_PX + mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) + mmToPx(WHITE_LINE_THICKNESS_MM) / 2.0f;
+        const float rightInnerX_px = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) - mmToPx(WHITE_LINE_INSET_FROM_WALL_MM) - mmToPx(WHITE_LINE_THICKNESS_MM) / 2.0f;
+        leftGoal.setSize(sf::Vector2f(goalD_px, goalW_px));
+        leftGoal.setOrigin(sf::Vector2f(goalD_px, goalW_px / 2.0f));
+        leftGoal.setPosition(sf::Vector2f(leftInnerX_px, currentCenterY_px));
+        rightGoal.setSize(sf::Vector2f(goalD_px, goalW_px));
+        rightGoal.setOrigin(sf::Vector2f(0.0f, goalW_px / 2.0f));
+        rightGoal.setPosition(sf::Vector2f(rightInnerX_px, currentCenterY_px));
 
         // draw field
         window.draw(greenBg);
@@ -683,26 +672,20 @@ int main() {
         window.draw(rightLine);
 
         // goals
-        window.draw(topGoal);
-        window.draw(bottomGoal);
+        window.draw(leftGoal);
+        window.draw(rightGoal);
 
         // Apply MoveProfile to simulated robot physics (if robot code is running and profile active)
         float dt_s = float(SIM_MS_PER_FRAME) / 1000.0f;
         const sf::Vector2f prevRobotPos = robot.pos;
+        const float prevRobotHeading = robot.headingDeg;
         if (robotCurrentlyRunning && currentMoveProfile.active) {
-            // linear speed (mm/s)
-            float linear_mm_s = currentMoveProfile.speed * SIM_MAX_LINEAR_MM_S * moveSpeedScale;
-            // rotation deg/s
-            float rot_deg_s = currentMoveProfile.rotationSpeed * SIM_MAX_ROT_DEG_S * rotSpeedScale;
-            // update heading
-            // Interpret rotationSpeed as: positive = counterclockwise. Convert to simulator heading which
-            // previously treated increasing heading as clockwise, so subtract to make positive -> CCW.
-            robot.headingDeg -= rot_deg_s * dt_s;
-            // compute world angle for movement: robot.headingDeg + movementDirectionDeg
-            float worldDeg = robot.headingDeg + ( -currentMoveProfile.movementDirectionDeg );
-            float angleRad = (worldDeg - 90.0f) * 3.14159265f / 180.0f;
+            const float linear_mm_s = currentMoveProfile.speed * ROBOT_LINEAR_SPEED_MM_S * 0.9f * moveSpeedScale;
+            const float rot_deg_s = currentMoveProfile.rotationSpeed / ROTATION_MAX_SPEED * SIM_MAX_ROT_DEG_S * rotSpeedScale;
+            robot.headingDeg += rot_deg_s * dt_s;
+            const float angleRad = currentMoveProfile.movementDirectionDeg * 3.14159265f / 180.0f;
             float dx = std::cos(angleRad) * linear_mm_s * dt_s;
-            float dy = std::sin(angleRad) * linear_mm_s * dt_s;
+            float dy = -std::sin(angleRad) * linear_mm_s * dt_s;
             moveWithGoalCollision(robot.pos, robot.pos + sf::Vector2f(dx, dy), robot.diameterMm / 2.0f);
         }
 
@@ -712,6 +695,19 @@ int main() {
         // the frontal dribbler bar, the ball is held against the bar instead of
         // rolling/bouncing, so it moves and rotates with the robot.
         const sf::Vector2f robotVelMmS = dt_s > 0.0f ? (robot.pos - prevRobotPos) / dt_s : sf::Vector2f(0.0f, 0.0f);
+        if (sim_consume_kick_request()) {
+            const float angleRad = -robot.headingDeg * 3.14159265f / 180.0f;
+            const sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
+            const sf::Vector2f toBall = ballPosMm - robot.pos;
+            const float forwardDistance = toBall.x * frontVec.x + toBall.y * frontVec.y;
+            const float lateralDistance = std::abs(toBall.x * frontVec.y - toBall.y * frontVec.x);
+            if (forwardDistance > 0.0f &&
+                forwardDistance <= robot.diameterMm / 2.0f + BALL_RADIUS_MM + 60.0f &&
+                lateralDistance <= robot.diameterMm / 2.0f) {
+                ballHeld = false;
+                ballVelMmS = frontVec * 2500.0f + robotVelMmS;
+            }
+        }
         if (!draggingBall) {
             ballHeld = updateBallDribbling(ballPosMm, ballVelMmS, ballHeld, robot.pos, robot.diameterMm,
                                            robot.headingDeg, robotVelMmS, dribblerShouldRun);
@@ -749,7 +745,7 @@ int main() {
         float dy = ballPosMm.y - robot.pos.y;
         float distMm = std::sqrt(dx*dx + dy*dy);
         // Robot front direction (world frame) as unit vector
-        float angleRad = (robot.headingDeg - 90.0f) * 3.14159265f / 180.0f;
+        float angleRad = -robot.headingDeg * 3.14159265f / 180.0f;
         sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
         // vector to ball
         sf::Vector2f v(dx, dy);
@@ -766,6 +762,26 @@ int main() {
         // Use simulator-driven milliseconds (simMs) for the ball packet timestamp so
         // the robot firmware (which reads millis()) sees a consistent epoch.
         lastBallPacketMs = simMs;
+
+        const RobotPose simulatedPose = {
+            true,
+            robot.pos.x - FIELD_WIDTH_MM / 2.0f,
+            FIELD_HEIGHT_MM / 2.0f - robot.pos.y,
+            robot.headingDeg,
+            1.0f,
+            simMs};
+        const FieldBall simulatedBall = {
+            true,
+            ballPosMm.x - FIELD_WIDTH_MM / 2.0f,
+            FIELD_HEIGHT_MM / 2.0f - ballPosMm.y,
+            distMm / 10.0f,
+            bearingDeg,
+            simMs};
+        sim_set_localization(simulatedPose, simulatedBall, nullptr, 0);
+        const float yawRateDegPerSec = dt_s > 0.0f
+            ? (robot.headingDeg - prevRobotHeading) / dt_s
+            : 0.0f;
+        sim_set_imu_state(robot.headingDeg, yawRateDegPerSec);
 
         // HUD panel area on the right side
         float hudX = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) + WINDOW_MARGIN_PX;

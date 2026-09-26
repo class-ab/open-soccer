@@ -5,6 +5,7 @@
 
 // Minimal stub for display functions used by robot code when running in simulator
 void initDisplay();
+void showBootStatus(const char *line1, const char *line2 = nullptr);
 void updateDisplay();
 std::string formatDuration(unsigned long ms);
 

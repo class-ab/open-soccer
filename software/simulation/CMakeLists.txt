@@ -15,11 +15,14 @@ set(SIM_SOURCES
   src/sim_stubs/sim_imu_stub.cpp
   src/sim_stubs/sim_dribbler_stub.cpp
   src/sim_stubs/sim_battery_stub.cpp
+  src/sim_stubs/sim_localization_stub.cpp
+  src/sim_stubs/sim_communication_stub.cpp
   # robot code sources (selected subset)
   ${CMAKE_SOURCE_DIR}/../code/src/robot.cpp
   ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/vision.cpp
   ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/drivebase.cpp
   ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/robot_state.cpp
+  ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/strategy.cpp
 )
 
 add_executable(simulation ${SIM_SOURCES})

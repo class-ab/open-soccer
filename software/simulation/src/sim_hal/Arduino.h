@@ -77,6 +77,11 @@ extern void delayMicroseconds(unsigned int us);
 // Simulator helpers: allow the simulator to drive the millis() epoch and enable/disable the robot thread.
 // These are implemented in sim_hal.cpp and are only meaningful when building/running the simulator.
 extern void sim_set_millis(unsigned long ms);
+extern void sim_step(unsigned long ms);
+extern void sim_wait_for_tick(uint64_t &generation);
+extern void sim_complete_tick(uint64_t generation);
+extern uint64_t sim_robot_setup_complete();
+extern void sim_request_robot_exit();
 // Note: sim_set_robot_enabled exists for backwards compatibility but main now uses
 // robotCurrentlyRunning to control firmware state. The function is kept in sim_hal
 // but should not be required for normal operation.
