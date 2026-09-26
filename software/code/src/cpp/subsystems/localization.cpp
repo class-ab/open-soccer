@@ -24,7 +24,6 @@ constexpr float MAX_RANGE_MM = 12000.0f;
 constexpr float LOCAL_DEG_TO_RAD = PI / 180.0f;
 constexpr float HUBER_MM = 120.0f;
 constexpr float MAX_ACCEPTED_COST = 24000.0f;
-constexpr float MAX_FIX_CORRECTION_MM = 35.0f;
 constexpr float FIT_CONDITION_MIN = 0.004f;
 constexpr uint8_t MIN_FIT_RAYS = 18;
 constexpr uint8_t MAX_FIT_RAYS = 72;
@@ -37,8 +36,8 @@ constexpr unsigned long POSE_TIMEOUT_MS = 1200;
 constexpr unsigned long OPPONENT_TIMEOUT_MS = 500;
 constexpr unsigned long LIDAR_INTERBYTE_TIMEOUT_MS = 25;
 
-// Pose is just the last accepted lidar fit -- no velocity/dead-reckoning model.
-// MAX_FIX_CORRECTION_MM above is the only guard, rejecting single outlier fits.
+// Pose is just the last accepted lidar fit -- no velocity/dead-reckoning model,
+// no distance clamp -- wellConditioned()/MAX_ACCEPTED_COST are the only gates.
 
 constexpr float POLE_ANGLES_DEG[4] = {-135.0f, -45.0f, 45.0f, 135.0f};
 constexpr float POLE_HALF_WIDTH_DEG = 3.4f;
@@ -504,18 +503,10 @@ void updatePoseFromLidar(unsigned long now) {
     return;
   }
 
-  float correctionX = candidateX - poseX;
-  float correctionY = candidateY - poseY;
-  const float correction = hypotf(correctionX, correctionY);
-  if (correction > MAX_FIX_CORRECTION_MM) {
-    // Disagrees sharply with the last fix -- clamp like an outlier, don't chase it.
-    const float scale = MAX_FIX_CORRECTION_MM / correction;
-    correctionX *= scale;
-    correctionY *= scale;
-  }
-
-  poseX += correctionX;
-  poseY += correctionY;
+  // Trust the fit directly -- wellConditioned()/MAX_ACCEPTED_COST above are the
+  // quality gates; no extra distance clamp toward the previous pose.
+  poseX = candidateX;
+  poseY = candidateY;
   poseQuality += 0.25f * (quality - poseQuality);
 
   lastPoseFixMs = now;

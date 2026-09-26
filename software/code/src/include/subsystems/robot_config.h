@@ -1,21 +1,21 @@
 #pragma once
 
 // SPEED LIMITS
-constexpr float ROBOT_MAX_SPEED = 0.5f;
-constexpr float ROTATION_MAX_SPEED = 0.5f;
+constexpr float ROBOT_MAX_SPEED = 1.0f;
+constexpr float ROTATION_MAX_SPEED = 1.0f;
 // Calibrate against measured full-command robot speed on the actual field.
-constexpr float ROBOT_LINEAR_SPEED_MM_S = 1400.0f;
+constexpr float ROBOT_LINEAR_SPEED_MM_S = 1800.0f;
 
 // ACCELERATION LIMITS
-constexpr float ACCEL_LIMIT = 1.0f;
-constexpr float ROTATION_ACCEL_LIMIT = 1.0f;
+constexpr float ACCEL_LIMIT = 1.5f;
+constexpr float ROTATION_ACCEL_LIMIT = 1.5f;
 
 // moveTo() position-to-speed proportional gain (normalized speed / mm).
 // Gentle preset (see set list below) -- previous value was ~4x weaker than
 // even that floor and produced too little PWM to overcome motor deadband.
-constexpr float POSITION_KP = 0.0007f;
-constexpr float POSITION_TOLERANCE_MM = 20.0f;
-constexpr float HEADING_TOLERANCE_DEG = 2.0f;
+constexpr float POSITION_KP = 0.0008f;
+constexpr float POSITION_TOLERANCE_MM = 10.0f;
+constexpr float HEADING_TOLERANCE_DEG = 1.0f;
 
 // Heading PID output is normalized rotation command. D uses IMU yaw rate.
 constexpr float HEADING_KP = 0.003f;

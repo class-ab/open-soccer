@@ -89,11 +89,6 @@ void setup() {
 }
 
 void loop() {
-  static bool translationPhase = true;
-  static bool phaseClockStarted = false;
-  static bool wasRunning = false;
-  static unsigned long phaseStartedMs = 0;
-
   // main update system
   unsigned long now = millis();
   checkButtons();
