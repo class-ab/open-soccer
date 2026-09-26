@@ -10,17 +10,24 @@ constexpr float ROBOT_LINEAR_SPEED_MM_S = 1400.0f;
 constexpr float ACCEL_LIMIT = 1.1f;
 constexpr float ROTATION_ACCEL_LIMIT = 1.0f;
 
-// moveTo() translation PID
-constexpr float POSITION_KP = 0.0012f;
+// moveTo() position-to-speed proportional gain (normalized speed / mm).
+// Starting point: conservative. Recheck against measured floor speed.
+constexpr float POSITION_KP = 0.00018f;
 constexpr float POSITION_TOLERANCE_MM = 12.0f;
 constexpr float HEADING_TOLERANCE_DEG = 2.0f;
 
-// ROTATION PID
-constexpr float HEADING_KP = 0.005f;
+// Heading PID output is normalized rotation command. D uses IMU yaw rate.
+constexpr float HEADING_KP = 0.003f;
 constexpr float HEADING_KI = 0.0f;
-constexpr float HEADING_KD = 0.001f;
-constexpr float HEADING_INTEGRAL_MAX = 0.20f;
+constexpr float HEADING_KD = 0.002f;
+// Integral is accumulated in degree-seconds and clamped before applying KI.
+constexpr float HEADING_INTEGRAL_MAX = 100.0f;
 constexpr float YAW_SIGN = 1.0f;
+
+// Example starting sets for controlled tuning (select one set at a time):
+// Gentle:     POSITION_KP 0.0007, HEADING_KP 0.0030, KI 0.0002, KD 0.0012
+// Balanced:   POSITION_KP 0.0012, HEADING_KP 0.0050, KI 0.0000, KD 0.0025
+// Responsive: POSITION_KP 0.0018, HEADING_KP 0.0070, KI 0.0005, KD 0.0015
 
 // ball sensing
 constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
@@ -29,9 +36,9 @@ constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
 
 // #define DEBUG_MOVE
 // #define DEBUG_BALL_LINK
-// #define DEBUG_LIDAR
+#define DEBUG_LIDAR
 // #define DEBUG_FIELDBALL // requires DEBUG_LIDAR
-#define LOCAL_STATE
+// #define LOCAL_STATE
 
 // IMU
 #define BNO08X_RESET -1

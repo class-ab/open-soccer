@@ -33,6 +33,7 @@ constexpr unsigned long RAY_WINDOW_MS = 85;
 constexpr unsigned long FIT_INTERVAL_MS = 10;
 constexpr unsigned long POSE_TIMEOUT_MS = 1200;
 constexpr unsigned long OPPONENT_TIMEOUT_MS = 500;
+constexpr unsigned long LIDAR_INTERBYTE_TIMEOUT_MS = 25;
 
 constexpr float POLE_ANGLES_DEG[4] = {-135.0f, -45.0f, 45.0f, 135.0f};
 constexpr float POLE_HALF_WIDTH_DEG = 3.4f;
@@ -125,6 +126,10 @@ float poseQuality = 0.0f;
 unsigned long lastLidarFixMs = 0;
 unsigned long lastPredictionMs = 0;
 unsigned long lastFitMs = 0;
+unsigned long lastLidarByteMs = 0;
+unsigned long lastValidLidarPacketMs = 0;
+uint32_t validLidarPackets = 0;
+uint32_t invalidLidarPackets = 0;
 float motionDirectionDeg = 0.0f;
 float motionSpeed = 0.0f;
 
@@ -567,6 +572,16 @@ void consumeLidar() {
     const int incoming = LIDAR_UART.read();
     if (incoming < 0) break;
     const uint8_t value = static_cast<uint8_t>(incoming);
+    const unsigned long byteNow = millis();
+
+    // Discard partial frames after the scanner pauses or the UART drops data.
+    // A normal 47-byte frame arrives far faster than this timeout at 230400 baud.
+    if (packetIndex > 0 && byteNow - lastLidarByteMs >
+                               LIDAR_INTERBYTE_TIMEOUT_MS) {
+      packetIndex = 0;
+      receiveState = WAIT_HEADER;
+    }
+    lastLidarByteMs = byteNow;
 
     switch (receiveState) {
       case WAIT_HEADER:
@@ -598,8 +613,12 @@ void consumeLidar() {
         packetBuffer[packetIndex++] = value;
         if (packetIndex == PACKET_SIZE) {
           LidarPacket packet;
-          if (parsePacket(packetBuffer, packet) && isIMUHeadingFresh()) {
-            addPacket(packet);
+          if (parsePacket(packetBuffer, packet)) {
+            lastValidLidarPacketMs = millis();
+            ++validLidarPackets;
+            if (isIMUHeadingFresh()) addPacket(packet);
+          } else {
+            ++invalidLidarPackets;
           }
           packetIndex = 0;
           receiveState = WAIT_HEADER;
@@ -663,6 +682,10 @@ void initLocalization() {
   lastLidarFixMs = 0;
   lastPredictionMs = millis();
   lastFitMs = 0;
+  lastLidarByteMs = 0;
+  lastValidLidarPacketMs = 0;
+  validLidarPackets = 0;
+  invalidLidarPackets = 0;
   motionDirectionDeg = motionSpeed = 0.0f;
   robotPose = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
   Serial.println("LD14P rolling localization ready");
@@ -690,6 +713,27 @@ void updateLocalization() {
 
   updatePublicPose(now);
   updateFieldBall(now);
+
+#ifdef DEBUG_LIDAR
+  static unsigned long lastLidarDebugMs = 0;
+  if (now - lastLidarDebugMs >= 1000) {
+    lastLidarDebugMs = now;
+    Serial.print("LIDAR packetAge=");
+    Serial.print(lastValidLidarPacketMs == 0 ? 0 : now - lastValidLidarPacketMs);
+    Serial.print("ms bytesAge=");
+    Serial.print(lastLidarByteMs == 0 ? 0 : now - lastLidarByteMs);
+    Serial.print("ms rays=");
+    Serial.print(rayCount);
+    Serial.print(" fixAge=");
+    Serial.print(lastLidarFixMs == 0 ? 0 : now - lastLidarFixMs);
+    Serial.print("ms imuFresh=");
+    Serial.print(isIMUHeadingFresh());
+    Serial.print(" good/bad=");
+    Serial.print(validLidarPackets);
+    Serial.print('/');
+    Serial.println(invalidLidarPackets);
+  }
+#endif
 }
 
 void getRobotPose(RobotPose &out) {

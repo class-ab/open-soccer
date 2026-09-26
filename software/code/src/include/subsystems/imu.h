@@ -9,6 +9,7 @@ extern sh2_SensorValue_t sensorValue;
 bool initIMU();
 void setReports();
 void updateIMU();
+float getIMUHeadingDeg();
 float getIMUYawRateDegPerSec();
 bool isIMUHeadingFresh();
 

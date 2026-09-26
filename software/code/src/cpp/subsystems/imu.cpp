@@ -11,6 +11,7 @@ sh2_SensorValue_t sensorValue;
 
 namespace {
 constexpr float LOCAL_RAD_TO_DEG = 180.0f / PI;
+constexpr uint32_t IMU_REPORT_INTERVAL_US = 10000;  // 100 Hz
 constexpr float YAW_RATE_FILTER = 0.35f;
 constexpr float MAX_YAW_RATE_DEG_S = 900.0f;
 constexpr unsigned long MAX_YAW_PREDICTION_MS = 20;
@@ -92,7 +93,8 @@ bool initIMU() {
 }
 
 void setReports() {
-  if (!bno08x.enableReport(SH2_GAME_ROTATION_VECTOR)) {
+  if (!bno08x.enableReport(SH2_GAME_ROTATION_VECTOR,
+                           IMU_REPORT_INTERVAL_US)) {
     Serial.println("Could not enable rotation vector");
   }
 }
@@ -126,6 +128,10 @@ void updateIMU() {
     currentYawDeg = wrapDegrees(
         unwrappedYawDeg + yawRateDegPerSec * predictionMs / 1000.0f);
   }
+}
+
+float getIMUHeadingDeg() {
+  return currentYawDeg;
 }
 
 float getIMUYawRateDegPerSec() {

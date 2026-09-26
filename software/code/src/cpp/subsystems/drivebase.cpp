@@ -38,6 +38,7 @@ struct CoordinateController {
   float velocityX = 0.0f;
   float velocityY = 0.0f;
   float rotation = 0.0f;
+  float headingIntegral = 0.0f;
   unsigned long lastUpdateMs = 0;
 };
 
@@ -91,13 +92,28 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
              coordinateController.velocityY, accelerationLimit * dt);
 
   float headingError = angleError(targetHeadingDeg, pose.headingDeg);
+  const float yawRate = YAW_SIGN * getIMUYawRateDegPerSec();
   maxRotationSpeed = constrain(maxRotationSpeed, 0.0f, ROTATION_MAX_SPEED);
-  float targetRotation =
-      headingError * HEADING_KP -
-      YAW_SIGN * getIMUYawRateDegPerSec() * HEADING_KD;
-  targetRotation = constrain(targetRotation, -maxRotationSpeed, maxRotationSpeed);
   if (fabsf(headingError) <= HEADING_TOLERANCE_DEG) {
+    coordinateController.headingIntegral = 0.0f;
+  } else if (dt > 0.0f) {
+    coordinateController.headingIntegral = constrain(
+        coordinateController.headingIntegral + headingError * dt,
+        -HEADING_INTEGRAL_MAX, HEADING_INTEGRAL_MAX);
+  }
+  float targetRotation = headingError * HEADING_KP +
+      coordinateController.headingIntegral * HEADING_KI -
+      yawRate * HEADING_KD;
+  const float unconstrainedRotation = targetRotation;
+  targetRotation = constrain(targetRotation, -maxRotationSpeed, maxRotationSpeed);
+  if (fabsf(headingError) <= HEADING_TOLERANCE_DEG && fabsf(yawRate) <= 8.0f) {
     targetRotation = 0.0f;
+  } else if (targetRotation != unconstrainedRotation &&
+             headingError * unconstrainedRotation > 0.0f) {
+    // Do not integrate further into the active output limit.
+    coordinateController.headingIntegral = constrain(
+        coordinateController.headingIntegral - headingError * dt,
+        -HEADING_INTEGRAL_MAX, HEADING_INTEGRAL_MAX);
   }
   targetRotation = constrain(targetRotation, -maxRotationSpeed, maxRotationSpeed);
   rotationAccelerationLimit = fmaxf(0.0f, rotationAccelerationLimit);
@@ -213,6 +229,7 @@ void stopAllDriveMotors() {
   coordinateController.velocityX = 0.0f;
   coordinateController.velocityY = 0.0f;
   coordinateController.rotation = 0.0f;
+  coordinateController.headingIntegral = 0.0f;
   currentMoveProfile.active = false;
   setLocalizationMotionCommand(0.0f, 0.0f);
 }
