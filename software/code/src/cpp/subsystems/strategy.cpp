@@ -12,9 +12,9 @@
 
 const int opponentBallDistance = 30; // mm
 
-ballLocation ballState = {false, 0, BallState::unknown};
-LocalState localState = {RobotState::attacking, RobotGoal::none};
-LocalState remoteState = {RobotState::damaged, RobotGoal::none};
+SIM_TLS ballLocation ballState = {false, 0, BallState::unknown};
+SIM_TLS LocalState localState = {RobotState::attacking, RobotGoal::none};
+SIM_TLS LocalState remoteState = {RobotState::damaged, RobotGoal::none};
 
 // Define field zones in millimeters (0,0 is center)
 // Adjust these thresholds based on actual field dimensions
@@ -27,19 +27,19 @@ const float BORDER_Y = 660.0;
 const float GOAL_Y = 425.0;
 
 // Opponent tracking
-OpponentRobot opponent1 = {false, 0.0, 0.0, 0.0, 0};
-OpponentRobot opponent2 = {false, 0.0, 0.0, 0.0, 0};
-int count = 0; // opponent counter
+SIM_TLS OpponentRobot opponent1 = {false, 0.0, 0.0, 0.0, 0};
+SIM_TLS OpponentRobot opponent2 = {false, 0.0, 0.0, 0.0, 0};
+SIM_TLS int count = 0; // opponent counter
 
 // LOCAL
-FieldBall ball; // get ball localisation data
-RobotPose robotPose; // get robot localisation data 
+SIM_TLS FieldBall ball; // get ball localisation data
+SIM_TLS RobotPose robotPose; // get robot localisation data 
 // REMOTE
-FieldBall remoteBall;
-RobotPose remotePose;
+SIM_TLS FieldBall remoteBall;
+SIM_TLS RobotPose remotePose;
 // OPPONENTS
-OpponentState opponent1State;
-OpponentState opponent2State;
+SIM_TLS OpponentState opponent1State;
+SIM_TLS OpponentState opponent2State;
 
 namespace {
 constexpr float OPPONENT_GOAL_X_MM = 989.0f;
@@ -90,8 +90,8 @@ void updateStrategy() {
 void move() {
     // Kicking is edge-triggered: repeatedly calling kick() restarts its timer
     // and would prevent the kicker sequence from completing.
-    static RobotGoal previousGoal = RobotGoal::none;
-    static bool kickIssued = false;
+    SIM_STATIC_TLS RobotGoal previousGoal = RobotGoal::none;
+    SIM_STATIC_TLS bool kickIssued = false;
     if (localState.robotGoal != previousGoal) {
         kickIssued = false;
         previousGoal = localState.robotGoal;

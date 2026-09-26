@@ -9,13 +9,13 @@
 
 namespace {
 std::mutex imuMutex;
-float simulatedHeadingDeg = 0.0f;
-float simulatedYawRateDegPerSec = 0.0f;
+float simulatedHeadingDeg[2] = {0.0f, 0.0f};
+float simulatedYawRateDegPerSec[2] = {0.0f, 0.0f};
 }
 
 bool initIMU() {
   std::lock_guard<std::mutex> lock(imuMutex);
-  currentYawDeg = simulatedHeadingDeg;
+  currentYawDeg = simulatedHeadingDeg[g_simRobotSlot];
   return true;
 }
 
@@ -25,7 +25,7 @@ void setReports() {
 
 void updateIMU() {
   std::lock_guard<std::mutex> lock(imuMutex);
-  currentYawDeg = simulatedHeadingDeg;
+  currentYawDeg = simulatedHeadingDeg[g_simRobotSlot];
 }
 
 float getIMUHeadingDeg() {
@@ -34,7 +34,7 @@ float getIMUHeadingDeg() {
 
 float getIMUYawRateDegPerSec() {
   std::lock_guard<std::mutex> lock(imuMutex);
-  return simulatedYawRateDegPerSec;
+  return simulatedYawRateDegPerSec[g_simRobotSlot];
 }
 
 bool isIMUHeadingFresh() {
@@ -65,8 +65,8 @@ float headingCorrection() {
                    -0.40f, 0.40f);
 }
 
-void sim_set_imu_state(float headingDeg, float yawRateDegPerSec) {
+void sim_set_imu_state(int slot, float headingDeg, float yawRateDegPerSec) {
   std::lock_guard<std::mutex> lock(imuMutex);
-  simulatedHeadingDeg = headingDeg;
-  simulatedYawRateDegPerSec = yawRateDegPerSec;
+  simulatedHeadingDeg[slot] = headingDeg;
+  simulatedYawRateDegPerSec[slot] = yawRateDegPerSec;
 }

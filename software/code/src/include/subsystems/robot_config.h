@@ -1,5 +1,17 @@
 #pragma once
 
+// On real hardware (ARDUINO) each binary controls exactly one robot, so these
+// expand to nothing. The simulator runs multiple robot instances as separate
+// threads and defines ARDUINO nowhere, so SIM_TLS/SIM_STATIC_TLS give each
+// thread its own isolated copy of otherwise-shared firmware state.
+#if defined(ARDUINO)
+#define SIM_TLS
+#define SIM_STATIC_TLS static
+#else
+#define SIM_TLS thread_local
+#define SIM_STATIC_TLS thread_local
+#endif
+
 // SPEED LIMITS
 constexpr float ROBOT_MAX_SPEED = 1.0f;
 constexpr float ROTATION_MAX_SPEED = 0.5f;

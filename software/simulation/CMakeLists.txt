@@ -17,6 +17,7 @@ set(SIM_SOURCES
   src/sim_stubs/sim_battery_stub.cpp
   src/sim_stubs/sim_localization_stub.cpp
   src/sim_stubs/sim_communication_stub.cpp
+  src/sim_stubs/sim_robot_bridge.cpp
   # robot code sources (selected subset)
   ${CMAKE_SOURCE_DIR}/../code/src/robot.cpp
   ${CMAKE_SOURCE_DIR}/../code/src/cpp/subsystems/vision.cpp

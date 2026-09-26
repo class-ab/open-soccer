@@ -2,11 +2,13 @@
 #include <cmath>
 #include <string>
 #include <algorithm>
+#include <array>
 #include <iostream>
 
 #include "subsystems/robot_state.h"
 #include "subsystems/localization.h"
 #include "subsystems/robot_config.h"
+#include "subsystems/strategy.h"
 #include "sim_hal/sim_robot_io.h"
 
 // Simple 2D RCJ Open Soccer simulation
@@ -350,6 +352,80 @@ struct Robot {
     }
 };
 
+// Two robots are heavy enough that they should not pass through one another;
+// push them apart symmetrically along the line between their centres.
+void resolveRobotRobotCollision(Robot &a, Robot &b) {
+    const sf::Vector2f delta = b.pos - a.pos;
+    const float dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    const float minDist = (a.diameterMm + b.diameterMm) / 2.0f;
+    if (dist >= minDist || dist <= 0.0001f) {
+        return;
+    }
+    const sf::Vector2f normal = delta / dist;
+    const float overlap = minDist - dist;
+    a.pos -= normal * (overlap * 0.5f);
+    b.pos += normal * (overlap * 0.5f);
+    constrainToFieldAndGoals(a.pos, a.diameterMm / 2.0f);
+    constrainToFieldAndGoals(b.pos, b.diameterMm / 2.0f);
+}
+
+const char* robotStateName(RobotState state) {
+    switch (state) {
+        case RobotState::attacking: return "attacking";
+        case RobotState::defending: return "defending";
+        case RobotState::damaged: return "damaged";
+    }
+    return "unknown";
+}
+
+const char* robotGoalName(RobotGoal goal) {
+    switch (goal) {
+        case RobotGoal::none: return "none";
+        case RobotGoal::getBallPush: return "getBallPush";
+        case RobotGoal::getBallDribble: return "getBallDribble";
+        case RobotGoal::getBallDribbleAway: return "getBallDribbleAway";
+        case RobotGoal::interceptBall1: return "interceptBall1";
+        case RobotGoal::interceptBall2: return "interceptBall2";
+        case RobotGoal::pushForward: return "pushForward";
+        case RobotGoal::hideForward: return "hideForward";
+        case RobotGoal::spinKick: return "spinKick";
+        case RobotGoal::kick: return "kick";
+        case RobotGoal::pass: return "pass";
+        case RobotGoal::awayBorders: return "awayBorders";
+        case RobotGoal::backOff: return "backOff";
+        case RobotGoal::defendBall: return "defendBall";
+        case RobotGoal::defendOpponent1: return "defendOpponent1";
+        case RobotGoal::defendOpponent2: return "defendOpponent2";
+        case RobotGoal::searchBall: return "searchBall";
+    }
+    return "unknown";
+}
+
+// Per-robot simulator bookkeeping layered on top of the physical Robot body.
+struct SimRobot {
+    Robot robot;
+    bool damaged = false;
+    bool dragging = false;
+    sf::Vector2f dragOffsetMm;
+    LocalState publishedState{RobotState::attacking, RobotGoal::none};
+};
+
+// Draws a small state/goal label above a robot; skipped if no font loaded.
+void drawRobotLabel(sf::RenderTarget &rt, const sf::Font &font, bool fontLoaded,
+                    const Robot &robot, int robotNumber, const LocalState &state) {
+    if (!fontLoaded) return;
+    const std::string text = "R" + std::to_string(robotNumber) + ": " +
+        robotStateName(state.robotState) + " / " + robotGoalName(state.robotGoal);
+    sf::Text label(font, text, 13);
+    label.setFillColor(sf::Color::White);
+    label.setOutlineColor(sf::Color::Black);
+    label.setOutlineThickness(2.0f);
+    const float r_px = mmToPx(robot.diameterMm) / 2.0f;
+    label.setPosition(sf::Vector2f(mmToPx(robot.pos.x) + WINDOW_MARGIN_PX - r_px,
+                                  mmToPx(robot.pos.y) + WINDOW_MARGIN_PX - r_px - 20.0f));
+    rt.draw(label);
+}
+
 int main() {
     // Compute an appropriate PX_PER_MM to maximize field size on the current screen while leaving a safety margin
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
@@ -376,7 +452,13 @@ int main() {
 
     std::cout << "Screen: " << screenW << "x" << screenH << ", PX_PER_MM=" << PX_PER_MM << "\n";
 
-    Robot robot;
+    // Two robots: index 0 starts as attacker, index 1 as defender.
+    std::array<SimRobot, 2> sims;
+    const sf::Vector2f INITIAL_POS[2] = {
+        sf::Vector2f(FIELD_WIDTH_MM * 0.35f, FIELD_HEIGHT_MM * 0.5f),
+        sf::Vector2f(FIELD_WIDTH_MM * 0.65f, FIELD_HEIGHT_MM * 0.5f)};
+    sims[0].robot.pos = INITIAL_POS[0];
+    sims[1].robot.pos = INITIAL_POS[1];
 
     // Create static shapes
     // full green area
@@ -435,26 +517,25 @@ int main() {
     rightGoal.setOutlineColor(sf::Color::Black);
 
     sf::Clock clock;
-    bool dragging = false;
-    sf::Vector2f dragOffsetMm(0.f, 0.f);
 
     // Robot/robotcode control
     bool robotEnabled = true; // initial state
-    extern void robot_init();
-    extern void robot_stop();
+    extern void robot_init(int index);
+    extern void robot_stop(int index);
     extern void sim_step(unsigned long ms);
 
-    // Start robot code thread (it will call setup() and then loop())
-    robot_init();
-    // set the robot_state flag so robot code can read whether it should be running
-    robotCurrentlyRunning = robotEnabled;
+    // Start both robot code threads (each calls setup() then loop())
+    robot_init(0);
+    robot_init(1);
+    sim_request_role(0, SimRoleCommand::attack);
+    sim_request_role(1, SimRoleCommand::defend);
 
     // Ball entity
     sf::Vector2f ballPosMm(FIELD_WIDTH_MM*0.25f, FIELD_HEIGHT_MM*0.5f);
     sf::Vector2f ballVelMmS(0.0f, 0.0f); // ball velocity in mm/s (rolled/pushed around by physics)
     bool draggingBall = false;
     sf::Vector2f ballDragOffsetMm(0.f, 0.f);
-    bool ballHeld = false; // true while the dribbler is holding the ball
+    int ballHolderIndex = -1; // index of the robot currently holding the ball, or -1
 
     unsigned long simMs = 0;
     const unsigned long SIM_MS_PER_FRAME = 16; // ~60Hz sim time step (16ms)
@@ -482,8 +563,10 @@ int main() {
                 if (kp) {
                     if (kp->code == sf::Keyboard::Key::Escape) window.close();
                     if (kp->code == sf::Keyboard::Key::R) {
-                        robot.pos = sf::Vector2f(FIELD_WIDTH_MM/2.0f, FIELD_HEIGHT_MM/2.0f);
-                        robot.headingDeg = 0.0f;
+                        for (int i = 0; i < 2; ++i) {
+                            sims[i].robot.pos = INITIAL_POS[i];
+                            sims[i].robot.headingDeg = 0.0f;
+                        }
                     }
                     // Handle input editing keys
                     if (kp->code == sf::Keyboard::Key::Backspace) {
@@ -531,16 +614,21 @@ int main() {
                     sf::Vector2i pix = mb->position;
                     sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
 
-                    // check robot
-                    float r_px = mmToPx(robot.diameterMm) / 2.0f;
-                    sf::Vector2f robotPx(mmToPx(robot.pos.x) + WINDOW_MARGIN_PX, mmToPx(robot.pos.y) + WINDOW_MARGIN_PX);
-                    float rdx = float(pix.x) - robotPx.x;
-                    float rdy = float(pix.y) - robotPx.y;
-                    if (std::sqrt(rdx*rdx + rdy*rdy) <= r_px) {
-                        dragging = true;
-                        dragOffsetMm = robot.pos - mouseMm; // preserve relative offset
-                        continue;
+                    // check robots (skip damaged robots; they are removed from the field)
+                    bool hitRobot = false;
+                    for (int i = 0; i < 2 && !hitRobot; ++i) {
+                        if (sims[i].damaged) continue;
+                        float r_px = mmToPx(sims[i].robot.diameterMm) / 2.0f;
+                        sf::Vector2f robotPx(mmToPx(sims[i].robot.pos.x) + WINDOW_MARGIN_PX, mmToPx(sims[i].robot.pos.y) + WINDOW_MARGIN_PX);
+                        float rdx = float(pix.x) - robotPx.x;
+                        float rdy = float(pix.y) - robotPx.y;
+                        if (std::sqrt(rdx*rdx + rdy*rdy) <= r_px) {
+                            sims[i].dragging = true;
+                            sims[i].dragOffsetMm = sims[i].robot.pos - mouseMm; // preserve relative offset
+                            hitRobot = true;
+                        }
                     }
+                    if (hitRobot) continue;
 
                     // check ball
                     float b_px = mmToPx(BALL_DIAMETER_MM) / 2.0f;
@@ -551,7 +639,7 @@ int main() {
                         draggingBall = true;
                         ballDragOffsetMm = ballPosMm - mouseMm;
                         ballVelMmS = sf::Vector2f(0.0f, 0.0f); // release a still ball
-                        ballHeld = false; // user grabbed the ball off the dribbler
+                        ballHolderIndex = -1; // user grabbed the ball off the dribbler
                             continue;
                         }
 
@@ -596,21 +684,50 @@ int main() {
                         const float dy = ey;
                         if (pix.x >= static_cast<int>(std::round(ex)) && pix.x <= static_cast<int>(std::round(ex + btnSize)) && pix.y >= static_cast<int>(std::round(ey)) && pix.y <= static_cast<int>(std::round(ey + btnSize))) {
                             robotEnabled = true;
-                            robotCurrentlyRunning = true;
                             continue;
                         }
                         if (pix.x >= static_cast<int>(std::round(dx)) && pix.x <= static_cast<int>(std::round(dx + btnSize)) && pix.y >= static_cast<int>(std::round(dy)) && pix.y <= static_cast<int>(std::round(dy + btnSize))) {
                             robotEnabled = false;
-                            robotCurrentlyRunning = false;
                             continue;
                         }
+
+                        // check per-robot role toggle buttons (Attack / Defend / Damaged)
+                        bool hitRole = false;
+                        for (int i = 0; i < 2 && !hitRole; ++i) {
+                            const float sectionY = rotRowY + 40.0f + i * 90.0f;
+                            const float buttonY = sectionY + 22.0f;
+                            const float buttonW = 60.0f, buttonH = 24.0f;
+                            const float atkX = hudX_click + pad_click;
+                            const float defX = atkX + 70.0f;
+                            const float dmgX = defX + 70.0f;
+                            auto hitsButton = [&](float bx) {
+                                return pix.x >= static_cast<int>(std::round(bx)) && pix.x <= static_cast<int>(std::round(bx + buttonW)) &&
+                                       pix.y >= static_cast<int>(std::round(buttonY)) && pix.y <= static_cast<int>(std::round(buttonY + buttonH));
+                            };
+                            if (hitsButton(atkX)) {
+                                sims[i].damaged = false;
+                                sim_request_role(i, SimRoleCommand::attack);
+                                hitRole = true;
+                            } else if (hitsButton(defX)) {
+                                sims[i].damaged = false;
+                                sim_request_role(i, SimRoleCommand::defend);
+                                hitRole = true;
+                            } else if (hitsButton(dmgX)) {
+                                sims[i].damaged = true;
+                                sims[i].dragging = false;
+                                if (ballHolderIndex == i) ballHolderIndex = -1;
+                                sim_request_role(i, SimRoleCommand::damage);
+                                hitRole = true;
+                            }
+                        }
+                        if (hitRole) continue;
                     }
                 }
 
             if (ev.is<sf::Event::MouseButtonReleased>()) {
                 const auto *mb = ev.getIf<sf::Event::MouseButtonReleased>();
                 if (mb && mb->button == sf::Mouse::Button::Left) {
-                    dragging = false; // release control back to robot code
+                    for (int i = 0; i < 2; ++i) sims[i].dragging = false; // release control back to robot code
                     draggingBall = false;
                     ballVelMmS = sf::Vector2f(0.0f, 0.0f); // dropped ball must not roll off
                 }
@@ -618,15 +735,17 @@ int main() {
 
             if (ev.is<sf::Event::MouseMoved>()) {
                 const auto *mmv = ev.getIf<sf::Event::MouseMoved>();
-                if (mmv && dragging) {
+                if (mmv) {
                     sf::Vector2i pix = mmv->position;
                     sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
-                    moveWithGoalCollision(robot.pos, mouseMm + dragOffsetMm, robot.diameterMm / 2.0f);
-                }
-                if (mmv && draggingBall) {
-                    sf::Vector2i pix = mmv->position;
-                    sf::Vector2f mouseMm((pix.x - WINDOW_MARGIN_PX) / PX_PER_MM, (pix.y - WINDOW_MARGIN_PX) / PX_PER_MM);
-                    moveBallWithCollision(ballPosMm, mouseMm + ballDragOffsetMm);
+                    for (int i = 0; i < 2; ++i) {
+                        if (sims[i].dragging) {
+                            moveWithGoalCollision(sims[i].robot.pos, mouseMm + sims[i].dragOffsetMm, sims[i].robot.diameterMm / 2.0f);
+                        }
+                    }
+                    if (draggingBall) {
+                        moveBallWithCollision(ballPosMm, mouseMm + ballDragOffsetMm);
+                    }
                 }
             }
         }
@@ -677,57 +796,109 @@ int main() {
 
         // Apply MoveProfile to simulated robot physics (if robot code is running and profile active)
         float dt_s = float(SIM_MS_PER_FRAME) / 1000.0f;
-        const sf::Vector2f prevRobotPos = robot.pos;
-        const float prevRobotHeading = robot.headingDeg;
-        if (robotCurrentlyRunning && currentMoveProfile.active) {
-            const float linear_mm_s = currentMoveProfile.speed * ROBOT_LINEAR_SPEED_MM_S * 0.9f * moveSpeedScale;
-            const float rot_deg_s = currentMoveProfile.rotationSpeed / ROTATION_MAX_SPEED * SIM_MAX_ROT_DEG_S * rotSpeedScale;
-            robot.headingDeg += rot_deg_s * dt_s;
-            const float angleRad = currentMoveProfile.movementDirectionDeg * 3.14159265f / 180.0f;
-            float dx = std::cos(angleRad) * linear_mm_s * dt_s;
-            float dy = -std::sin(angleRad) * linear_mm_s * dt_s;
-            moveWithGoalCollision(robot.pos, robot.pos + sf::Vector2f(dx, dy), robot.diameterMm / 2.0f);
+        sf::Vector2f prevRobotPos[2];
+        float prevRobotHeading[2];
+        MoveProfile moveProfiles[2] = {};
+        bool dribblerFlags[2] = {false, false};
+        for (int i = 0; i < 2; ++i) {
+            prevRobotPos[i] = sims[i].robot.pos;
+            prevRobotHeading[i] = sims[i].robot.headingDeg;
+            sim_set_running(i, robotEnabled);
+            if (sims[i].damaged) continue;
+            bool dribble = false;
+            sim_get_move_profile(i, moveProfiles[i], dribble);
+            dribblerFlags[i] = dribble;
+            if (robotEnabled && moveProfiles[i].active) {
+                const float linear_mm_s = moveProfiles[i].speed * ROBOT_LINEAR_SPEED_MM_S * 0.9f * moveSpeedScale;
+                const float rot_deg_s = moveProfiles[i].rotationSpeed / ROTATION_MAX_SPEED * SIM_MAX_ROT_DEG_S * rotSpeedScale;
+                sims[i].robot.headingDeg += rot_deg_s * dt_s;
+                const float angleRad = moveProfiles[i].movementDirectionDeg * 3.14159265f / 180.0f;
+                float dx = std::cos(angleRad) * linear_mm_s * dt_s;
+                float dy = -std::sin(angleRad) * linear_mm_s * dt_s;
+                moveWithGoalCollision(sims[i].robot.pos, sims[i].robot.pos + sf::Vector2f(dx, dy), sims[i].robot.diameterMm / 2.0f);
+            }
+        }
+        if (!sims[0].damaged && !sims[1].damaged) {
+            resolveRobotRobotCollision(sims[0].robot, sims[1].robot);
         }
 
         // Ball physics: roll with friction, bounce off walls/goals, and be
-        // pushed out (and given a nudge) whenever it touches the robot.
-        // If the dribbler is requested (dribblerShouldRun) and the ball touches
-        // the frontal dribbler bar, the ball is held against the bar instead of
-        // rolling/bouncing, so it moves and rotates with the robot.
-        const sf::Vector2f robotVelMmS = dt_s > 0.0f ? (robot.pos - prevRobotPos) / dt_s : sf::Vector2f(0.0f, 0.0f);
-        if (sim_consume_kick_request()) {
-            const float angleRad = -robot.headingDeg * 3.14159265f / 180.0f;
-            const sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
-            const sf::Vector2f toBall = ballPosMm - robot.pos;
-            const float forwardDistance = toBall.x * frontVec.x + toBall.y * frontVec.y;
-            const float lateralDistance = std::abs(toBall.x * frontVec.y - toBall.y * frontVec.x);
-            if (forwardDistance > 0.0f &&
-                forwardDistance <= robot.diameterMm / 2.0f + BALL_RADIUS_MM + 60.0f &&
-                lateralDistance <= robot.diameterMm / 2.0f) {
-                ballHeld = false;
-                ballVelMmS = frontVec * 2500.0f + robotVelMmS;
+        // pushed out (and given a nudge) whenever it touches a robot.
+        // If a robot's dribbler is requested and the ball touches its frontal
+        // dribbler bar, the ball is held against the bar instead of
+        // rolling/bouncing, so it moves and rotates with that robot.
+        sf::Vector2f robotVelMmS[2];
+        for (int i = 0; i < 2; ++i) {
+            robotVelMmS[i] = dt_s > 0.0f ? (sims[i].robot.pos - prevRobotPos[i]) / dt_s : sf::Vector2f(0.0f, 0.0f);
+        }
+        for (int i = 0; i < 2; ++i) {
+            if (sims[i].damaged) continue;
+            if (sim_consume_kick_request(i)) {
+                const float angleRad = -sims[i].robot.headingDeg * 3.14159265f / 180.0f;
+                const sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
+                const sf::Vector2f toBall = ballPosMm - sims[i].robot.pos;
+                const float forwardDistance = toBall.x * frontVec.x + toBall.y * frontVec.y;
+                const float lateralDistance = std::abs(toBall.x * frontVec.y - toBall.y * frontVec.x);
+                if (forwardDistance > 0.0f &&
+                    forwardDistance <= sims[i].robot.diameterMm / 2.0f + BALL_RADIUS_MM + 60.0f &&
+                    lateralDistance <= sims[i].robot.diameterMm / 2.0f) {
+                    ballHolderIndex = -1;
+                    ballVelMmS = frontVec * 2500.0f + robotVelMmS[i];
+                }
             }
         }
         if (!draggingBall) {
-            ballHeld = updateBallDribbling(ballPosMm, ballVelMmS, ballHeld, robot.pos, robot.diameterMm,
-                                           robot.headingDeg, robotVelMmS, dribblerShouldRun);
+            if (ballHolderIndex != -1 && sims[ballHolderIndex].damaged) {
+                ballHolderIndex = -1;
+            }
+            if (ballHolderIndex != -1) {
+                const bool stillHeld = updateBallDribbling(
+                    ballPosMm, ballVelMmS, true, sims[ballHolderIndex].robot.pos,
+                    sims[ballHolderIndex].robot.diameterMm, sims[ballHolderIndex].robot.headingDeg,
+                    robotVelMmS[ballHolderIndex], dribblerFlags[ballHolderIndex]);
+                if (!stillHeld) ballHolderIndex = -1;
+            } else {
+                for (int i = 0; i < 2 && ballHolderIndex == -1; ++i) {
+                    if (sims[i].damaged) continue;
+                    const bool held = updateBallDribbling(
+                        ballPosMm, ballVelMmS, false, sims[i].robot.pos, sims[i].robot.diameterMm,
+                        sims[i].robot.headingDeg, robotVelMmS[i], dribblerFlags[i]);
+                    if (held) ballHolderIndex = i;
+                }
+            }
         }
-        // The user fully controls the ball while dragging it, so the robot must
+        // The user fully controls the ball while dragging it, so the robots must
         // not shove it around (or give it velocity) mid-drag.
-        if (!draggingBall && !ballHeld) {
+        if (!draggingBall && ballHolderIndex == -1) {
             moveBall(ballPosMm, ballVelMmS, dt_s);
         }
-        if (!draggingBall && !ballHeld) {
-            resolveRobotBallCollision(ballPosMm, ballVelMmS, robot.pos, robot.diameterMm / 2.0f, robotVelMmS);
+        if (!draggingBall && ballHolderIndex == -1) {
+            for (int i = 0; i < 2; ++i) {
+                if (sims[i].damaged) continue;
+                resolveRobotBallCollision(ballPosMm, ballVelMmS, sims[i].robot.pos, sims[i].robot.diameterMm / 2.0f, robotVelMmS[i]);
+            }
         }
         if (!draggingBall) {
             containBallInGoalBoxes(ballPosMm);
         }
         clampBallToField(ballPosMm);
 
+        // Ensure the HUD font is loaded before it is needed by on-field labels.
+        static sf::Font hudFont;
+        static bool hudFontLoaded = false;
+        if (!hudFontLoaded) {
+           // Try common Windows fonts as a fallback so HUD works without bundling a font file
+           hudFontLoaded = hudFont.openFromFile("C:\\Windows\\Fonts\\arial.ttf")
+               || hudFont.openFromFile("C:\\Windows\\Fonts\\segoeui.ttf")
+               || hudFont.openFromFile("C:\\Windows\\Fonts\\tahoma.ttf");
+        }
 
-        // draw robot
-        robot.draw(window);
+        // draw robots (damaged robots are removed from the field entirely)
+        for (int i = 0; i < 2; ++i) {
+            if (sims[i].damaged) continue;
+            sims[i].robot.draw(window);
+            drawRobotLabel(window, hudFont, hudFontLoaded, sims[i].robot, i + 1, sims[i].publishedState);
+        }
 
         // draw ball
         float ball_r_px = mmToPx(BALL_DIAMETER_MM) / 2.0f;
@@ -738,52 +909,58 @@ int main() {
         ballShape.setOutlineColor(sf::Color::Black);
         ballShape.setOutlineThickness(1.0f);
         window.draw(ballShape);
- 
-        // Update BallPacket based on ball->robot geometry
-        // Compute vector from robot to ball in mm
-        float dx = ballPosMm.x - robot.pos.x;
-        float dy = ballPosMm.y - robot.pos.y;
-        float distMm = std::sqrt(dx*dx + dy*dy);
-        // Robot front direction (world frame) as unit vector
-        float angleRad = -robot.headingDeg * 3.14159265f / 180.0f;
-        sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
-        // vector to ball
-        sf::Vector2f v(dx, dy);
-        // compute signed angle between frontVec and v
-        float dot = frontVec.x * v.x + frontVec.y * v.y;
-        float cross = frontVec.x * v.y - frontVec.y * v.x;
-        float bearingRad = std::atan2(cross, dot);
-        float bearingDeg = bearingRad * 180.0f / 3.14159265f;
 
-        latestBallPacket.detected = true;
-        latestBallPacket.angleDeg = bearingDeg; // angle relative to robot front
-        latestBallPacket.distanceCM = distMm / 10.0f;
-        latestBallPacket.sizeByte = static_cast<uint8_t>(std::min(255, static_cast<int>(BALL_DIAMETER_MM)));
-        // Use simulator-driven milliseconds (simMs) for the ball packet timestamp so
-        // the robot firmware (which reads millis()) sees a consistent epoch.
-        lastBallPacketMs = simMs;
+        // Update each robot's BallPacket/localization/IMU inputs based on ball->robot geometry
+        float ballBearingDeg[2] = {0.0f, 0.0f};
+        float ballDistCm[2] = {0.0f, 0.0f};
+        for (int i = 0; i < 2; ++i) {
+            float dx = ballPosMm.x - sims[i].robot.pos.x;
+            float dy = ballPosMm.y - sims[i].robot.pos.y;
+            float distMm = std::sqrt(dx*dx + dy*dy);
+            // Robot front direction (world frame) as unit vector
+            float angleRad = -sims[i].robot.headingDeg * 3.14159265f / 180.0f;
+            sf::Vector2f frontVec(std::cos(angleRad), std::sin(angleRad));
+            // vector to ball
+            sf::Vector2f v(dx, dy);
+            // compute signed angle between frontVec and v
+            float dot = frontVec.x * v.x + frontVec.y * v.y;
+            float cross = frontVec.x * v.y - frontVec.y * v.x;
+            float bearingRad = std::atan2(cross, dot);
+            float bearingDeg = bearingRad * 180.0f / 3.14159265f;
+            ballBearingDeg[i] = bearingDeg;
+            ballDistCm[i] = distMm / 10.0f;
 
-        const RobotPose simulatedPose = {
-            true,
-            robot.pos.x - FIELD_WIDTH_MM / 2.0f,
-            FIELD_HEIGHT_MM / 2.0f - robot.pos.y,
-            robot.headingDeg,
-            1.0f,
-            simMs};
-        const FieldBall simulatedBall = {
-            true,
-            ballPosMm.x - FIELD_WIDTH_MM / 2.0f,
-            FIELD_HEIGHT_MM / 2.0f - ballPosMm.y,
-            distMm / 10.0f,
-            bearingDeg,
-            simMs};
-        sim_set_localization(simulatedPose, simulatedBall, nullptr, 0);
-        const float yawRateDegPerSec = dt_s > 0.0f
-            ? (robot.headingDeg - prevRobotHeading) / dt_s
-            : 0.0f;
-        sim_set_imu_state(robot.headingDeg, yawRateDegPerSec);
+            BallPacket packet;
+            packet.detected = true;
+            packet.angleDeg = bearingDeg; // angle relative to robot front
+            packet.distanceCM = distMm / 10.0f;
+            packet.sizeByte = static_cast<uint8_t>(std::min(255, static_cast<int>(BALL_DIAMETER_MM)));
+            // Use simulator-driven milliseconds (simMs) so the robot firmware
+            // (which reads millis()) sees a consistent epoch.
+            sim_publish_ball_packet(i, packet, simMs);
 
-        // HUD panel area on the right side
+            const RobotPose simulatedPose = {
+                true,
+                sims[i].robot.pos.x - FIELD_WIDTH_MM / 2.0f,
+                FIELD_HEIGHT_MM / 2.0f - sims[i].robot.pos.y,
+                sims[i].robot.headingDeg,
+                1.0f,
+                simMs};
+            const FieldBall simulatedBall = {
+                true,
+                ballPosMm.x - FIELD_WIDTH_MM / 2.0f,
+                FIELD_HEIGHT_MM / 2.0f - ballPosMm.y,
+                distMm / 10.0f,
+                bearingDeg,
+                simMs};
+            sim_set_localization(i, simulatedPose, simulatedBall, nullptr, 0);
+            const float yawRateDegPerSec = dt_s > 0.0f
+                ? (sims[i].robot.headingDeg - prevRobotHeading[i]) / dt_s
+                : 0.0f;
+            sim_set_imu_state(i, sims[i].robot.headingDeg, yawRateDegPerSec);
+            sim_get_published_local_state(i, sims[i].publishedState);
+        }
+
         float hudX = WINDOW_MARGIN_PX + mmToPx(FIELD_WIDTH_MM) + WINDOW_MARGIN_PX;
         float hudY = WINDOW_MARGIN_PX;
         float hudW = static_cast<float>(HUD_PANEL_WIDTH_PX);
@@ -798,17 +975,9 @@ int main() {
         window.draw(hudPanel);
 
         // Ensure HUD font is available
-        static sf::Font hudFont;
-        static bool hudFontLoaded = false;
-        if (!hudFontLoaded) {
-           // Try common Windows fonts as a fallback so HUD works without bundling a font file
-           hudFontLoaded = hudFont.openFromFile("C:\\Windows\\Fonts\\arial.ttf")
-               || hudFont.openFromFile("C:\\Windows\\Fonts\\segoeui.ttf")
-               || hudFont.openFromFile("C:\\Windows\\Fonts\\tahoma.ttf");
-        }
+        const float pad = 10.0f;
 
         // draw enable/disable buttons at top-left of HUD
-        const float pad = 10.0f;
         sf::RectangleShape btnEnable(sf::Vector2f(28.0f, 28.0f));
         btnEnable.setPosition(sf::Vector2f(hudX + pad, hudY + pad));
         btnEnable.setFillColor(robotEnabled ? sf::Color(50,200,50) : sf::Color(80,80,80));
@@ -825,11 +994,13 @@ int main() {
 
         // Draw labels for robot state
         if (hudFontLoaded) {
-            sf::Text stateLabel(hudFont, robotCurrentlyRunning ? "Robot: ENABLED" : "Robot: DISABLED", 14);
-            stateLabel.setFillColor(robotCurrentlyRunning ? sf::Color(180,255,180) : sf::Color(200,120,120));
+            sf::Text stateLabel(hudFont, robotEnabled ? "Robot: ENABLED" : "Robot: DISABLED", 14);
+            stateLabel.setFillColor(robotEnabled ? sf::Color(180,255,180) : sf::Color(200,120,120));
             stateLabel.setPosition(sf::Vector2f(hudX + pad + 72.0f, hudY + pad + 4.0f));
             window.draw(stateLabel);
         }
+
+        float rotY = 0.0f;
 
         // Draw MoveProfile scaling controls
         if (hudFontLoaded) {
@@ -858,7 +1029,7 @@ int main() {
             window.draw(moveText);
 
             // Rotation scale label and input box
-            float rotY = scaleBaseY + 40.0f;
+            rotY = scaleBaseY + 40.0f;
             sf::Text rotLabel(hudFont, std::string("Rot scale:"), fs);
             rotLabel.setFillColor(sf::Color::White);
             rotLabel.setPosition(sf::Vector2f(hudX + pad, rotY));
@@ -881,47 +1052,88 @@ int main() {
 
         }
 
-        // HUD: render BallPacket and MoveProfile inside the panel
-
+        // Per-robot role toggle (Attack / Defend / Damaged) + state/goal readout
         if (hudFontLoaded) {
-            std::string bp1 = std::string("BallPacket.detected: ") + (latestBallPacket.detected ? "true" : "false");
-            std::string bp2 = "angleDeg: " + std::to_string(latestBallPacket.angleDeg);
-            std::string bp3 = "distanceCM: " + std::to_string(latestBallPacket.distanceCM);
-            std::string bp4 = "size: " + std::to_string((int)latestBallPacket.sizeByte);
+            const unsigned int fs = 14;
+            for (int i = 0; i < 2; ++i) {
+                const float sectionY = rotY + 40.0f + i * 90.0f;
+                sf::Text title(hudFont, "Robot " + std::to_string(i + 1), fs);
+                title.setFillColor(sf::Color::White);
+                title.setPosition(sf::Vector2f(hudX + pad, sectionY));
+                window.draw(title);
 
-            std::string mp1 = std::string("MoveProfile.active: ") + (currentMoveProfile.active ? "true" : "false");
-            std::string mp2 = "dirDeg: " + std::to_string(currentMoveProfile.movementDirectionDeg);
-            std::string mp3 = "speed: " + std::to_string(currentMoveProfile.speed);
-            std::string mp4 = "rot: " + std::to_string(currentMoveProfile.rotationSpeed);
+                const float buttonY = sectionY + 22.0f;
+                const float buttonW = 60.0f, buttonH = 24.0f;
+                const float atkX = hudX + pad;
+                const float defX = atkX + 70.0f;
+                const float dmgX = defX + 70.0f;
+                const bool isAttacking = !sims[i].damaged && sims[i].publishedState.robotState == RobotState::attacking;
+                const bool isDefending = !sims[i].damaged && sims[i].publishedState.robotState == RobotState::defending;
 
-            std::string dr1 = std::string("Dribbler: ") + (dribblerShouldRun ? "RUNNING" : "off");
-            std::string dr2 = std::string("Ball held: ") + (ballHeld ? "YES" : "no");
+                sf::RectangleShape atkBtn(sf::Vector2f(buttonW, buttonH));
+                atkBtn.setPosition(sf::Vector2f(atkX, buttonY));
+                atkBtn.setFillColor(isAttacking ? sf::Color(50,200,50) : sf::Color(80,80,80));
+                atkBtn.setOutlineThickness(1.0f); atkBtn.setOutlineColor(sf::Color::Black);
+                window.draw(atkBtn);
+                sf::Text atkText(hudFont, "ATK", fs); atkText.setFillColor(sf::Color::White);
+                atkText.setPosition(sf::Vector2f(atkX + 8.0f, buttonY + 3.0f)); window.draw(atkText);
 
-            const float pad = 10.0f;
+                sf::RectangleShape defBtn(sf::Vector2f(buttonW, buttonH));
+                defBtn.setPosition(sf::Vector2f(defX, buttonY));
+                defBtn.setFillColor(isDefending ? sf::Color(80,140,220) : sf::Color(80,80,80));
+                defBtn.setOutlineThickness(1.0f); defBtn.setOutlineColor(sf::Color::Black);
+                window.draw(defBtn);
+                sf::Text defText(hudFont, "DEF", fs); defText.setFillColor(sf::Color::White);
+                defText.setPosition(sf::Vector2f(defX + 8.0f, buttonY + 3.0f)); window.draw(defText);
+
+                sf::RectangleShape dmgBtn(sf::Vector2f(buttonW, buttonH));
+                dmgBtn.setPosition(sf::Vector2f(dmgX, buttonY));
+                dmgBtn.setFillColor(sims[i].damaged ? sf::Color(220,50,50) : sf::Color(80,80,80));
+                dmgBtn.setOutlineThickness(1.0f); dmgBtn.setOutlineColor(sf::Color::Black);
+                window.draw(dmgBtn);
+                sf::Text dmgText(hudFont, "DMG", fs); dmgText.setFillColor(sf::Color::White);
+                dmgText.setPosition(sf::Vector2f(dmgX + 6.0f, buttonY + 3.0f)); window.draw(dmgText);
+
+                std::string statusText = sims[i].damaged
+                    ? "State: damaged (removed from field)"
+                    : "State: " + std::string(robotStateName(sims[i].publishedState.robotState)) +
+                      "  Goal: " + std::string(robotGoalName(sims[i].publishedState.robotGoal));
+                sf::Text status(hudFont, statusText, fs);
+                status.setFillColor(sf::Color(220, 220, 255));
+                status.setPosition(sf::Vector2f(hudX + pad, buttonY + 32.0f));
+                window.draw(status);
+            }
+        }
+
+        // HUD: compact per-robot BallPacket/MoveProfile/dribbler debug readout
+        if (hudFontLoaded) {
+            const float HUD_CONTROLS_HEIGHT = rotY - hudY + 40.0f + 2 * 90.0f + 10.0f; // controls + both role sections
             float tx = hudX + pad;
-                        const float HUD_CONTROLS_HEIGHT = 120.0f; // space reserved for enable buttons and scale controls
-                        float ty = hudY + pad + HUD_CONTROLS_HEIGHT; // start text below controls
-            unsigned int fs = 16;
+            float ty = hudY + HUD_CONTROLS_HEIGHT;
+            unsigned int fs = 14;
+            for (int i = 0; i < 2; ++i) {
+                std::string line1 = "R" + std::to_string(i + 1) + " ball: bearing=" +
+                    std::to_string(ballBearingDeg[i]) + " dist=" + std::to_string(ballDistCm[i]) + "cm";
+                std::string line2 = "R" + std::to_string(i + 1) + " move: active=" +
+                    (moveProfiles[i].active ? "Y" : "N") + " spd=" + std::to_string(moveProfiles[i].speed) +
+                    " rot=" + std::to_string(moveProfiles[i].rotationSpeed);
+                std::string line3 = "R" + std::to_string(i + 1) + " dribble=" +
+                    (dribblerFlags[i] ? "ON" : "off") + "  holding=" + (ballHolderIndex == i ? "YES" : "no");
 
-            sf::Text t1(hudFont, bp1, fs); t1.setFillColor(sf::Color::White); t1.setPosition(sf::Vector2f(tx, ty)); window.draw(t1); ty += 22.0f;
-            sf::Text t2(hudFont, bp2, fs); t2.setFillColor(sf::Color::White); t2.setPosition(sf::Vector2f(tx, ty)); window.draw(t2); ty += 22.0f;
-            sf::Text t3(hudFont, bp3, fs); t3.setFillColor(sf::Color::White); t3.setPosition(sf::Vector2f(tx, ty)); window.draw(t3); ty += 22.0f;
-            sf::Text t4(hudFont, bp4, fs); t4.setFillColor(sf::Color::White); t4.setPosition(sf::Vector2f(tx, ty)); window.draw(t4); ty += 32.0f;
-
-            sf::Text m1(hudFont, mp1, fs); m1.setFillColor(sf::Color::White); m1.setPosition(sf::Vector2f(tx, ty)); window.draw(m1); ty += 22.0f;
-            sf::Text m2(hudFont, mp2, fs); m2.setFillColor(sf::Color::White); m2.setPosition(sf::Vector2f(tx, ty)); window.draw(m2); ty += 22.0f;
-            sf::Text m3(hudFont, mp3, fs); m3.setFillColor(sf::Color::White); m3.setPosition(sf::Vector2f(tx, ty)); window.draw(m3); ty += 22.0f;
-            sf::Text m4(hudFont, mp4, fs); m4.setFillColor(sf::Color::White); m4.setPosition(sf::Vector2f(tx, ty)); ty += 32.0f;
-
-            sf::Text d1(hudFont, dr1, fs); d1.setFillColor(sf::Color(255, 220, 140)); d1.setPosition(sf::Vector2f(tx, ty)); window.draw(d1); ty += 22.0f;
-            sf::Text d2(hudFont, dr2, fs); d2.setFillColor(ballHeld ? sf::Color(140, 255, 140) : sf::Color::White); d2.setPosition(sf::Vector2f(tx, ty)); window.draw(d2); ty += 22.0f;
+                sf::Text t1(hudFont, line1, fs); t1.setFillColor(sf::Color::White); t1.setPosition(sf::Vector2f(tx, ty)); window.draw(t1); ty += 20.0f;
+                sf::Text t2(hudFont, line2, fs); t2.setFillColor(sf::Color::White); t2.setPosition(sf::Vector2f(tx, ty)); window.draw(t2); ty += 20.0f;
+                sf::Text t3(hudFont, line3, fs); t3.setFillColor(ballHolderIndex == i ? sf::Color(140, 255, 140) : sf::Color(255, 220, 140));
+                t3.setPosition(sf::Vector2f(tx, ty)); window.draw(t3); ty += 28.0f;
+            }
         }
 
         window.display();
     }
 
-    // Stop robot thread cleanly
-    robot_stop();
+    // Stop both robot threads cleanly
+    robot_stop(0);
+    robot_stop(1);
 
     return 0;
 }
+

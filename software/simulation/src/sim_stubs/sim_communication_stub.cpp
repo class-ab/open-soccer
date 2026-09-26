@@ -2,9 +2,10 @@
 
 #include "subsystems/localization.h"
 #include "subsystems/strategy.h"
+#include "sim_hal/sim_robot_io.h"
 
 namespace {
-uint8_t currentRobotNumber = 1;
+thread_local uint8_t currentRobotNumber = 1;
 }
 
 bool initCommunication() { return true; }
@@ -12,15 +13,21 @@ bool initCommunication() { return true; }
 void updateCommunication() {}
 
 void getRemoteRobotPose(RobotPose &out) {
-  out = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
+  RobotPose pose;
+  FieldBall ball;
+  sim_get_localization(1 - g_simRobotSlot, pose, ball);
+  out = pose;
 }
 
 void getRemoteRobotState(LocalState &out) {
-  out = {RobotState::damaged, RobotGoal::none};
+  sim_get_published_local_state(1 - g_simRobotSlot, out);
 }
 
 void getRemoteFieldBall(FieldBall &out) {
-  out = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
+  RobotPose pose;
+  FieldBall ball;
+  sim_get_localization(1 - g_simRobotSlot, pose, ball);
+  out = ball;
 }
 
 void getRemoteOpponents(OpponentRobot *out, int maxOpponents, int &count) {

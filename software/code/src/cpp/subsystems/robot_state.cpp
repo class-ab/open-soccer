@@ -4,29 +4,29 @@
 #include "include/subsystems/display.h"
 #include "include/subsystems/strategy.h"
 
-BallPacket latestBallPacket = {false, 0.0f, 0.0f, 0};
-unsigned long lastBallPacketMs = 0;
-uint8_t ballPacketBuf[BALL_PACKET_LEN];
-uint8_t ballPacketIdx = 0;
-bool ballSyncFound = false;
+SIM_TLS BallPacket latestBallPacket = {false, 0.0f, 0.0f, 0};
+SIM_TLS unsigned long lastBallPacketMs = 0;
+SIM_TLS uint8_t ballPacketBuf[BALL_PACKET_LEN];
+SIM_TLS uint8_t ballPacketIdx = 0;
+SIM_TLS bool ballSyncFound = false;
 
-MoveProfile currentMoveProfile = {false, 0.0f, 0.0f, 0.0f, 0};
+SIM_TLS MoveProfile currentMoveProfile = {false, 0.0f, 0.0f, 0.0f, 0};
 
-unsigned long bootMillis = 0;
-unsigned long lastRunStateChangeMs = 0;
-bool robotCurrentlyRunning = false;
+SIM_TLS unsigned long bootMillis = 0;
+SIM_TLS unsigned long lastRunStateChangeMs = 0;
+SIM_TLS bool robotCurrentlyRunning = false;
 
-unsigned long lastBatteryCheckMs = 0;
-float lastBatteryVoltage = 0.0f;
-bool shutdownLatched = false;
-bool dribblerShouldRun = false;
+SIM_TLS unsigned long lastBatteryCheckMs = 0;
+SIM_TLS float lastBatteryVoltage = 0.0f;
+SIM_TLS bool shutdownLatched = false;
+SIM_TLS bool dribblerShouldRun = false;
 
-unsigned long lastDisplayUpdateMs = 0;
-bool displayAvailable = false;
+SIM_TLS unsigned long lastDisplayUpdateMs = 0;
+SIM_TLS bool displayAvailable = false;
 
-bool button1State = false;
-bool button2State = false;
-bool button3State = false;
+SIM_TLS bool button1State = false;
+SIM_TLS bool button2State = false;
+SIM_TLS bool button3State = false;
 
 namespace { // start namespace
 bool button1RawState = LOW;
@@ -50,12 +50,12 @@ void updateButtonState(bool rawState, bool& lastRawState,
 }
 } // end namespace
 
-float currentYawDeg = 0.0f;
-float desiredHeadingDeg = 0.0f;
-float headingIntegral = 0.0f;
-float headingLastError = 0.0f;
-unsigned long headingLastTimeMs = 0;
-bool headingPidInitialized = false;
+SIM_TLS float currentYawDeg = 0.0f;
+SIM_TLS float desiredHeadingDeg = 0.0f;
+SIM_TLS float headingIntegral = 0.0f;
+SIM_TLS float headingLastError = 0.0f;
+SIM_TLS unsigned long headingLastTimeMs = 0;
+SIM_TLS bool headingPidInitialized = false;
 
 void checkButtons() {
     unsigned long now = millis();

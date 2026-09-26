@@ -28,6 +28,9 @@
     <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_communication_stub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\simulation\src\sim_stubs\sim_robot_bridge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\aiden\Documents\GitHub\open-soccer\software\code\src\robot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

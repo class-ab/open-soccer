@@ -4,11 +4,16 @@
 #include "subsystems/robot_config.h"
 #include "subsystems/robot_state.h"
 
+#include <atomic>
+
 namespace {
-unsigned long kickStartedMs = 0;
-bool kicking = false;
-bool kickPulseSent = false;
-bool kickRequested = false;
+struct KickState {
+  unsigned long startedMs = 0;
+  bool kicking = false;
+  bool pulseSent = false;
+  std::atomic<bool> requested{false};
+};
+KickState g_kickStates[2];
 }
 
 // Simulator-side implementation of dribbler and kicker outputs.
@@ -33,33 +38,34 @@ void stopDribbler() {
 }
 
 void initKicker() {
-  kicking = false;
-  kickPulseSent = false;
+  KickState &k = g_kickStates[g_simRobotSlot];
+  k.kicking = false;
+  k.pulseSent = false;
 }
 
 void kick() {
-  if (kicking) return;
-  kickStartedMs = millis();
-  kicking = true;
-  kickPulseSent = false;
+  KickState &k = g_kickStates[g_simRobotSlot];
+  if (k.kicking) return;
+  k.startedMs = millis();
+  k.kicking = true;
+  k.pulseSent = false;
 }
 
 void updateKicker() {
-  if (!kicking) return;
-  const unsigned long elapsed = millis() - kickStartedMs;
-  if (!kickPulseSent && elapsed >= 20) {
-    kickRequested = true;
-    kickPulseSent = true;
+  KickState &k = g_kickStates[g_simRobotSlot];
+  if (!k.kicking) return;
+  const unsigned long elapsed = millis() - k.startedMs;
+  if (!k.pulseSent && elapsed >= 20) {
+    k.requested.store(true);
+    k.pulseSent = true;
   }
-  if (elapsed >= 60) kicking = false;
+  if (elapsed >= 60) k.kicking = false;
 }
 
-void sim_request_kick() {
-  kickRequested = true;
+void sim_request_kick(int slot) {
+  g_kickStates[slot].requested.store(true);
 }
 
-bool sim_consume_kick_request() {
-  const bool requested = kickRequested;
-  kickRequested = false;
-  return requested;
+bool sim_consume_kick_request(int slot) {
+  return g_kickStates[slot].requested.exchange(false);
 }
