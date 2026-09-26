@@ -9,6 +9,9 @@ extern sh2_SensorValue_t sensorValue;
 bool initIMU();
 void setReports();
 void updateIMU();
+float getIMUHeadingDeg();
+float getIMUYawRateDegPerSec();
+bool isIMUHeadingFresh();
 
 float quaternionToYawDegrees(float real, float i, float j, float k);
 float angleError(float target, float current);

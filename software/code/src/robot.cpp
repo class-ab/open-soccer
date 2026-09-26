@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <math.h>
 
 #include "include/robot.h"
 #include "include/subsystems/vision.h"
@@ -97,6 +98,9 @@ void loop() {
   updateCommunication();
   updateStrategy();
   updateKicker();
+
+  // Refresh after localization and strategy work, just before control uses it.
+  updateIMU();
   
   if (robotCurrentlyRunning) {
     move();

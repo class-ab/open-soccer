@@ -3,39 +3,44 @@
 // SPEED LIMITS
 constexpr float ROBOT_MAX_SPEED = 1.0f;
 constexpr float ROTATION_MAX_SPEED = 0.5f;
+// Calibrate against measured full-command robot speed on the actual field.
+constexpr float ROBOT_LINEAR_SPEED_MM_S = 1800.0f;
 
 // ACCELERATION LIMITS
-constexpr float ACCEL_LIMIT = 1.1f;
+constexpr float ACCEL_LIMIT = 1.0f;
 constexpr float ROTATION_ACCEL_LIMIT = 1.0f;
 
-// moveTo() translation PID
-constexpr float POSITION_KP = 0.0012f;
-constexpr float POSITION_KI = 0.0000004f;
-constexpr float POSITION_KD = 0.00025f;
-constexpr float POSITION_INTEGRAL_MAX_MM = 500.0f;
-constexpr float POSITION_DERIVATIVE_FILTER = 0.2f;
-constexpr float POSITION_TOLERANCE_MM = 12.0f;
-constexpr float POSITION_TARGET_RESET_MM = 20.0f;
-constexpr float HEADING_TOLERANCE_DEG = 2.0f;
-constexpr float HEADING_TARGET_RESET_DEG = 2.0f;
+// moveTo() position-to-speed proportional gain (normalized speed / mm).
+// Gentle preset (see set list below) -- previous value was ~4x weaker than
+// even that floor and produced too little PWM to overcome motor deadband.
+constexpr float POSITION_KP = 0.00065f;
+constexpr float POSITION_TOLERANCE_MM = 10.0f;
+constexpr float HEADING_TOLERANCE_DEG = 1.0f;
 
-// ROTATION PID
+// Heading PID output is normalized rotation command. D uses IMU yaw rate.
 constexpr float HEADING_KP = 0.005f;
-constexpr float HEADING_KI = 0.0f;
+constexpr float HEADING_KI = 0.0002f;
 constexpr float HEADING_KD = 0.001f;
-constexpr float HEADING_INTEGRAL_MAX = 0.20f;
+// Integral is accumulated in degree-seconds and clamped before applying KI.
+constexpr float HEADING_INTEGRAL_MAX = 100.0f;
 constexpr float YAW_SIGN = 1.0f;
+
+// Example starting sets for controlled tuning (select one set at a time):
+// Gentle:     POSITION_KP 0.0007, HEADING_KP 0.0030, KI 0.0002, KD 0.0012
+// Balanced:   POSITION_KP 0.0012, HEADING_KP 0.0050, KI 0.0000, KD 0.0025
+// Responsive: POSITION_KP 0.0018, HEADING_KP 0.0070, KI 0.0005, KD 0.0015
 
 // ball sensing
 constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
 constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
-constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
+constexpr float BALL_TARGET_DISTANCE_CM = 20.00f;
 
 // #define DEBUG_MOVE
 // #define DEBUG_BALL_LINK
-// #define DEBUG_LIDAR
-// #define DEBUG_FIELDBALL // requires DEBUG_LIDAR
-#define LOCAL_STATE
+// #define DEBUG_LIDAR        // basic lidar info
+// #define DEBUG_FIELDBALL    // requires DEBUG_LIDAR
+// #define LOCAL_STATE
+// #define LIDAR_POSE_STREAM  // advanced lidar debug + py script
 
 // IMU
 #define BNO08X_RESET -1
@@ -88,6 +93,17 @@ constexpr uint8_t BLUE_GOAL_SYNC = 0xAC; // not used currently
 // LD14P LiDAR
 #define LIDAR_UART      Serial3
 #define LIDAR_UART_BAUD 230400
+// LD14P motor speed PWM control loop (closed-loop on the reported scan speed).
+constexpr uint8_t LIDAR_SPEED_CONTROL_PIN = 14;
+constexpr uint32_t LIDAR_PWM_FREQUENCY_HZ = 1000;
+// Measured working duty for this robot's LD14P is ~80% -- start near there so
+// boot doesn't have to slowly ramp up from a much lower entry point.
+constexpr float LIDAR_PWM_ENTRY_DUTY_PERCENT = 78.0f;
+constexpr float LIDAR_PWM_MIN_DUTY_PERCENT = 45.1f;
+constexpr float LIDAR_PWM_MAX_DUTY_PERCENT = 80.0f;
+constexpr float LIDAR_TARGET_SPEED_DEG_S = 2880.0f;
+constexpr float LIDAR_SPEED_TOLERANCE_DEG_S = 36.0f;
+constexpr unsigned long LIDAR_CONTROL_INTERVAL_MS = 500;
 
 // battery
 constexpr int BATTERY_PIN = A2;

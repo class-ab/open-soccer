@@ -426,15 +426,13 @@ void updateOpponentState() {
 }
 
 void updateRobotState() {
-    // Selected roles are fixed: robot 1 attacks and robot 2 defends. Damage
-    // remains latched until a role-selection button is pressed again.
+    // Damaged robots keep their last radio identity so they remain robot 1 or 2.
     if (localState.robotState == RobotState::damaged) {
         return;
     }
 
-    localState.robotState = (getCurrentRobotNumber() == 1)
-                                ? RobotState::attacking
-                                : RobotState::defending;
+    uint8_t robotNumber = (localState.robotState == RobotState::attacking) ? 1 : 2;
+    selectCurrentRobotNumber(robotNumber);
 }
 
 void updateRobotGoal() {

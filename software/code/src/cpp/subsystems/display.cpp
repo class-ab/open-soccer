@@ -68,7 +68,7 @@ void updateDisplay() {
   */
   display.print("Status: ");
   display.println(robotCurrentlyRunning ? "RUNNING" : "STOPPED");
-
+  /*
   display.print("LclPos: ");
   RobotPose pose;
   getRobotPose(pose);
@@ -82,20 +82,22 @@ void updateDisplay() {
   } else {
     display.println("INVALID");
   }
-  /* display.print("RemPos: ");
+  */
+  
+  display.print("RemPos: ");
   RobotPose remotePose;
   getRemoteRobotPose(remotePose);
-  if (pose.valid) {
+  if (remotePose.valid) {
     display.print("X=" );
-    display.print(pose.xMm, 0);
+    display.println(remotePose.xMm, 0);
     display.print(" Y=" );
-    display.print(pose.yMm, 0);
+    display.println(remotePose.yMm, 0);
     display.print(" H= ");
-    display.print(pose.headingDeg, 1);
+    display.println(remotePose.headingDeg, 1);
   } else {
     display.println("INVALID");
   }
-  */
+  
  // get localState from strategy
   LocalState localState;
   getLocalState(localState);
