@@ -5,6 +5,7 @@
 // threads and defines ARDUINO nowhere, so SIM_TLS/SIM_STATIC_TLS give each
 // thread its own isolated copy of otherwise-shared firmware state.
 #if defined(ARDUINO)
+#include <Arduino.h>
 #define SIM_TLS
 #define SIM_STATIC_TLS static
 #else
