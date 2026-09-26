@@ -31,7 +31,5 @@ struct OpponentRobot {
 void initLocalization();
 void updateLocalization();
 void getRobotPose(RobotPose &out);
-// Returns the latest predicted and LiDAR-corrected pose.
-void getPredictedRobotPose(RobotPose &out);
 void getFieldBall(FieldBall &out);
 void getOpponents(OpponentRobot *out, int maxOpponents, int &count);

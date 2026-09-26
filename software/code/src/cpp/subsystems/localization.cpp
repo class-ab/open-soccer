@@ -37,15 +37,8 @@ constexpr unsigned long POSE_TIMEOUT_MS = 1200;
 constexpr unsigned long OPPONENT_TIMEOUT_MS = 500;
 constexpr unsigned long LIDAR_INTERBYTE_TIMEOUT_MS = 25;
 
-// Position tracked with an alpha-beta (g-h) filter so it carries a velocity
-// estimate and can be dead-reckoned forward between fits.
-constexpr float POSE_FIX_GAIN = 0.45f;   // g: position correction toward each new fit.
-constexpr float POSE_VEL_GAIN = 0.12f;   // h: velocity correction toward each new fit.
-// Floor on the dt used only in the velocity update's division -- fits can land only a
-// few ms apart, and dividing a noisy residual by a tiny dt is the dominant jitter source.
-constexpr float MIN_POSE_VEL_DT_S = 0.02f;
-constexpr unsigned long POSE_VEL_TIMEOUT_MS = 150;  // no accepted fit for this long -> assume stopped
-constexpr unsigned long MAX_POSE_PREDICTION_MS = 50;
+// Pose is just the last accepted lidar fit -- no velocity/dead-reckoning model.
+// MAX_FIX_CORRECTION_MM above is the only guard, rejecting single outlier fits.
 
 constexpr float POLE_ANGLES_DEG[4] = {-135.0f, -45.0f, 45.0f, 135.0f};
 constexpr float POLE_HALF_WIDTH_DEG = 3.4f;
@@ -134,8 +127,6 @@ unsigned long opponentTimestampMs = 0;
 bool poseInitialized = false;
 float poseX = FIELD_WIDTH_MM * 0.5f;
 float poseY = FIELD_HEIGHT_MM * 0.5f;
-float poseVX = 0.0f;  // mm/s, alpha-beta velocity estimate from consecutive fits
-float poseVY = 0.0f;
 float poseQuality = 0.0f;
 unsigned long lastPoseFixMs = 0;  // timestamp of last accepted fit
 unsigned long lastFitMs = 0;      // gates fit *attempt* cadence
@@ -479,16 +470,10 @@ void updatePoseFromLidar(unsigned long now) {
   float totalWeight = 0.0f;
   for (uint8_t i = 0; i < count; ++i) totalWeight += samples[i].weight;
 
-  const float dtS = poseInitialized
-                         ? fminf((now - lastPoseFixMs) / 1000.0f,
-                                 POSE_VEL_TIMEOUT_MS / 1000.0f)
-                         : 0.0f;
-  // Dead-reckon the warm-start/search center from the last fix using the velocity estimate.
-  const float predX = poseX + poseVX * dtS;
-  const float predY = poseY + poseVY * dtS;
-
-  float candidateX = predX;
-  float candidateY = predY;
+  // Search center is just the last accepted fit -- no velocity extrapolation,
+  // so a fit reflects only what the sensor sees right now.
+  float candidateX = poseX;
+  float candidateY = poseY;
   FitResult fit = {};
 
   if (!poseInitialized) {
@@ -500,7 +485,7 @@ void updatePoseFromLidar(unsigned long now) {
     if (!refinePose(candidateX, candidateY, samples, count, totalWeight, fit)) return;
   } else if (!refinePose(candidateX, candidateY, samples, count, totalWeight, fit) ||
              fit.cost > MAX_ACCEPTED_COST) {
-    if (!coarseSearch(predX, predY, 300.0f, 300.0f, 75.0f,
+    if (!coarseSearch(poseX, poseY, 300.0f, 300.0f, 75.0f,
                       samples, count, totalWeight, candidateX, candidateY) ||
         !refinePose(candidateX, candidateY, samples, count, totalWeight, fit)) {
       return;
@@ -512,8 +497,6 @@ void updatePoseFromLidar(unsigned long now) {
   if (!poseInitialized) {
     poseX = candidateX;
     poseY = candidateY;
-    poseVX = 0.0f;
-    poseVY = 0.0f;
     poseInitialized = true;
     poseQuality = quality;
     lastPoseFixMs = now;
@@ -521,22 +504,18 @@ void updatePoseFromLidar(unsigned long now) {
     return;
   }
 
-  float correctionX = candidateX - predX;
-  float correctionY = candidateY - predY;
+  float correctionX = candidateX - poseX;
+  float correctionY = candidateY - poseY;
   const float correction = hypotf(correctionX, correctionY);
   if (correction > MAX_FIX_CORRECTION_MM) {
-    // Disagrees sharply with the dead-reckoned prediction -- clamp like an outlier, don't chase it.
+    // Disagrees sharply with the last fix -- clamp like an outlier, don't chase it.
     const float scale = MAX_FIX_CORRECTION_MM / correction;
     correctionX *= scale;
     correctionY *= scale;
   }
 
-  poseX = predX + POSE_FIX_GAIN * correctionX;
-  poseY = predY + POSE_FIX_GAIN * correctionY;
-  // Floored dt keeps back-to-back fits from turning small residual noise into large velocity spikes.
-  const float velDtS = fmaxf(dtS, MIN_POSE_VEL_DT_S);
-  poseVX += POSE_VEL_GAIN * correctionX / velDtS;
-  poseVY += POSE_VEL_GAIN * correctionY / velDtS;
+  poseX += correctionX;
+  poseY += correctionY;
   poseQuality += 0.25f * (quality - poseQuality);
 
   lastPoseFixMs = now;
@@ -573,18 +552,14 @@ void streamPointsBatch(const int16_t *coords, uint8_t pointCount) {
   Serial.write(checksum);
 }
 
-// "P <x_mm> <y_mm> <heading_deg> <quality 0-1>\n" -- predicted through the latest fit.
+// "P <x_mm> <y_mm> <heading_deg> <quality 0-1>\n" -- the raw last-fit pose, no extrapolation.
 void streamPose(unsigned long now) {
-  const unsigned long heldMs = poseInitialized ? now - lastPoseFixMs : 0;
-  const unsigned long predMs = heldMs < MAX_POSE_PREDICTION_MS ? heldMs : MAX_POSE_PREDICTION_MS;
-  const float predX = poseX + poseVX * predMs / 1000.0f;
-  const float predY = poseY + poseVY * predMs / 1000.0f;
-
+  (void)now;
   Serial.print('P');
   Serial.print(' ');
-  Serial.print(predX, 1);
+  Serial.print(poseX, 1);
   Serial.print(' ');
-  Serial.print(predY, 1);
+  Serial.print(poseY, 1);
   Serial.print(' ');
   Serial.print(YAW_SIGN * currentYawDeg, 2);
   Serial.print(' ');
@@ -654,7 +629,9 @@ void addPacket(const LidarPacket &packet) {
 }
 
 void writeLidarPwm(float dutyPercent) {
-  const uint16_t pwmMax = (1U << 12) - 1;
+  // analogWriteResolution() is board-wide on Teensy, not per-pin -- stay on the
+  // default 8-bit range so this doesn't reinterpret drivebase's PWM duty cycles.
+  const uint16_t pwmMax = (1U << 8) - 1;
   const uint16_t pwmDuty = static_cast<uint16_t>(pwmMax * dutyPercent / 100.0f);
   analogWrite(LIDAR_SPEED_CONTROL_PIN, pwmDuty);
 }
@@ -673,7 +650,7 @@ void updateLidarSpeedController(unsigned long now) {
     return;
   }
 
-  const float magnitude = fminf(0.5f, fmaxf(0.05f, fabsf(error) / 1000.0f));
+  const float magnitude = fminf(3.0f, fmaxf(0.05f, fabsf(error) / 1000.0f));
   const float direction = error > 0.0f ? 1.0f : -1.0f;
   const float requestedDuty = lidarPwmDutyPercent + direction * magnitude;
   const float boundedDuty = fminf(LIDAR_PWM_MAX_DUTY_PERCENT,
@@ -815,7 +792,6 @@ void updateFieldBall(unsigned long now) {
 void initLocalization() {
   LIDAR_UART.addMemoryForRead(lidarRxStorage, sizeof(lidarRxStorage));
   LIDAR_UART.begin(LIDAR_UART_BAUD);
-  analogWriteResolution(12);
   analogWriteFrequency(LIDAR_SPEED_CONTROL_PIN, LIDAR_PWM_FREQUENCY_HZ);
   lidarPwmDutyPercent = LIDAR_PWM_ENTRY_DUTY_PERCENT;
   writeLidarPwm(lidarPwmDutyPercent);
@@ -829,8 +805,6 @@ void initLocalization() {
   poseInitialized = false;
   poseX = FIELD_WIDTH_MM * 0.5f;
   poseY = FIELD_HEIGHT_MM * 0.5f;
-  poseVX = 0.0f;
-  poseVY = 0.0f;
   poseQuality = 0.0f;
   lastPoseFixMs = 0;
   lastFitMs = 0;
@@ -866,12 +840,6 @@ void updateLocalization() {
     updatePoseFromLidar(now);
   }
 
-  if (poseInitialized && now - lastPoseFixMs > POSE_VEL_TIMEOUT_MS) {
-    // Lost lock for a while -- stop dead-reckoning on a stale velocity estimate.
-    poseVX = 0.0f;
-    poseVY = 0.0f;
-  }
-
   updatePublicPose(now);
   updateFieldBall(now);
 
@@ -889,18 +857,6 @@ void updateLocalization() {
 
 void getRobotPose(RobotPose &out) {
   out = robotPose;
-}
-
-void getPredictedRobotPose(RobotPose &out) {
-  out = robotPose;
-  if (!robotPose.valid) return;
-
-  // Dead-reckon forward from the last accepted fit using the alpha-beta velocity estimate.
-  const unsigned long now = millis();
-  const unsigned long heldMs = now - lastPoseFixMs;
-  const unsigned long predMs = heldMs < MAX_POSE_PREDICTION_MS ? heldMs : MAX_POSE_PREDICTION_MS;
-  out.xMm += poseVX * predMs / 1000.0f;
-  out.yMm += poseVY * predMs / 1000.0f;
 }
 
 void getFieldBall(FieldBall &out) {

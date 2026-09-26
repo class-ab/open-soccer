@@ -1,25 +1,26 @@
 #pragma once
 
 // SPEED LIMITS
-constexpr float ROBOT_MAX_SPEED = 1.0f;
+constexpr float ROBOT_MAX_SPEED = 0.5f;
 constexpr float ROTATION_MAX_SPEED = 0.5f;
 // Calibrate against measured full-command robot speed on the actual field.
 constexpr float ROBOT_LINEAR_SPEED_MM_S = 1400.0f;
 
 // ACCELERATION LIMITS
-constexpr float ACCEL_LIMIT = 1.1f;
+constexpr float ACCEL_LIMIT = 1.0f;
 constexpr float ROTATION_ACCEL_LIMIT = 1.0f;
 
 // moveTo() position-to-speed proportional gain (normalized speed / mm).
-// Starting point: conservative. Recheck against measured floor speed.
-constexpr float POSITION_KP = 0.00018f;
-constexpr float POSITION_TOLERANCE_MM = 12.0f;
+// Gentle preset (see set list below) -- previous value was ~4x weaker than
+// even that floor and produced too little PWM to overcome motor deadband.
+constexpr float POSITION_KP = 0.0007f;
+constexpr float POSITION_TOLERANCE_MM = 20.0f;
 constexpr float HEADING_TOLERANCE_DEG = 2.0f;
 
 // Heading PID output is normalized rotation command. D uses IMU yaw rate.
 constexpr float HEADING_KP = 0.003f;
-constexpr float HEADING_KI = 0.0f;
-constexpr float HEADING_KD = 0.002f;
+constexpr float HEADING_KI = 0.0002f;
+constexpr float HEADING_KD = 0.0012f;
 // Integral is accumulated in degree-seconds and clamped before applying KI.
 constexpr float HEADING_INTEGRAL_MAX = 100.0f;
 constexpr float YAW_SIGN = 1.0f;
@@ -32,15 +33,14 @@ constexpr float YAW_SIGN = 1.0f;
 // ball sensing
 constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
 constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
-constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
+constexpr float BALL_TARGET_DISTANCE_CM = 20.00f;
 
 // #define DEBUG_MOVE
 // #define DEBUG_BALL_LINK
-#define DEBUG_LIDAR
-// #define DEBUG_FIELDBALL // requires DEBUG_LIDAR
+// #define DEBUG_LIDAR        // basic lidar info
+// #define DEBUG_FIELDBALL    // requires DEBUG_LIDAR
 // #define LOCAL_STATE
-// Enables the binary lidar-hit + ASCII pose stream over USB Serial for the PC viewer script.
-// #define LIDAR_POSE_STREAM
+// #define LIDAR_POSE_STREAM  // advanced lidar debug + py script
 
 // IMU
 #define BNO08X_RESET -1
@@ -96,7 +96,9 @@ constexpr uint8_t BLUE_GOAL_SYNC = 0xAC; // not used currently
 // LD14P motor speed PWM control loop (closed-loop on the reported scan speed).
 constexpr uint8_t LIDAR_SPEED_CONTROL_PIN = 14;
 constexpr uint32_t LIDAR_PWM_FREQUENCY_HZ = 1000;
-constexpr float LIDAR_PWM_ENTRY_DUTY_PERCENT = 50.0f;
+// Measured working duty for this robot's LD14P is ~80% -- start near there so
+// boot doesn't have to slowly ramp up from a much lower entry point.
+constexpr float LIDAR_PWM_ENTRY_DUTY_PERCENT = 78.0f;
 constexpr float LIDAR_PWM_MIN_DUTY_PERCENT = 45.1f;
 constexpr float LIDAR_PWM_MAX_DUTY_PERCENT = 80.0f;
 constexpr float LIDAR_TARGET_SPEED_DEG_S = 2880.0f;
