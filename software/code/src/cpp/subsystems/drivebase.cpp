@@ -217,7 +217,6 @@ void drive(float direction_deg, float speed, float rotation) {
   currentMoveProfile.speed = speed;
   currentMoveProfile.rotationSpeed = rotation;
   currentMoveProfile.lastUpdateMs = millis();
-  setLocalizationMotionCommand(direction_deg, speed * wheelScale);
 }
 
 void stopAllDriveMotors() {
@@ -231,7 +230,6 @@ void stopAllDriveMotors() {
   coordinateController.rotation = 0.0f;
   coordinateController.headingIntegral = 0.0f;
   currentMoveProfile.active = false;
-  setLocalizationMotionCommand(0.0f, 0.0f);
 }
 
 void SetSpeed(int motor, int pwm) {

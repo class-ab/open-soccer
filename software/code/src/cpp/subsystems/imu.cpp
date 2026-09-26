@@ -20,7 +20,7 @@ constexpr unsigned long IMU_TIMEOUT_MS = 100;
 float previousRawYawDeg = 0.0f;
 float unwrappedYawDeg = 0.0f;
 float yawRateDegPerSec = 0.0f;
-unsigned long lastYawSampleMs = 0;
+uint32_t lastYawSampleUs = 0;
 bool yawSampleCaptured = false;
 bool rebaseNextYawSample = false;
 
@@ -30,42 +30,38 @@ float wrapDegrees(float angle) {
   return angle - 180.0f;
 }
 
-void updateYawFromQuaternion(float rawYawDeg, unsigned long now) {
+void updateYawFromQuaternion(float rawYawDeg, uint32_t nowUs) {
   if (!yawSampleCaptured) {
     previousRawYawDeg = rawYawDeg;
     unwrappedYawDeg = 0.0f;
-    lastYawSampleMs = now;
+    lastYawSampleUs = nowUs;
     yawRateDegPerSec = 0.0f;
     yawSampleCaptured = true;
   } else if (rebaseNextYawSample) {
     previousRawYawDeg = rawYawDeg;
-    lastYawSampleMs = now;
+    lastYawSampleUs = nowUs;
     yawRateDegPerSec = 0.0f;
     rebaseNextYawSample = false;
   } else {
-    const unsigned long elapsedMs = now - lastYawSampleMs;
-    if (elapsedMs > 0) {
-      const float delta = wrapDegrees(rawYawDeg - previousRawYawDeg);
-      const float rate = delta * 1000.0f / elapsedMs;
-      if (fabsf(rate) <= MAX_YAW_RATE_DEG_S) {
-        unwrappedYawDeg += delta;
-        yawRateDegPerSec +=
-            YAW_RATE_FILTER * (rate - yawRateDegPerSec);
-      } else {
-        // A discontinuity is more likely an IMU restart/glitch than real motion.
-        yawRateDegPerSec = 0.0f;
-      }
-      previousRawYawDeg = rawYawDeg;
-      lastYawSampleMs = now;
+    const float delta = wrapDegrees(rawYawDeg - previousRawYawDeg);
+    unwrappedYawDeg += delta;
+    const uint32_t elapsedUs = nowUs - lastYawSampleUs;
+    if (elapsedUs > 0) {
+      const float rate = delta * 1000000.0f / elapsedUs;
+      const float boundedRate =
+          fmaxf(-MAX_YAW_RATE_DEG_S, fminf(MAX_YAW_RATE_DEG_S, rate));
+      yawRateDegPerSec += YAW_RATE_FILTER * (boundedRate - yawRateDegPerSec);
+      lastYawSampleUs = nowUs;
     }
+    previousRawYawDeg = rawYawDeg;
   }
 
-  const unsigned long predictionMs =
-      (now - lastYawSampleMs < MAX_YAW_PREDICTION_MS)
-          ? now - lastYawSampleMs
-          : MAX_YAW_PREDICTION_MS;
+  const uint32_t elapsedUs = nowUs - lastYawSampleUs;
+  const uint32_t maxPredictionUs = MAX_YAW_PREDICTION_MS * 1000U;
+  const uint32_t predictionUs =
+      elapsedUs < maxPredictionUs ? elapsedUs : maxPredictionUs;
   currentYawDeg = wrapDegrees(
-      unwrappedYawDeg + yawRateDegPerSec * predictionMs / 1000.0f);
+      unwrappedYawDeg + yawRateDegPerSec * predictionUs / 1000000.0f);
 }
 }  // namespace
 
@@ -106,27 +102,31 @@ float quaternionToYawDegrees(float real, float i, float j, float k) {
 }
 
 void updateIMU() {
-  const unsigned long now = millis();
+  const uint32_t nowUs = micros();
   if (bno08x.wasReset()) {
     setReports();
     rebaseNextYawSample = true;
   }
 
-  if (bno08x.getSensorEvent(&sensorValue) &&
-      sensorValue.sensorId == SH2_GAME_ROTATION_VECTOR) {
+  bool receivedRotation = false;
+  while (bno08x.getSensorEvent(&sensorValue)) {
+    if (sensorValue.sensorId != SH2_GAME_ROTATION_VECTOR) continue;
     const float rawYawDeg = quaternionToYawDegrees(
         sensorValue.un.gameRotationVector.real,
         sensorValue.un.gameRotationVector.i,
         sensorValue.un.gameRotationVector.j,
         sensorValue.un.gameRotationVector.k);
-    updateYawFromQuaternion(rawYawDeg, now);
-  } else if (yawSampleCaptured) {
-    const unsigned long predictionMs =
-        (now - lastYawSampleMs < MAX_YAW_PREDICTION_MS)
-            ? now - lastYawSampleMs
-            : MAX_YAW_PREDICTION_MS;
+    updateYawFromQuaternion(rawYawDeg, nowUs);
+    receivedRotation = true;
+  }
+
+  if (!receivedRotation && yawSampleCaptured) {
+    const uint32_t elapsedUs = nowUs - lastYawSampleUs;
+    const uint32_t maxPredictionUs = MAX_YAW_PREDICTION_MS * 1000U;
+    const uint32_t predictionUs =
+        elapsedUs < maxPredictionUs ? elapsedUs : maxPredictionUs;
     currentYawDeg = wrapDegrees(
-        unwrappedYawDeg + yawRateDegPerSec * predictionMs / 1000.0f);
+        unwrappedYawDeg + yawRateDegPerSec * predictionUs / 1000000.0f);
   }
 }
 
@@ -139,7 +139,7 @@ float getIMUYawRateDegPerSec() {
 }
 
 bool isIMUHeadingFresh() {
-  return yawSampleCaptured && millis() - lastYawSampleMs <= IMU_TIMEOUT_MS;
+  return yawSampleCaptured && micros() - lastYawSampleUs <= IMU_TIMEOUT_MS * 1000U;
 }
 
 float angleError(float target, float current) {

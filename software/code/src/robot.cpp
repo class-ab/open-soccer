@@ -108,54 +108,9 @@ void loop() {
   updateIMU();
   
   if (robotCurrentlyRunning) {
-    if (!wasRunning || !phaseClockStarted) {
-      translationPhase = true;
-      phaseStartedMs = now;
-      phaseClockStarted = true;
-    } else if (now - phaseStartedMs >= 1000) {
-      translationPhase = !translationPhase;
-      phaseStartedMs = now;
-    }
-    wasRunning = true;
-
-    if (translationPhase) {
-      RobotPose pose;
-      getRobotPose(pose);
-      if (pose.valid) {
-        const float errorX = -pose.xMm;
-        const float errorY = -pose.yMm;
-        const float distance = hypotf(errorX, errorY);
-        if (distance > POSITION_TOLERANCE_MM) {
-          const float direction = atan2f(errorY, errorX) * 180.0f / PI;
-          drive(direction, 0.45f, 0.0f);
-        } else {
-          drive(0.0f, 0.0f, 0.0f);
-        }
-      } else {
-        drive(0.0f, 0.0f, 0.0f);
-      }
-    } else {
-      // Rotation feedback comes directly from the IMU, never RobotPose.
-      if (isIMUHeadingFresh()) {
-        const float headingError =
-            angleError(0.0f, YAW_SIGN * getIMUHeadingDeg());
-        const float yawRate = YAW_SIGN * getIMUYawRateDegPerSec();
-        float rotation = headingError * HEADING_KP - yawRate * HEADING_KD;
-        rotation = constrain(rotation, -0.25f, 0.25f);
-        if (fabsf(headingError) <= HEADING_TOLERANCE_DEG &&
-            fabsf(yawRate) <= 8.0f) {
-          rotation = 0.0f;
-        }
-        drive(0.0f, 0.0f, rotation);
-      } else {
-        drive(0.0f, 0.0f, 0.0f);
-      }
-    }
+    moveTo(0,0,0,0.8,1.0,0.5,1);
   } else {
     stopAllMotors();
-    translationPhase = true;
-    phaseClockStarted = false;
-    wasRunning = false;
   }
 
   if (now - lastBatteryCheckMs >= BATTERY_CHECK_INTERVAL_MS) {

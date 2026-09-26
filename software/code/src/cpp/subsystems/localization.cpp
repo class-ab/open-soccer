@@ -13,7 +13,7 @@ constexpr uint8_t PACKET_SIZE = 47;
 constexpr uint8_t PACKET_HEADER = 0x54;
 constexpr uint8_t PACKET_VERLEN = 0x2C;
 constexpr uint8_t POINTS_PER_PACKET = 12;
-constexpr size_t LIDAR_RX_BUFFER_SIZE = 8192;
+constexpr size_t LIDAR_RX_BUFFER_SIZE = 16384;
 
 constexpr float FIELD_WIDTH_MM = 2430.0f;
 constexpr float FIELD_HEIGHT_MM = 1820.0f;
@@ -24,16 +24,28 @@ constexpr float MAX_RANGE_MM = 12000.0f;
 constexpr float LOCAL_DEG_TO_RAD = PI / 180.0f;
 constexpr float HUBER_MM = 120.0f;
 constexpr float MAX_ACCEPTED_COST = 24000.0f;
-constexpr float MAX_FIX_CORRECTION_MM = 30.0f;
+constexpr float MAX_FIX_CORRECTION_MM = 35.0f;
 constexpr float FIT_CONDITION_MIN = 0.004f;
 constexpr uint8_t MIN_FIT_RAYS = 18;
 constexpr uint8_t MAX_FIT_RAYS = 72;
+// Higher = fewer, more-independent fits (less jitter, same latency floor set by RAY_WINDOW_MS).
+constexpr uint8_t NEW_RAY_TRIGGER = 6;
 constexpr uint16_t MAX_WINDOW_RAYS = 512;
-constexpr unsigned long RAY_WINDOW_MS = 85;
+constexpr unsigned long RAY_WINDOW_MS = 35;
 constexpr unsigned long FIT_INTERVAL_MS = 10;
 constexpr unsigned long POSE_TIMEOUT_MS = 1200;
 constexpr unsigned long OPPONENT_TIMEOUT_MS = 500;
 constexpr unsigned long LIDAR_INTERBYTE_TIMEOUT_MS = 25;
+
+// Position tracked with an alpha-beta (g-h) filter so it carries a velocity
+// estimate and can be dead-reckoned forward between fits.
+constexpr float POSE_FIX_GAIN = 0.45f;   // g: position correction toward each new fit.
+constexpr float POSE_VEL_GAIN = 0.12f;   // h: velocity correction toward each new fit.
+// Floor on the dt used only in the velocity update's division -- fits can land only a
+// few ms apart, and dividing a noisy residual by a tiny dt is the dominant jitter source.
+constexpr float MIN_POSE_VEL_DT_S = 0.02f;
+constexpr unsigned long POSE_VEL_TIMEOUT_MS = 150;  // no accepted fit for this long -> assume stopped
+constexpr unsigned long MAX_POSE_PREDICTION_MS = 50;
 
 constexpr float POLE_ANGLES_DEG[4] = {-135.0f, -45.0f, 45.0f, 135.0f};
 constexpr float POLE_HALF_WIDTH_DEG = 3.4f;
@@ -54,10 +66,10 @@ struct LidarPacket {
 struct Ray {
   float dx;
   float dy;
-  float offsetX;
-  float offsetY;
   float range;
   float weight;
+  float invDx;  // 1/dx, 1/dy cached at append time -- fixed for the ray's lifetime
+  float invDy;
   unsigned long timestampMs;
 };
 
@@ -122,16 +134,28 @@ unsigned long opponentTimestampMs = 0;
 bool poseInitialized = false;
 float poseX = FIELD_WIDTH_MM * 0.5f;
 float poseY = FIELD_HEIGHT_MM * 0.5f;
+float poseVX = 0.0f;  // mm/s, alpha-beta velocity estimate from consecutive fits
+float poseVY = 0.0f;
 float poseQuality = 0.0f;
-unsigned long lastLidarFixMs = 0;
-unsigned long lastPredictionMs = 0;
-unsigned long lastFitMs = 0;
+unsigned long lastPoseFixMs = 0;  // timestamp of last accepted fit
+unsigned long lastFitMs = 0;      // gates fit *attempt* cadence
 unsigned long lastLidarByteMs = 0;
 unsigned long lastValidLidarPacketMs = 0;
 uint32_t validLidarPackets = 0;
 uint32_t invalidLidarPackets = 0;
-float motionDirectionDeg = 0.0f;
-float motionSpeed = 0.0f;
+
+// LD14P motor speed PWM controller bookkeeping.
+uint16_t lastLidarSpeedDegS = 0;
+unsigned long lastLidarPacketMs = 0;
+bool lidarPacketSeen = false;
+uint32_t lidarSpeedSumDegS = 0;
+uint16_t lidarSpeedSampleCount = 0;
+float lidarPwmDutyPercent = LIDAR_PWM_ENTRY_DUTY_PERCENT;
+unsigned long lastLidarControlMs = 0;
+
+#ifdef LIDAR_POSE_STREAM
+unsigned long lastPoseStreamMs = 0;
+#endif
 
 float wrappedDifference(float a, float b) {
   return fmodf(a - b + 540.0f, 360.0f) - 180.0f;
@@ -223,32 +247,6 @@ void pruneRays(unsigned long now) {
   }
 }
 
-void predictPose(unsigned long now) {
-  if (lastPredictionMs == 0) {
-    lastPredictionMs = now;
-    return;
-  }
-
-  unsigned long elapsedMs = now - lastPredictionMs;
-  lastPredictionMs = now;
-  if (!poseInitialized || elapsedMs == 0) return;
-  if (elapsedMs > 100) elapsedMs = 100;
-
-    const float direction = motionDirectionDeg * LOCAL_DEG_TO_RAD;
-  const float distance = motionSpeed * ROBOT_LINEAR_SPEED_MM_S *
-                         (elapsedMs / 1000.0f);
-  const float dx = distance * cosf(direction);
-  const float dy = distance * sinf(direction);
-  poseX += dx;
-  poseY += dy;
-
-  for (uint16_t i = 0; i < rayCount; ++i) {
-    Ray &ray = rayAt(i);
-    ray.offsetX -= dx;
-    ray.offsetY -= dy;
-  }
-}
-
 bool rayToField(float x, float y, float dx, float dy, RayHit &hit) {
   float nearest = MAX_RANGE_MM;
   bool found = false;
@@ -284,22 +282,20 @@ float robustLoss(float residual) {
 }
 
 FitResult evaluatePose(float x, float y, const Ray *samples, uint8_t count,
-                       bool buildHessian) {
+                       float totalWeight, bool buildHessian) {
   FitResult fit = {};
-  float weightedCost = 0.0f;
+  fit.weightSum = totalWeight;
 
+  if (!insideField(x, y)) {
+    fit.cost = fit.weightSum > 0.0f ? robustLoss(600.0f) : 1e30f;
+    return fit;
+  }
+
+  float weightedCost = 0.0f;
   for (uint8_t i = 0; i < count; ++i) {
     const Ray &ray = samples[i];
-    fit.weightSum += ray.weight;
-    const float originX = x + ray.offsetX;
-    const float originY = y + ray.offsetY;
-    if (!insideField(originX, originY)) {
-      weightedCost += ray.weight * robustLoss(600.0f);
-      continue;
-    }
-
     RayHit hit;
-    if (!rayToField(originX, originY, ray.dx, ray.dy, hit)) {
+    if (!rayToField(x, y, ray.dx, ray.dy, hit)) {
       weightedCost += ray.weight * robustLoss(600.0f);
       continue;
     }
@@ -312,8 +308,8 @@ FitResult evaluatePose(float x, float y, const Ray *samples, uint8_t count,
           ray.weight * (fabsf(residual) > HUBER_MM
                             ? HUBER_MM / fabsf(residual)
                             : 1.0f);
-      const float jx = hit.vertical ? 1.0f / ray.dx : 0.0f;
-      const float jy = hit.vertical ? 0.0f : 1.0f / ray.dy;
+      const float jx = hit.vertical ? ray.invDx : 0.0f;
+      const float jy = hit.vertical ? 0.0f : ray.invDy;
       fit.hxx += robustWeight * jx * jx;
       fit.hxy += robustWeight * jx * jy;
       fit.hyy += robustWeight * jy * jy;
@@ -347,9 +343,9 @@ uint8_t collectFitRays(Ray *samples) {
 }
 
 bool refinePose(float &x, float &y, const Ray *samples, uint8_t count,
-                FitResult &result) {
+                float totalWeight, FitResult &result) {
   for (uint8_t iteration = 0; iteration < 5; ++iteration) {
-    const FitResult current = evaluatePose(x, y, samples, count, true);
+    const FitResult current = evaluatePose(x, y, samples, count, totalWeight, true);
     if (!wellConditioned(current)) return false;
 
     const float determinant = current.hxx * current.hyy -
@@ -374,7 +370,7 @@ bool refinePose(float &x, float &y, const Ray *samples, uint8_t count,
       const float candidateY = y + stepY * scale;
       if (insideField(candidateX, candidateY)) {
         const FitResult candidate =
-            evaluatePose(candidateX, candidateY, samples, count, false);
+            evaluatePose(candidateX, candidateY, samples, count, totalWeight, false);
         if (candidate.cost <= current.cost) {
           x = candidateX;
           y = candidateY;
@@ -387,19 +383,19 @@ bool refinePose(float &x, float &y, const Ray *samples, uint8_t count,
     if (!improved) break;
   }
 
-  result = evaluatePose(x, y, samples, count, true);
+  result = evaluatePose(x, y, samples, count, totalWeight, true);
   return wellConditioned(result);
 }
 
 bool coarseSearch(float centerX, float centerY, float halfRangeX,
                   float halfRangeY, float step, const Ray *samples,
-                  uint8_t count, float &bestX, float &bestY) {
+                  uint8_t count, float totalWeight, float &bestX, float &bestY) {
   float bestCost = 1e30f;
   bool found = false;
   for (float x = centerX - halfRangeX; x <= centerX + halfRangeX; x += step) {
     for (float y = centerY - halfRangeY; y <= centerY + halfRangeY; y += step) {
       if (!insideField(x, y)) continue;
-      const FitResult fit = evaluatePose(x, y, samples, count, true);
+      const FitResult fit = evaluatePose(x, y, samples, count, totalWeight, true);
       if (wellConditioned(fit) && fit.cost < bestCost) {
         bestCost = fit.cost;
         bestX = x;
@@ -442,13 +438,11 @@ void updateOpponentDetections(unsigned long now) {
 
   for (uint16_t i = 0; i < rayCount; ++i) {
     const Ray &ray = rayAt(i);
-    const float originX = poseX + ray.offsetX;
-    const float originY = poseY + ray.offsetY;
-    const float pointX = originX + ray.dx * ray.range;
-    const float pointY = originY + ray.dy * ray.range;
+    const float pointX = poseX + ray.dx * ray.range;
+    const float pointY = poseY + ray.dy * ray.range;
     RayHit hit;
     const bool objectReturn = insideField(pointX, pointY) &&
-        rayToField(originX, originY, ray.dx, ray.dy, hit) &&
+        rayToField(poseX, poseY, ray.dx, ray.dy, hit) &&
         ray.range < hit.range - 100.0f;
 
     if (!objectReturn) {
@@ -482,23 +476,33 @@ void updatePoseFromLidar(unsigned long now) {
   Ray samples[MAX_FIT_RAYS];
   const uint8_t count = collectFitRays(samples);
   if (count < MIN_FIT_RAYS) return;
+  float totalWeight = 0.0f;
+  for (uint8_t i = 0; i < count; ++i) totalWeight += samples[i].weight;
 
-  float candidateX = poseX;
-  float candidateY = poseY;
+  const float dtS = poseInitialized
+                         ? fminf((now - lastPoseFixMs) / 1000.0f,
+                                 POSE_VEL_TIMEOUT_MS / 1000.0f)
+                         : 0.0f;
+  // Dead-reckon the warm-start/search center from the last fix using the velocity estimate.
+  const float predX = poseX + poseVX * dtS;
+  const float predY = poseY + poseVY * dtS;
+
+  float candidateX = predX;
+  float candidateY = predY;
   FitResult fit = {};
 
   if (!poseInitialized) {
     if (!coarseSearch(FIELD_WIDTH_MM * 0.5f, FIELD_HEIGHT_MM * 0.5f,
                       FIELD_WIDTH_MM * 0.5f, FIELD_HEIGHT_MM * 0.5f,
-                      100.0f, samples, count, candidateX, candidateY)) {
+                      100.0f, samples, count, totalWeight, candidateX, candidateY)) {
       return;
     }
-    if (!refinePose(candidateX, candidateY, samples, count, fit)) return;
-  } else if (!refinePose(candidateX, candidateY, samples, count, fit) ||
+    if (!refinePose(candidateX, candidateY, samples, count, totalWeight, fit)) return;
+  } else if (!refinePose(candidateX, candidateY, samples, count, totalWeight, fit) ||
              fit.cost > MAX_ACCEPTED_COST) {
-    if (!coarseSearch(poseX, poseY, 300.0f, 300.0f, 75.0f,
-                      samples, count, candidateX, candidateY) ||
-        !refinePose(candidateX, candidateY, samples, count, fit)) {
+    if (!coarseSearch(predX, predY, 300.0f, 300.0f, 75.0f,
+                      samples, count, totalWeight, candidateX, candidateY) ||
+        !refinePose(candidateX, candidateY, samples, count, totalWeight, fit)) {
       return;
     }
   }
@@ -508,25 +512,85 @@ void updatePoseFromLidar(unsigned long now) {
   if (!poseInitialized) {
     poseX = candidateX;
     poseY = candidateY;
+    poseVX = 0.0f;
+    poseVY = 0.0f;
     poseInitialized = true;
     poseQuality = quality;
-  } else {
-    float correctionX = (candidateX - poseX) * (0.20f + 0.20f * quality);
-    float correctionY = (candidateY - poseY) * (0.20f + 0.20f * quality);
-    const float correction = hypotf(correctionX, correctionY);
-    if (correction > MAX_FIX_CORRECTION_MM) {
-      const float scale = MAX_FIX_CORRECTION_MM / correction;
-      correctionX *= scale;
-      correctionY *= scale;
-    }
-    poseX += correctionX;
-    poseY += correctionY;
-    poseQuality += 0.25f * (quality - poseQuality);
+    lastPoseFixMs = now;
+    updateOpponentDetections(now);
+    return;
   }
 
-  lastLidarFixMs = now;
+  float correctionX = candidateX - predX;
+  float correctionY = candidateY - predY;
+  const float correction = hypotf(correctionX, correctionY);
+  if (correction > MAX_FIX_CORRECTION_MM) {
+    // Disagrees sharply with the dead-reckoned prediction -- clamp like an outlier, don't chase it.
+    const float scale = MAX_FIX_CORRECTION_MM / correction;
+    correctionX *= scale;
+    correctionY *= scale;
+  }
+
+  poseX = predX + POSE_FIX_GAIN * correctionX;
+  poseY = predY + POSE_FIX_GAIN * correctionY;
+  // Floored dt keeps back-to-back fits from turning small residual noise into large velocity spikes.
+  const float velDtS = fmaxf(dtS, MIN_POSE_VEL_DT_S);
+  poseVX += POSE_VEL_GAIN * correctionX / velDtS;
+  poseVY += POSE_VEL_GAIN * correctionY / velDtS;
+  poseQuality += 0.25f * (quality - poseQuality);
+
+  lastPoseFixMs = now;
   updateOpponentDetections(now);
 }
+
+#ifdef LIDAR_POSE_STREAM
+// Sends every valid point from one lidar packet as a single binary frame
+// instead of one Serial.print per point, to keep formatting overhead off
+// the localization hot path.
+//   byte 0        : 0xAA sync byte
+//   byte 1        : point count N (0-12)
+//   N * 4 bytes   : (int16 x_mm, int16 y_mm) little-endian, world frame
+//   byte last     : XOR checksum of count byte + all payload bytes
+constexpr uint8_t BINARY_FRAME_SYNC = 0xAA;
+constexpr unsigned long POSE_STREAM_INTERVAL_MS = 20;
+
+void streamPointsBatch(const int16_t *coords, uint8_t pointCount) {
+  if (pointCount == 0) return;
+  const int frameBytes = 2 + static_cast<int>(pointCount) * 4 + 1;
+  if (Serial.availableForWrite() < frameBytes) return;
+
+  uint8_t checksum = pointCount;
+  Serial.write(BINARY_FRAME_SYNC);
+  Serial.write(pointCount);
+  for (uint8_t i = 0; i < pointCount; ++i) {
+    const uint16_t ux = static_cast<uint16_t>(coords[i * 2]);
+    const uint16_t uy = static_cast<uint16_t>(coords[i * 2 + 1]);
+    const uint8_t bytes[4] = {static_cast<uint8_t>(ux & 0xFF), static_cast<uint8_t>(ux >> 8),
+                              static_cast<uint8_t>(uy & 0xFF), static_cast<uint8_t>(uy >> 8)};
+    Serial.write(bytes, 4);
+    for (uint8_t b : bytes) checksum ^= b;
+  }
+  Serial.write(checksum);
+}
+
+// "P <x_mm> <y_mm> <heading_deg> <quality 0-1>\n" -- predicted through the latest fit.
+void streamPose(unsigned long now) {
+  const unsigned long heldMs = poseInitialized ? now - lastPoseFixMs : 0;
+  const unsigned long predMs = heldMs < MAX_POSE_PREDICTION_MS ? heldMs : MAX_POSE_PREDICTION_MS;
+  const float predX = poseX + poseVX * predMs / 1000.0f;
+  const float predY = poseY + poseVY * predMs / 1000.0f;
+
+  Serial.print('P');
+  Serial.print(' ');
+  Serial.print(predX, 1);
+  Serial.print(' ');
+  Serial.print(predY, 1);
+  Serial.print(' ');
+  Serial.print(YAW_SIGN * currentYawDeg, 2);
+  Serial.print(' ');
+  Serial.println(poseQuality, 2);
+}
+#endif  // LIDAR_POSE_STREAM
 
 void addPacket(const LidarPacket &packet) {
   const int32_t angleSpan =
@@ -536,10 +600,20 @@ void addPacket(const LidarPacket &packet) {
       packet.speed > 0 ? angleSpan * 10.0f / packet.speed : 0.0f;
   const float serialDelayMs =
       PACKET_SIZE * 10000.0f / LIDAR_UART_BAUD;
-  const float direction = motionDirectionDeg * LOCAL_DEG_TO_RAD;
-  const float commandedSpeedMmS =
-      motionSpeed * ROBOT_LINEAR_SPEED_MM_S;
   const unsigned long packetEndMs = millis();
+
+  lastLidarSpeedDegS = packet.speed;
+  lastLidarPacketMs = packetEndMs;
+  lidarPacketSeen = true;
+  if (packet.speed > 0) {
+    lidarSpeedSumDegS += packet.speed;
+    if (lidarSpeedSampleCount < UINT16_MAX) ++lidarSpeedSampleCount;
+  }
+
+#ifdef LIDAR_POSE_STREAM
+  int16_t batchCoords[POINTS_PER_PACKET * 2];
+  uint8_t batchCount = 0;
+#endif
 
   for (uint8_t i = 0; i < POINTS_PER_PACKET; ++i) {
     const int32_t angleHundredths =
@@ -554,18 +628,91 @@ void addPacket(const LidarPacket &packet) {
     const float fraction = i / static_cast<float>(POINTS_PER_PACKET - 1);
     const float ageMs = serialDelayMs * 0.5f +
                         lidarSweepMs * (1.0f - fraction);
-    const float ageSeconds = ageMs / 1000.0f;
     const float pointHeading =
-        headingDeg - YAW_SIGN * getIMUYawRateDegPerSec() * ageSeconds;
+        headingDeg - YAW_SIGN * getIMUYawRateDegPerSec() * (ageMs / 1000.0f);
     const float worldRad =
         (pointHeading - localAngle) * LOCAL_DEG_TO_RAD;
-    appendRay({cosf(worldRad), sinf(worldRad),
-               -commandedSpeedMmS * ageSeconds * cosf(direction),
-               -commandedSpeedMmS * ageSeconds * sinf(direction),
-               static_cast<float>(packet.distanceMm[i]), weight,
+    const float dx = cosf(worldRad);
+    const float dy = sinf(worldRad);
+    const float range = static_cast<float>(packet.distanceMm[i]);
+
+    appendRay({dx, dy, range, weight, 1.0f / dx, 1.0f / dy,
                packetEndMs - static_cast<unsigned long>(ageMs)});
+
+#ifdef LIDAR_POSE_STREAM
+    if (batchCount < POINTS_PER_PACKET) {
+      batchCoords[batchCount * 2] = static_cast<int16_t>(lroundf(poseX + range * dx));
+      batchCoords[batchCount * 2 + 1] = static_cast<int16_t>(lroundf(poseY + range * dy));
+      ++batchCount;
+    }
+#endif
   }
+
+#ifdef LIDAR_POSE_STREAM
+  streamPointsBatch(batchCoords, batchCount);
+#endif
 }
+
+void writeLidarPwm(float dutyPercent) {
+  const uint16_t pwmMax = (1U << 12) - 1;
+  const uint16_t pwmDuty = static_cast<uint16_t>(pwmMax * dutyPercent / 100.0f);
+  analogWrite(LIDAR_SPEED_CONTROL_PIN, pwmDuty);
+}
+
+void updateLidarSpeedController(unsigned long now) {
+  if (now - lastLidarControlMs < LIDAR_CONTROL_INTERVAL_MS) return;
+  lastLidarControlMs = now;
+
+  if (lidarSpeedSampleCount == 0) return;
+  const float measuredSpeed = static_cast<float>(lidarSpeedSumDegS) / lidarSpeedSampleCount;
+  lidarSpeedSumDegS = 0;
+  lidarSpeedSampleCount = 0;
+
+  const float error = LIDAR_TARGET_SPEED_DEG_S - measuredSpeed;
+  if (fabsf(error) <= LIDAR_SPEED_TOLERANCE_DEG_S) {
+    return;
+  }
+
+  const float magnitude = fminf(0.5f, fmaxf(0.05f, fabsf(error) / 1000.0f));
+  const float direction = error > 0.0f ? 1.0f : -1.0f;
+  const float requestedDuty = lidarPwmDutyPercent + direction * magnitude;
+  const float boundedDuty = fminf(LIDAR_PWM_MAX_DUTY_PERCENT,
+                                  fmaxf(LIDAR_PWM_MIN_DUTY_PERCENT, requestedDuty));
+
+  if (fabsf(boundedDuty - lidarPwmDutyPercent) < 0.001f) {
+    return;
+  }
+
+  lidarPwmDutyPercent = boundedDuty;
+  writeLidarPwm(lidarPwmDutyPercent);
+}
+
+#ifdef DEBUG_LIDAR
+void reportLidarStatus(unsigned long now) {
+  static unsigned long lastLidarDebugMs = 0;
+  if (now - lastLidarDebugMs < 1000) return;
+  lastLidarDebugMs = now;
+
+  Serial.print("LIDAR pwmDuty=");
+  Serial.print(lidarPwmDutyPercent, 2);
+  Serial.print(" speedHz=");
+  Serial.print(lastLidarSpeedDegS / 360.0f, 2);
+  Serial.print(" packetAge=");
+  Serial.print(lidarPacketSeen ? now - lastLidarPacketMs : 0);
+  Serial.print("ms bytesAge=");
+  Serial.print(lastLidarByteMs == 0 ? 0 : now - lastLidarByteMs);
+  Serial.print("ms rays=");
+  Serial.print(rayCount);
+  Serial.print(" fixAge=");
+  Serial.print(lastPoseFixMs == 0 ? 0 : now - lastPoseFixMs);
+  Serial.print("ms imuFresh=");
+  Serial.print(isIMUHeadingFresh());
+  Serial.print(" good/bad=");
+  Serial.print(validLidarPackets);
+  Serial.print('/');
+  Serial.println(invalidLidarPackets);
+}
+#endif  // DEBUG_LIDAR
 
 void consumeLidar() {
   while (LIDAR_UART.available() > 0) {
@@ -629,7 +776,7 @@ void consumeLidar() {
 }
 
 void updatePublicPose(unsigned long now) {
-  const unsigned long fixAge = poseInitialized ? now - lastLidarFixMs
+  const unsigned long fixAge = poseInitialized ? now - lastPoseFixMs
                                                : POSE_TIMEOUT_MS + 1;
   const float freshness = fixAge < POSE_TIMEOUT_MS
                               ? 1.0f - fixAge /
@@ -668,6 +815,10 @@ void updateFieldBall(unsigned long now) {
 void initLocalization() {
   LIDAR_UART.addMemoryForRead(lidarRxStorage, sizeof(lidarRxStorage));
   LIDAR_UART.begin(LIDAR_UART_BAUD);
+  analogWriteResolution(12);
+  analogWriteFrequency(LIDAR_SPEED_CONTROL_PIN, LIDAR_PWM_FREQUENCY_HZ);
+  lidarPwmDutyPercent = LIDAR_PWM_ENTRY_DUTY_PERCENT;
+  writeLidarPwm(lidarPwmDutyPercent);
 
   for (uint8_t i = 0; i < 12; ++i) {
     const uint8_t next = (i + 1) % 12;
@@ -678,61 +829,61 @@ void initLocalization() {
   poseInitialized = false;
   poseX = FIELD_WIDTH_MM * 0.5f;
   poseY = FIELD_HEIGHT_MM * 0.5f;
+  poseVX = 0.0f;
+  poseVY = 0.0f;
   poseQuality = 0.0f;
-  lastLidarFixMs = 0;
-  lastPredictionMs = millis();
+  lastPoseFixMs = 0;
   lastFitMs = 0;
   lastLidarByteMs = 0;
   lastValidLidarPacketMs = 0;
   validLidarPackets = 0;
   invalidLidarPackets = 0;
-  motionDirectionDeg = motionSpeed = 0.0f;
+  lastLidarSpeedDegS = 0;
+  lastLidarPacketMs = 0;
+  lidarPacketSeen = false;
+  lidarSpeedSumDegS = 0;
+  lidarSpeedSampleCount = 0;
+  lastLidarControlMs = millis();
+  opponentCount = 0;
+  opponentTimestampMs = 0;
   robotPose = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
+  fieldBall = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
   Serial.println("LD14P rolling localization ready");
-}
-
-void setLocalizationMotionCommand(float directionDeg, float speed) {
-  motionDirectionDeg = directionDeg;
-  motionSpeed = constrain(speed, 0.0f, 1.0f);
 }
 
 void updateLocalization() {
   unsigned long now = millis();
-  predictPose(now);
   pruneRays(now);
   consumeLidar();
   now = millis();
   pruneRays(now);
+  updateLidarSpeedController(now);
 
-  if (isIMUHeadingFresh() && newRayCount >= 8 &&
+  if (isIMUHeadingFresh() && newRayCount >= NEW_RAY_TRIGGER &&
       now - lastFitMs >= FIT_INTERVAL_MS) {
     lastFitMs = now;
     newRayCount = 0;
     updatePoseFromLidar(now);
   }
 
+  if (poseInitialized && now - lastPoseFixMs > POSE_VEL_TIMEOUT_MS) {
+    // Lost lock for a while -- stop dead-reckoning on a stale velocity estimate.
+    poseVX = 0.0f;
+    poseVY = 0.0f;
+  }
+
   updatePublicPose(now);
   updateFieldBall(now);
 
-#ifdef DEBUG_LIDAR
-  static unsigned long lastLidarDebugMs = 0;
-  if (now - lastLidarDebugMs >= 1000) {
-    lastLidarDebugMs = now;
-    Serial.print("LIDAR packetAge=");
-    Serial.print(lastValidLidarPacketMs == 0 ? 0 : now - lastValidLidarPacketMs);
-    Serial.print("ms bytesAge=");
-    Serial.print(lastLidarByteMs == 0 ? 0 : now - lastLidarByteMs);
-    Serial.print("ms rays=");
-    Serial.print(rayCount);
-    Serial.print(" fixAge=");
-    Serial.print(lastLidarFixMs == 0 ? 0 : now - lastLidarFixMs);
-    Serial.print("ms imuFresh=");
-    Serial.print(isIMUHeadingFresh());
-    Serial.print(" good/bad=");
-    Serial.print(validLidarPackets);
-    Serial.print('/');
-    Serial.println(invalidLidarPackets);
+#ifdef LIDAR_POSE_STREAM
+  if (now - lastPoseStreamMs >= POSE_STREAM_INTERVAL_MS) {
+    lastPoseStreamMs = now;
+    streamPose(now);
   }
+#endif
+
+#ifdef DEBUG_LIDAR
+  reportLidarStatus(now);
 #endif
 }
 
@@ -741,8 +892,15 @@ void getRobotPose(RobotPose &out) {
 }
 
 void getPredictedRobotPose(RobotPose &out) {
-  // updateLocalization() already predicts through the latest motion command.
   out = robotPose;
+  if (!robotPose.valid) return;
+
+  // Dead-reckon forward from the last accepted fit using the alpha-beta velocity estimate.
+  const unsigned long now = millis();
+  const unsigned long heldMs = now - lastPoseFixMs;
+  const unsigned long predMs = heldMs < MAX_POSE_PREDICTION_MS ? heldMs : MAX_POSE_PREDICTION_MS;
+  out.xMm += poseVX * predMs / 1000.0f;
+  out.yMm += poseVY * predMs / 1000.0f;
 }
 
 void getFieldBall(FieldBall &out) {
@@ -758,3 +916,4 @@ void getOpponents(OpponentRobot *out, int maxOpponents, int &count) {
   const int available = opponentCount < maxOpponents ? opponentCount : maxOpponents;
   for (int i = 0; i < available; ++i) out[count++] = opponents[i];
 }
+

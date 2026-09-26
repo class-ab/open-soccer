@@ -39,6 +39,8 @@ constexpr float BALL_TARGET_DISTANCE_CM = 10.00f;
 #define DEBUG_LIDAR
 // #define DEBUG_FIELDBALL // requires DEBUG_LIDAR
 // #define LOCAL_STATE
+// Enables the binary lidar-hit + ASCII pose stream over USB Serial for the PC viewer script.
+// #define LIDAR_POSE_STREAM
 
 // IMU
 #define BNO08X_RESET -1
@@ -91,6 +93,15 @@ constexpr uint8_t BLUE_GOAL_SYNC = 0xAC; // not used currently
 // LD14P LiDAR
 #define LIDAR_UART      Serial3
 #define LIDAR_UART_BAUD 230400
+// LD14P motor speed PWM control loop (closed-loop on the reported scan speed).
+constexpr uint8_t LIDAR_SPEED_CONTROL_PIN = 14;
+constexpr uint32_t LIDAR_PWM_FREQUENCY_HZ = 1000;
+constexpr float LIDAR_PWM_ENTRY_DUTY_PERCENT = 50.0f;
+constexpr float LIDAR_PWM_MIN_DUTY_PERCENT = 45.1f;
+constexpr float LIDAR_PWM_MAX_DUTY_PERCENT = 80.0f;
+constexpr float LIDAR_TARGET_SPEED_DEG_S = 2880.0f;
+constexpr float LIDAR_SPEED_TOLERANCE_DEG_S = 36.0f;
+constexpr unsigned long LIDAR_CONTROL_INTERVAL_MS = 500;
 
 // battery
 constexpr int BATTERY_PIN = A2;
