@@ -47,6 +47,7 @@ constexpr float YAW_SIGN = 1.0f;
 constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
 constexpr unsigned long BALL_DATA_TIMEOUT_MS = 300;
 constexpr float BALL_TARGET_DISTANCE_CM = 20.00f;
+constexpr float BALL_TARGET_ANGLE = 5.0f;
 
 // #define DEBUG_MOVE
 // #define DEBUG_BALL_LINK
