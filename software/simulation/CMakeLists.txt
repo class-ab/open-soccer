@@ -4,6 +4,11 @@ project(rcj_simulation)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+list(APPEND CMAKE_MODULE_PATH "C:/Program Files/CMake/share/cmake-4.4/Modules")
+
+list(APPEND CMAKE_PREFIX_PATH "C:/Program Files/SFML/3.1.0/bin")
+
+
 find_package(SFML COMPONENTS Graphics Window System REQUIRED)
 
 # Collect sources
@@ -37,4 +42,3 @@ target_link_libraries(simulation PRIVATE SFML::Graphics SFML::Window SFML::Syste
 # Define Arduino analog pin macros so robot_config.h can use A0..A15 as constants
 target_compile_definitions(simulation PRIVATE
   A0=0 A1=1 A2=2 A3=3 A4=4 A5=5 A6=6 A7=7 A8=8 A9=9 A10=10 A11=11 A12=12 A13=13 A14=14 A15=15)
-

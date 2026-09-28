@@ -1,0 +1,3 @@
+C:/Users/aiden/Documents/GitHub/open-soccer/software/build/CMakeFiles/simulation.dir
+C:/Users/aiden/Documents/GitHub/open-soccer/software/build/CMakeFiles/edit_cache.dir
+C:/Users/aiden/Documents/GitHub/open-soccer/software/build/CMakeFiles/rebuild_cache.dir
