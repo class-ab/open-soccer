@@ -38,6 +38,7 @@ enum class BallState {
 enum class BallPossession {
     none,
     mePossession,
+    front,
     himPossession,
     theirPossession1,
     theirPossession2
@@ -66,7 +67,10 @@ enum class RobotGoal {
     defendBall,
     defendOpponent1,
     defendOpponent2,
-    searchBall
+    searchBall,
+    dribbleForward,
+    hideBall,
+    scoring
 };
 
 struct ballLocation {

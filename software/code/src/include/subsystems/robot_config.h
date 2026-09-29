@@ -21,7 +21,7 @@ constexpr float ROBOT_LINEAR_SPEED_MM_S = 3600.0f;
 
 // ACCELERATION LIMITS
 constexpr float ACCEL_LIMIT = 1.0f;
-constexpr float ROTATION_ACCEL_LIMIT = 1.0f;
+constexpr float ROTATION_ACCEL_LIMIT = 2.0f;
 
 // moveTo() position-to-speed proportional gain (normalized speed / mm).
 // Gentle preset (see set list below) -- previous value was ~4x weaker than
@@ -31,7 +31,7 @@ constexpr float POSITION_TOLERANCE_MM = 10.0f;
 constexpr float HEADING_TOLERANCE_DEG = 1.0f;
 
 // Heading PID output is normalized rotation command. D uses IMU yaw rate.
-constexpr float HEADING_KP = 0.005f;
+constexpr float HEADING_KP = 0.010f;
 constexpr float HEADING_KI = 0.0002f;
 constexpr float HEADING_KD = 0.001f;
 // Integral is accumulated in degree-seconds and clamped before applying KI.
@@ -41,7 +41,7 @@ constexpr float YAW_SIGN = 1.0f;
 // Example starting sets for controlled tuning (select one set at a time):
 // Gentle:     POSITION_KP 0.0007, HEADING_KP 0.0030, KI 0.0002, KD 0.0012
 // Balanced:   POSITION_KP 0.0012, HEADING_KP 0.0050, KI 0.0000, KD 0.0025
-// Responsive: POSITION_KP 0.0018, HEADING_KP 0.0070, KI 0.0005, KD 0.0015
+// Responsive: POSITION_KP 0.0018, HEADING_KP 0.0100, KI 0.0005, KD 0.0015
 
 // ball sensing
 constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;

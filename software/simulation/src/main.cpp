@@ -397,6 +397,9 @@ const char* robotGoalName(RobotGoal goal) {
         case RobotGoal::defendOpponent1: return "defendOpponent1";
         case RobotGoal::defendOpponent2: return "defendOpponent2";
         case RobotGoal::searchBall: return "searchBall";
+        case RobotGoal::dribbleForward: return "dribbleForward";
+        case RobotGoal::hideBall: return "hideBall";
+        case RobotGoal::scoring: return "scoring";
     }
     return "unknown";
 }
@@ -549,7 +552,7 @@ int main() {
     bool editRot = false;
 
     // Max physical speeds used by simulator (mm/s and deg/s)
-    const float SIM_MAX_ROT_DEG_S = 120.0f;   // base max rotation speed
+    const float SIM_MAX_ROT_DEG_S = 240.0f;   // base max rotation speed
 
     while (window.isOpen()) {
         // Event handling (SFML3 uses std::optional<Event>)
