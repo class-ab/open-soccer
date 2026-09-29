@@ -328,7 +328,7 @@ void move() {
             float targetYmm;
             getBallDefenceTarget(targetXmm, targetYmm);
             moveTo(targetXmm, targetYmm,
-                   robotPose.headingDeg,
+                   headingTo(ball.xMm, ball.yMm),
                    1.0f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
@@ -588,8 +588,6 @@ void updateRobotGoal() {
             localState.robotGoal = RobotGoal::defendOpponent1;
         } else if (opponent2.valid == true  && opponent2State == OpponentState::shooting) {
             localState.robotGoal = RobotGoal::defendOpponent2;
-        } else if (ballState.ballState == BallState::farSidesOwn || ballState.ballState == BallState::nearOwnGoal) {
-            localState.robotGoal = RobotGoal::getBallDribbleAway;
         } else {
             localState.robotGoal = RobotGoal::defendBall;
         }

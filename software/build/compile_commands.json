@@ -1,91 +1,91 @@
 [
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\main.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\main.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\main.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\main.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/main.cpp",
   "output": "CMakeFiles/simulation.dir/src/main.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\robot_wrapper.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\robot_wrapper.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\robot_wrapper.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\robot_wrapper.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/robot_wrapper.cpp",
   "output": "CMakeFiles/simulation.dir/src/robot_wrapper.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_hal\\sim_hal.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_hal\\sim_hal.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_hal\\sim_hal.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_hal\\sim_hal.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_hal/sim_hal.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_hal/sim_hal.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_display_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_display_stub.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_display_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_display_stub.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_stubs/sim_display_stub.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_stubs/sim_display_stub.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_imu_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_imu_stub.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_imu_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_imu_stub.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_stubs/sim_imu_stub.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_stubs/sim_imu_stub.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_dribbler_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_dribbler_stub.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_dribbler_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_dribbler_stub.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_stubs/sim_dribbler_stub.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_stubs/sim_dribbler_stub.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_battery_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_battery_stub.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_battery_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_battery_stub.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_stubs/sim_battery_stub.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_stubs/sim_battery_stub.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_localization_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_localization_stub.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_localization_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_localization_stub.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_stubs/sim_localization_stub.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_stubs/sim_localization_stub.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_communication_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_communication_stub.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_communication_stub.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_communication_stub.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_stubs/sim_communication_stub.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_stubs/sim_communication_stub.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_robot_bridge.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_robot_bridge.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\src\\sim_stubs\\sim_robot_bridge.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\simulation\\src\\sim_stubs\\sim_robot_bridge.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_stubs/sim_robot_bridge.cpp",
   "output": "CMakeFiles/simulation.dir/src/sim_stubs/sim_robot_bridge.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\robot.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\robot.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\robot.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\robot.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/robot.cpp",
   "output": "CMakeFiles/simulation.dir/C_/Users/aiden/Documents/GitHub/open-soccer/software/code/src/robot.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\vision.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\vision.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\vision.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\vision.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/vision.cpp",
   "output": "CMakeFiles/simulation.dir/C_/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/vision.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\drivebase.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\drivebase.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\drivebase.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\drivebase.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/drivebase.cpp",
   "output": "CMakeFiles/simulation.dir/C_/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/drivebase.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\robot_state.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\robot_state.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\robot_state.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\robot_state.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/robot_state.cpp",
   "output": "CMakeFiles/simulation.dir/C_/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/robot_state.cpp.obj"
 },
 {
   "directory": "C:/Users/aiden/Documents/GitHub/open-soccer/software/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles/simulation.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\strategy.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\strategy.cpp",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe -DA0=0 -DA10=10 -DA11=11 -DA12=12 -DA13=13 -DA14=14 -DA15=15 -DA1=1 -DA2=2 -DA3=3 -DA4=4 -DA5=5 -DA6=6 -DA7=7 -DA8=8 -DA9=9 @CMakeFiles\\simulation.dir\\includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\simulation.dir\\C_\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\strategy.cpp.obj -c C:\\Users\\aiden\\Documents\\GitHub\\open-soccer\\software\\code\\src\\cpp\\subsystems\\strategy.cpp",
   "file": "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/strategy.cpp",
   "output": "CMakeFiles/simulation.dir/C_/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/strategy.cpp.obj"
 }

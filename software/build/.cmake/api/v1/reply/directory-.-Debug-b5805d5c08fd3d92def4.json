@@ -5,6 +5,11 @@
 		"files" : [],
 		"nodes" : []
 	},
+	"codemodelVersion" : 
+	{
+		"major" : 2,
+		"minor" : 11
+	},
 	"installers" : [],
 	"paths" : 
 	{

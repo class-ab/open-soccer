@@ -53,6 +53,26 @@
 			}
 		]
 	},
+	"codemodelVersion" : 
+	{
+		"major" : 2,
+		"minor" : 11
+	},
+	"compileDependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "SFML::Graphics::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "SFML::Window::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "SFML::System::@6890427a1f51a3e7e1df"
+		}
+	],
 	"compileGroups" : 
 	[
 		{
@@ -196,10 +216,6 @@
 				"role" : "flags"
 			},
 			{
-				"fragment" : "",
-				"role" : "flags"
-			},
-			{
 				"backtrace" : 2,
 				"fragment" : "\"C:\\Program Files\\SFML\\3.1.0\\lib\\libsfml-graphics-d.a\"",
 				"role" : "libraries"
@@ -221,6 +237,21 @@
 		],
 		"language" : "CXX"
 	},
+	"linkLibraries" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "SFML::Graphics::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "SFML::Window::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "SFML::System::@6890427a1f51a3e7e1df"
+		}
+	],
 	"name" : "simulation",
 	"nameOnDisk" : "simulation.exe",
 	"paths" : 
@@ -256,90 +287,150 @@
 	[
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/main.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/robot_wrapper.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_hal/sim_hal.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_stubs/sim_display_stub.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_stubs/sim_imu_stub.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_stubs/sim_dribbler_stub.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_stubs/sim_battery_stub.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_stubs/sim_localization_stub.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_stubs/sim_communication_stub.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "src/sim_stubs/sim_robot_bridge.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/robot.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/vision.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/drivebase.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/robot_state.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
+			"backtraces" : 
+			[
+				1
+			],
 			"compileGroupIndex" : 0,
 			"path" : "C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/cpp/subsystems/strategy.cpp",
 			"sourceGroupIndex" : 0

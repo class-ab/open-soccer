@@ -17,7 +17,7 @@
 constexpr float ROBOT_MAX_SPEED = 1.0f;
 constexpr float ROTATION_MAX_SPEED = 0.5f;
 // Calibrate against measured full-command robot speed on the actual field.
-constexpr float ROBOT_LINEAR_SPEED_MM_S = 1800.0f;
+constexpr float ROBOT_LINEAR_SPEED_MM_S = 3600.0f;
 
 // ACCELERATION LIMITS
 constexpr float ACCEL_LIMIT = 1.0f;

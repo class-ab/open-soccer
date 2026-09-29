@@ -455,8 +455,8 @@ int main() {
     // Two robots: index 0 starts as attacker, index 1 as defender.
     std::array<SimRobot, 2> sims;
     const sf::Vector2f INITIAL_POS[2] = {
-        sf::Vector2f(FIELD_WIDTH_MM * 0.35f, FIELD_HEIGHT_MM * 0.5f),
-        sf::Vector2f(FIELD_WIDTH_MM * 0.65f, FIELD_HEIGHT_MM * 0.5f)};
+        sf::Vector2f(FIELD_WIDTH_MM * 0.42f, FIELD_HEIGHT_MM * 0.5f),
+        sf::Vector2f(FIELD_WIDTH_MM * 0.30f, FIELD_HEIGHT_MM * 0.5f)};
     sims[0].robot.pos = INITIAL_POS[0];
     sims[1].robot.pos = INITIAL_POS[1];
 
@@ -531,7 +531,7 @@ int main() {
     sim_request_role(1, SimRoleCommand::defend);
 
     // Ball entity
-    sf::Vector2f ballPosMm(FIELD_WIDTH_MM*0.25f, FIELD_HEIGHT_MM*0.5f);
+    sf::Vector2f ballPosMm(FIELD_WIDTH_MM * 0.5f, FIELD_HEIGHT_MM * 0.5f);
     sf::Vector2f ballVelMmS(0.0f, 0.0f); // ball velocity in mm/s (rolled/pushed around by physics)
     bool draggingBall = false;
     sf::Vector2f ballDragOffsetMm(0.f, 0.f);
@@ -567,6 +567,10 @@ int main() {
                             sims[i].robot.pos = INITIAL_POS[i];
                             sims[i].robot.headingDeg = 0.0f;
                         }
+                        ballPosMm = sf::Vector2f(FIELD_WIDTH_MM * 0.5f,
+                                                 FIELD_HEIGHT_MM * 0.5f);
+                        ballVelMmS = sf::Vector2f(0.0f, 0.0f);
+                        ballHolderIndex = -1;
                     }
                     // Handle input editing keys
                     if (kp->code == sf::Keyboard::Key::Backspace) {
