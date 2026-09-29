@@ -552,7 +552,7 @@ int main() {
     bool editRot = false;
 
     // Max physical speeds used by simulator (mm/s and deg/s)
-    const float SIM_MAX_ROT_DEG_S = 240.0f;   // base max rotation speed
+    const float SIM_MAX_ROT_DEG_S = 300.0f;   // base max rotation speed
 
     while (window.isOpen()) {
         // Event handling (SFML3 uses std::optional<Event>)

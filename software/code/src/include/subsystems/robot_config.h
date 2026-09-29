@@ -15,7 +15,11 @@
 
 // SPEED LIMITS
 constexpr float ROBOT_MAX_SPEED = 1.0f;
-constexpr float ROTATION_MAX_SPEED = 0.5f;
+constexpr float ROTATION_MAX_SPEED = 0.65f;
+constexpr float POSSESSION_MAX_SPEED = 0.60f;
+constexpr float POSSESSION_ACCEL_LIMIT = 0.50f;
+constexpr float POSSESSION_ROTATION_MAX_SPEED = 0.30f;
+constexpr float POSSESSION_ROTATION_ACCEL_LIMIT = 0.75f;
 // Calibrate against measured full-command robot speed on the actual field.
 constexpr float ROBOT_LINEAR_SPEED_MM_S = 3600.0f;
 

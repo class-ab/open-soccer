@@ -132,4 +132,5 @@ CMakeFiles/simulation.dir/C_/Users/aiden/Documents/GitHub/open-soccer/software/c
  C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/robot_config.h \
  C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/imu.h \
  C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/include/Adafruit_BNO08x.h \
- C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/localization.h
+ C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/localization.h \
+ C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/strategy.h

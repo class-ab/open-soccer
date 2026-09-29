@@ -7,6 +7,7 @@ CMakeFiles/simulation.dir/C_/Users/aiden/Documents/GitHub/open-soccer/software/c
   C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/localization.h \
   C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/robot_config.h \
   C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/robot_state.h \
+  C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/strategy.h \
   C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/include/Adafruit_BNO08x.h \
   C:/Users/aiden/Documents/GitHub/open-soccer/software/simulation/src/sim_hal/Arduino.h \
   C:/msys64/ucrt64/include/_mingw.h \
@@ -2552,6 +2553,10 @@ CMakeFiles/simulation.dir/src/sim_stubs/sim_robot_bridge.cpp.obj: C:/Users/aiden
   C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/16.2.0/include/syslimits.h
 
 
+C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/strategy.h:
+
+C:/msys64/ucrt64/include/c++/16.2.0/bits/alloc_traits.h:
+
 C:/msys64/ucrt64/include/c++/16.2.0/optional:
 
 C:/msys64/ucrt64/include/c++/16.2.0/typeinfo:
@@ -2633,10 +2638,6 @@ C:/msys64/ucrt64/include/c++/16.2.0/bits/stl_iterator_base_types.h:
 C:/Program\ Files/SFML/3.1.0/include/SFML/System/Clock.hpp:
 
 C:/msys64/ucrt64/include/c++/16.2.0/bit:
-
-C:/Users/aiden/Documents/GitHub/open-soccer/software/code/src/include/subsystems/strategy.h:
-
-C:/msys64/ucrt64/include/c++/16.2.0/bits/alloc_traits.h:
 
 C:/msys64/ucrt64/include/c++/16.2.0/bits/exception.h:
 
@@ -2726,8 +2727,6 @@ C:/msys64/ucrt64/include/c++/16.2.0/bits/range_access.h:
 
 C:/msys64/ucrt64/include/c++/16.2.0/bits/requires_hosted.h:
 
-C:/msys64/ucrt64/include/c++/16.2.0/clocale:
-
 C:/msys64/ucrt64/include/c++/16.2.0/cmath:
 
 C:/msys64/ucrt64/include/c++/16.2.0/bits/stdexcept_throwfwd.h:
@@ -2753,6 +2752,8 @@ C:/Program\ Files/SFML/3.1.0/include/SFML/Window/Touch.hpp:
 C:/msys64/ucrt64/include/c++/16.2.0/tr1/riemann_zeta.tcc:
 
 C:/msys64/ucrt64/include/c++/16.2.0/cerrno:
+
+C:/msys64/ucrt64/include/c++/16.2.0/clocale:
 
 C:/msys64/ucrt64/include/c++/16.2.0/bits/algorithmfwd.h:
 
