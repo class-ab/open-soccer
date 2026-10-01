@@ -63,6 +63,7 @@ Mouse:
 
 Keyboard:
 - `R` — reset robot to field centre
+- `Space` — enable or disable the robots
 - `Escape` — quit (or cancel an in-progress HUD text edit)
 
 HUD panel (right side):

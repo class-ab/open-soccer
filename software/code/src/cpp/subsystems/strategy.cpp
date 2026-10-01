@@ -45,9 +45,7 @@ namespace {
 constexpr float OPPONENT_GOAL_X_MM = 989.0f;
 constexpr float OPPONENT_GOAL_Y_MM = 0.0f;
 constexpr float KICK_LINE_X_MM = 615.0f;
-// The simulator treats the goal mouth as solid for robots. Stop short of its
-// collision face so the scoring completion threshold remains reachable.
-constexpr float SCORING_TARGET_X_MM = OPPONENT_GOAL_X_MM - 180.0f;
+constexpr float KICK_LINE_TOLERANCE_MM = 40.0f;
 constexpr float OWN_GOAL_X_MM = -989.0f;
 constexpr float OWN_GOAL_Y_MM = 0.0f;
 constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
@@ -129,6 +127,10 @@ void getBallDefenceTarget(float &targetXmm, float &targetYmm) {
 
 float headingToOpponentGoal() {
     return headingTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM);
+}
+
+bool isAtKickLine() {
+    return fabsf(robotPose.xMm - KICK_LINE_X_MM) <= KICK_LINE_TOLERANCE_MM;
 }
 
 bool isInOpponentGoalBox(const OpponentRobot &opponent) {
@@ -304,8 +306,9 @@ void move() {
                 break;
             }
             dribbleForward();
-            if (ballState.ballPossession == BallPossession::mePossession) {
-                moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM,
+            if (ballState.ballPossession == BallPossession::mePossession ||
+                ballState.ballPossession == BallPossession::front) {
+                moveTo(KICK_LINE_X_MM, robotPose.yMm,
                        headingToOpponentGoal(), 0.55f, ACCEL_LIMIT,
                        ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             } else {
@@ -345,26 +348,26 @@ void move() {
         }
 
         case RobotGoal::pushForward:
-            if (ballState.ballPossession != BallPossession::front) {
+            if (ballState.ballPossession != BallPossession::front &&
+                ballState.ballPossession != BallPossession::mePossession) {
                 stopMotionAndDribbler();
                 break;
             }
             dribbleForward();
-            // Keep carrying the ball while translating toward goal and
-            // continuously correcting the heading to the goal line.
-            moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM,
+            // Carry the ball to the kick line, then hold position for the shot.
+            moveTo(KICK_LINE_X_MM, robotPose.yMm,
                    headingToOpponentGoal(), 1.0f, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
         case RobotGoal::scoring:
-            if (ballState.ballPossession != BallPossession::front) {
+            if (ballState.ballPossession != BallPossession::front &&
+                ballState.ballPossession != BallPossession::mePossession) {
                 stopMotionAndDribbler();
                 break;
             }
             dribbleForward();
-            moveTo(SCORING_TARGET_X_MM,
-                   OPPONENT_GOAL_Y_MM, headingToOpponentGoal(),
+            moveTo(KICK_LINE_X_MM, robotPose.yMm, headingToOpponentGoal(),
                    1.0f, ACCEL_LIMIT, ROTATION_MAX_SPEED,
                    ROTATION_ACCEL_LIMIT);
             break;
@@ -419,17 +422,22 @@ void move() {
 
         case RobotGoal::kick: {
             const float goalHeading = headingForShot(kickFromHide);
-            const bool ballHeld = ballState.ballPossession == BallPossession::mePossession;
+            const bool ballHeld = ballState.ballPossession == BallPossession::mePossession ||
+                                  ballState.ballPossession == BallPossession::front;
             if (kickIssued) {
                 stopDribbler();
             } else {
                 dribbleForward();
             }
-            moveTo(robotPose.xMm, robotPose.yMm, goalHeading,
-                   0.0f, ACCEL_LIMIT, ROTATION_MAX_SPEED,
+            const float kickTargetX = kickFromHide
+                ? robotPose.xMm : KICK_LINE_X_MM;
+            const float translationSpeed = kickFromHide || kickIssued
+                ? 0.0f : 0.5f;
+            moveTo(kickTargetX, robotPose.yMm, goalHeading,
+                   translationSpeed, ACCEL_LIMIT, ROTATION_MAX_SPEED,
                    ROTATION_ACCEL_LIMIT);
             const bool atKickLine = kickFromHide
-                ? hideBallReached() : robotPose.xMm >= KICK_LINE_X_MM;
+                ? hideBallReached() : isAtKickLine();
             if (!kickIssued && ballHeld && atKickLine &&
                 fabsf(angleError(goalHeading, robotPose.headingDeg)) <=
                                    SPIN_KICK_HEADING_TOLERANCE_DEG) {
@@ -728,38 +736,23 @@ void updateRobotGoal() {
             return;
         }
 
-        if (currentGoal == RobotGoal::scoring &&
-            possession == BallPossession::mePossession) {
-            localState.robotGoal = robotPose.xMm >= KICK_LINE_X_MM
-                ? RobotGoal::kick : RobotGoal::dribbleForward;
-            return;
+        if (currentGoal == RobotGoal::scoring) {
+            if (possession == BallPossession::mePossession ||
+                possession == BallPossession::front) {
+                localState.robotGoal = isAtKickLine()
+                    ? RobotGoal::kick : RobotGoal::dribbleForward;
+                return;
+            }
         }
 
-        // Keep stage three running to the goal after the ball reaches the
-        // shooting area. This prevents a brief possession drop from restarting
-        // collection halfway through the scoring run.
-        if (currentGoal == RobotGoal::scoring &&
-            possession == BallPossession::front &&
-            robotPose.xMm < SCORING_TARGET_X_MM - 30.0f) {
-            localState.robotGoal = RobotGoal::scoring;
-            return;
-        }
-
-        // The behind-ball route has its own translation stage: once the ball
-        // reaches the robot's front, charge straight at goal, then continue the
-        // full-speed scoring run near the goal. Side-zone handling does not
-        // redirect this route into hideBall.
+        // The behind-ball route has its own translation stage. Side-zone
+        // handling does not redirect this route into hideBall.
         const bool behindRoute = isBehindBallRoute(currentGoal);
         if (behindRoute && currentGoal != RobotGoal::scoring &&
             ((possession == BallPossession::front) ||
              (possession == BallPossession::mePossession))) {
-            if (possession == BallPossession::mePossession) {
-                localState.robotGoal = robotPose.xMm >= KICK_LINE_X_MM
-                    ? RobotGoal::kick : RobotGoal::dribbleForward;
-            } else {
-                localState.robotGoal = robotPose.xMm >= KICK_LINE_X_MM
-                    ? RobotGoal::scoring : RobotGoal::pushForward;
-            }
+            localState.robotGoal = isAtKickLine()
+                ? RobotGoal::kick : RobotGoal::dribbleForward;
             return;
         }
 
@@ -769,14 +762,14 @@ void updateRobotGoal() {
                     ? RobotGoal::kick
                     : RobotGoal::hideBall;
             } else if (currentGoal == RobotGoal::kick && ball.valid &&
-                       ball.distanceCm <= BALL_DRIBBLE_CAPTURE_DISTANCE_CM + 5.0f) {
+                       ball.distanceCm <= BALL_TARGET_DISTANCE_CM) {
+                localState.robotGoal = RobotGoal::kick;
+            } else if (isAtKickLine()) {
                 localState.robotGoal = RobotGoal::kick;
             } else if (isSideRoute()) {
                 localState.robotGoal = hideBallReached()
                     ? RobotGoal::kick
                     : RobotGoal::hideBall;
-            } else if (robotPose.xMm >= KICK_LINE_X_MM) {
-                localState.robotGoal = RobotGoal::kick;
             } else {
                 localState.robotGoal = RobotGoal::dribbleForward;
             }
@@ -785,10 +778,16 @@ void updateRobotGoal() {
 
         if (possession == BallPossession::front) {
             if (currentGoal == RobotGoal::hideBall) {
-                localState.robotGoal = RobotGoal::hideBall;
-            } else if (currentGoal == RobotGoal::kick) {
-                localState.robotGoal = RobotGoal::pushForward;
-            } else if (currentGoal == RobotGoal::dribbleForward) {
+                localState.robotGoal = hideBallReached()
+                    ? RobotGoal::kick
+                    : RobotGoal::hideBall;
+            } else if (currentGoal == RobotGoal::kick && ball.valid &&
+                       ball.distanceCm <= BALL_TARGET_DISTANCE_CM) {
+                localState.robotGoal = RobotGoal::kick;
+            } else if (isAtKickLine()) {
+                localState.robotGoal = RobotGoal::kick;
+            } else if (currentGoal == RobotGoal::dribbleForward ||
+                       currentGoal == RobotGoal::pushForward) {
                 localState.robotGoal = RobotGoal::dribbleForward;
             } else {
                 // Front means the ball has reached the dribbler; keep
@@ -799,21 +798,22 @@ void updateRobotGoal() {
         }
 
         if (currentGoal == RobotGoal::kick) {
-            localState.robotGoal = RobotGoal::pushForward;
+            // Ball has been kicked or lost.
+            if (ball.valid) {
+                localState.robotGoal = ball.xMm > 0.0f
+                    ? RobotGoal::getBallPush : RobotGoal::getBallDribble;
+            } else {
+                localState.robotGoal = RobotGoal::searchBall;
+            }
             return;
         }
         if (currentGoal == RobotGoal::hideBall && ball.valid &&
-            ball.distanceCm <= BALL_DRIBBLE_CAPTURE_DISTANCE_CM + 5.0f) {
+            ball.distanceCm <= BALL_TARGET_DISTANCE_CM) {
             localState.robotGoal = RobotGoal::hideBall;
             return;
         }
         if (currentGoal == RobotGoal::pushForward) {
-            if (possession == BallPossession::front &&
-                robotPose.xMm >= KICK_LINE_X_MM) {
-                localState.robotGoal = RobotGoal::scoring;
-            } else if (possession == BallPossession::front) {
-                localState.robotGoal = RobotGoal::pushForward;
-            } else if (ball.valid) {
+            if (ball.valid) {
                 localState.robotGoal = ball.xMm > 0.0f
                     ? RobotGoal::getBallPush : RobotGoal::getBallDribble;
             } else {

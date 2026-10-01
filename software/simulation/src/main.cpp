@@ -523,6 +523,7 @@ int main() {
 
     // Robot/robotcode control
     bool robotEnabled = true; // initial state
+    bool spacebarHeld = false;
     extern void robot_init(int index);
     extern void robot_stop(int index);
     extern void sim_step(unsigned long ms);
@@ -565,6 +566,10 @@ int main() {
                 const auto *kp = ev.getIf<sf::Event::KeyPressed>();
                 if (kp) {
                     if (kp->code == sf::Keyboard::Key::Escape) window.close();
+                    if (kp->code == sf::Keyboard::Key::Space && !spacebarHeld) {
+                        robotEnabled = !robotEnabled;
+                        spacebarHeld = true;
+                    }
                     if (kp->code == sf::Keyboard::Key::R) {
                         for (int i = 0; i < 2; ++i) {
                             sims[i].robot.pos = INITIAL_POS[i];
@@ -595,6 +600,12 @@ int main() {
                         if (editMove) { moveSpeedStr = std::to_string(moveSpeedScale); editMove = false; }
                         if (editRot) { rotSpeedStr = std::to_string(rotSpeedScale); editRot = false; }
                     }
+                }
+            }
+            if (ev.is<sf::Event::KeyReleased>()) {
+                const auto *kr = ev.getIf<sf::Event::KeyReleased>();
+                if (kr && kr->code == sf::Keyboard::Key::Space) {
+                    spacebarHeld = false;
                 }
             }
 
