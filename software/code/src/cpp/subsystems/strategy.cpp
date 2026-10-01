@@ -44,6 +44,7 @@ SIM_TLS OpponentState opponent2State;
 namespace {
 constexpr float OPPONENT_GOAL_X_MM = 989.0f;
 constexpr float OPPONENT_GOAL_Y_MM = 0.0f;
+constexpr float GOAL_PUSH_DEPTH_MM = 100.0f;
 constexpr float KICK_LINE_X_MM = 615.0f;
 constexpr float KICK_LINE_TOLERANCE_MM = 40.0f;
 constexpr float OWN_GOAL_X_MM = -989.0f;
@@ -64,7 +65,6 @@ constexpr float PARALLEL_HEADING_DEG = 0.0f;
 constexpr float SIDE_WALL_TARGET_Y_MM = 300.0f;
 constexpr float HIDE_BALL_TARGET_X_MM = 580.0f;
 constexpr float HIDE_BALL_LANE_Y_MM = 350.0f;
-const float DEFENCE_X_MM = -MIDDLE_ZONE_X;
 
 float headingTo(float targetXmm, float targetYmm) {
     return atan2f(targetYmm - robotPose.yMm,
@@ -133,9 +133,22 @@ bool isAtKickLine() {
     return fabsf(robotPose.xMm - KICK_LINE_X_MM) <= KICK_LINE_TOLERANCE_MM;
 }
 
+bool isBallInGoalPushZone() {
+    return ball.valid &&
+           ball.xMm >= OPPONENT_GOAL_X_MM - GOAL_PUSH_DEPTH_MM &&
+           ball.xMm <= OPPONENT_GOAL_X_MM &&
+           fabsf(ball.yMm) <= GOAL_Y;
+}
+
 bool isInOpponentGoalBox(const OpponentRobot &opponent) {
     return opponent.valid && opponent.xMm >= MIDDLE_ZONE_X &&
            opponent.xMm <= BORDER_X && fabsf(opponent.yMm) <= GOAL_Y;
+}
+
+bool isBallInDefenceBox() {
+    return ball.valid && ball.xMm >= DEFENCE_BOX_MIN_X_MM &&
+           ball.xMm <= DEFENCE_BOX_MAX_X_MM &&
+           fabsf(ball.yMm) <= DEFENCE_BOX_MAX_ABS_Y_MM;
 }
 
 bool isSideRoute() {
@@ -361,15 +374,31 @@ void move() {
             break;
 
         case RobotGoal::scoring:
-            if (ballState.ballPossession != BallPossession::front &&
-                ballState.ballPossession != BallPossession::mePossession) {
+            if (!ball.valid ||
+                (ballState.ballPossession != BallPossession::front &&
+                 ballState.ballPossession != BallPossession::mePossession)) {
                 stopMotionAndDribbler();
                 break;
             }
             dribbleForward();
-            moveTo(KICK_LINE_X_MM, robotPose.yMm, headingToOpponentGoal(),
-                   1.0f, ACCEL_LIMIT, ROTATION_MAX_SPEED,
-                   ROTATION_ACCEL_LIMIT);
+            {
+                const float goalwardX = OPPONENT_GOAL_X_MM - ball.xMm;
+                const float goalwardY = OPPONENT_GOAL_Y_MM - ball.yMm;
+                const float goalwardDistance =
+                    sqrtf(goalwardX * goalwardX + goalwardY * goalwardY);
+                const float goalwardScale = goalwardDistance > 0.001f
+                    ? BALL_APPROACH_OFFSET_MM / goalwardDistance : 0.0f;
+                const float targetXmm = OPPONENT_GOAL_X_MM +
+                                        goalwardX * goalwardScale;
+                const float targetYmm = OPPONENT_GOAL_Y_MM +
+                                        goalwardY * goalwardScale;
+                const float targetHeading = goalwardDistance > 0.001f
+                    ? atan2f(goalwardY, goalwardX) * 180.0f / PI
+                    : headingToOpponentGoal();
+                moveTo(targetXmm, targetYmm, targetHeading, 1.0f,
+                       ACCEL_LIMIT, ROTATION_MAX_SPEED,
+                       ROTATION_ACCEL_LIMIT);
+            }
             break;
 
         case RobotGoal::hideBall: {
@@ -470,7 +499,7 @@ void move() {
 
         case RobotGoal::backOff:
             stopDribbler();
-            moveTo(DEFENCE_X_MM, OWN_GOAL_Y_MM, PARALLEL_HEADING_DEG,
+            moveTo(0.0f, 0.0f, PARALLEL_HEADING_DEG,
                    0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -723,6 +752,11 @@ void updateRobotGoal() {
         const RobotGoal currentGoal = localState.robotGoal;
         const BallPossession possession = ballState.ballPossession;
 
+        if (currentGoal == RobotGoal::backOff || isBallInDefenceBox()) {
+            localState.robotGoal = RobotGoal::backOff;
+            return;
+        }
+
         if (possession == BallPossession::himPossession) {
             localState.robotGoal = RobotGoal::defendBall;
             return;
@@ -737,12 +771,19 @@ void updateRobotGoal() {
         }
 
         if (currentGoal == RobotGoal::scoring) {
-            if (possession == BallPossession::mePossession ||
-                possession == BallPossession::front) {
-                localState.robotGoal = isAtKickLine()
-                    ? RobotGoal::kick : RobotGoal::dribbleForward;
+            if (ball.valid &&
+                (possession == BallPossession::mePossession ||
+                 possession == BallPossession::front)) {
+                localState.robotGoal = RobotGoal::scoring;
                 return;
             }
+        }
+
+        if (isBallInGoalPushZone() &&
+            (possession == BallPossession::mePossession ||
+             possession == BallPossession::front)) {
+            localState.robotGoal = RobotGoal::scoring;
+            return;
         }
 
         // The behind-ball route has its own translation stage. Side-zone
