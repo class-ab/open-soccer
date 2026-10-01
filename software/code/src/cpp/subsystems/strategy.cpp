@@ -45,6 +45,10 @@ namespace {
 constexpr float OPPONENT_GOAL_X_MM = 989.0f;
 constexpr float OPPONENT_GOAL_Y_MM = 0.0f;
 constexpr float GOAL_PUSH_DEPTH_MM = 100.0f;
+constexpr float ROBOT_DIAMETER_MM = 220.0f;
+constexpr float ROBOT_RADIUS_MM = ROBOT_DIAMETER_MM * 0.5f;
+constexpr float BALL_RADIUS_MM = 20.0f;
+constexpr float DEFENSIVE_PASS_LANE_Y_MM = 300.0f;
 constexpr float KICK_LINE_X_MM = 615.0f;
 constexpr float KICK_LINE_TOLERANCE_MM = 40.0f;
 constexpr float OWN_GOAL_X_MM = -989.0f;
@@ -60,11 +64,10 @@ constexpr float DEFENCE_BOX_MIN_X_MM = -965.0f;
 constexpr float DEFENCE_BOX_MAX_X_MM = -615.0f;
 constexpr float DEFENCE_BOX_MAX_ABS_Y_MM = 450.0f;
 constexpr float OWN_GOAL_BACK_X_MM = -989.0f;
-// Keep the chassis aligned with the field's +X axis during normal play.
-constexpr float PARALLEL_HEADING_DEG = 0.0f;
 constexpr float SIDE_WALL_TARGET_Y_MM = 300.0f;
 constexpr float HIDE_BALL_TARGET_X_MM = 580.0f;
 constexpr float HIDE_BALL_LANE_Y_MM = 350.0f;
+SIM_TLS float defensivePassTargetYmm = 0.0f;
 
 float headingTo(float targetXmm, float targetYmm) {
     return atan2f(targetYmm - robotPose.yMm,
@@ -149,6 +152,79 @@ bool isBallInDefenceBox() {
     return ball.valid && ball.xMm >= DEFENCE_BOX_MIN_X_MM &&
            ball.xMm <= DEFENCE_BOX_MAX_X_MM &&
            fabsf(ball.yMm) <= DEFENCE_BOX_MAX_ABS_Y_MM;
+}
+
+float distanceToSegmentSquared(float pointX, float pointY,
+                               float startX, float startY,
+                               float endX, float endY) {
+    const float segmentX = endX - startX;
+    const float segmentY = endY - startY;
+    const float segmentLengthSquared = segmentX * segmentX + segmentY * segmentY;
+    const float projection = segmentLengthSquared > 0.0f
+        ? constrain(((pointX - startX) * segmentX +
+                     (pointY - startY) * segmentY) / segmentLengthSquared,
+                    0.0f, 1.0f)
+        : 0.0f;
+    const float closestX = startX + projection * segmentX;
+    const float closestY = startY + projection * segmentY;
+    const float deltaX = pointX - closestX;
+    const float deltaY = pointY - closestY;
+    return deltaX * deltaX + deltaY * deltaY;
+}
+
+bool isClearOfRobot(float startX, float startY, float endX, float endY,
+                    float robotX, float robotY) {
+    const float clearance = ROBOT_RADIUS_MM + BALL_RADIUS_MM;
+    return distanceToSegmentSquared(robotX, robotY, startX, startY,
+                                    endX, endY) > clearance * clearance;
+}
+
+bool isClearOfOpponentRobots(float startX, float startY,
+                             float endX, float endY) {
+    return (!opponent1.valid ||
+            isClearOfRobot(startX, startY, endX, endY,
+                           opponent1.xMm, opponent1.yMm)) &&
+           (!opponent2.valid ||
+            isClearOfRobot(startX, startY, endX, endY,
+                           opponent2.xMm, opponent2.yMm));
+}
+
+bool isClearDefensivePassRoute(float targetYmm) {
+    if (!ball.valid || !remotePose.valid) {
+        return false;
+    }
+
+    const float targetXmm = 0.0f;
+    if (!isClearOfOpponentRobots(ball.xMm, ball.yMm,
+                                 targetXmm, targetYmm) ||
+        !isClearOfRobot(ball.xMm, ball.yMm, targetXmm, targetYmm,
+                        remotePose.xMm, remotePose.yMm)) {
+        return false;
+    }
+
+    return isClearOfOpponentRobots(targetXmm, targetYmm,
+                                   remotePose.xMm, remotePose.yMm);
+}
+
+bool chooseDefensivePassLane(float &targetYmm) {
+    const float firstLaneYmm = ball.yMm >= 0.0f
+        ? DEFENSIVE_PASS_LANE_Y_MM : -DEFENSIVE_PASS_LANE_Y_MM;
+    const float secondLaneYmm = -firstLaneYmm;
+    if (isClearDefensivePassRoute(firstLaneYmm)) {
+        targetYmm = firstLaneYmm;
+        return true;
+    }
+    if (isClearDefensivePassRoute(secondLaneYmm)) {
+        targetYmm = secondLaneYmm;
+        return true;
+    }
+    return false;
+}
+
+bool isDefensiveThreatOverHalfway() {
+    return (ball.valid && ball.xMm < 0.0f) ||
+           (opponent1.valid && opponent1.xMm < 0.0f) ||
+           (opponent2.valid && opponent2.xMm < 0.0f);
 }
 
 bool isSideRoute() {
@@ -304,11 +380,11 @@ void move() {
         }
 
         case RobotGoal::getBallDribble:
+            dribbleForward();
             if (!ball.valid) {
-                stopMotionAndDribbler();
+                stopAllDriveMotors();
                 break;
             }
-            dribbleForward();
             moveTo(ball.xMm, ball.yMm, headingTo(ball.xMm, ball.yMm),
                    0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
@@ -481,6 +557,34 @@ void move() {
                 stopMotionAndDribbler();
                 break;
             }
+            if (localState.robotState == RobotState::defending) {
+                if (!ball.valid ||
+                    ballState.ballPossession != BallPossession::mePossession) {
+                    stopMotionAndDribbler();
+                    break;
+                }
+                const bool atPassLane =
+                    fabsf(robotPose.xMm) <= POSITION_TOLERANCE_MM &&
+                    fabsf(robotPose.yMm - defensivePassTargetYmm) <=
+                        POSITION_TOLERANCE_MM;
+                const float passHeading = headingTo(remotePose.xMm,
+                                                    remotePose.yMm);
+                if (kickIssued) {
+                    stopDribbler();
+                } else {
+                    dribbleForward();
+                }
+                moveTo(0.0f, defensivePassTargetYmm, passHeading,
+                       atPassLane ? 0.0f : 0.65f, ACCEL_LIMIT,
+                       ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+                if (atPassLane && !kickIssued &&
+                    fabsf(angleError(passHeading, robotPose.headingDeg)) <=
+                        SPIN_KICK_HEADING_TOLERANCE_DEG) {
+                    kick();
+                    kickIssued = true;
+                }
+                break;
+            }
             stopDribbler();
             const float passHeading = headingTo(remotePose.xMm, remotePose.yMm);
             moveTo(robotPose.xMm, robotPose.yMm,
@@ -499,7 +603,8 @@ void move() {
 
         case RobotGoal::backOff:
             stopDribbler();
-            moveTo(0.0f, 0.0f, PARALLEL_HEADING_DEG,
+                        moveTo(0.0f, 0.0f,
+                                     headingTo(OWN_GOAL_X_MM, OWN_GOAL_Y_MM),
                    0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -508,7 +613,11 @@ void move() {
                 stopMotionAndDribbler();
                 break;
             }
-            stopDribbler();
+            if (isDefensiveThreatOverHalfway()) {
+                dribbleForward();
+            } else {
+                stopDribbler();
+            }
             float targetXmm;
             float targetYmm;
             getBallDefenceTarget(targetXmm, targetYmm);
@@ -526,7 +635,11 @@ void move() {
                 stopMotionAndDribbler();
                 break;
             }
-            stopDribbler();
+            if (isDefensiveThreatOverHalfway()) {
+                dribbleForward();
+            } else {
+                stopDribbler();
+            }
             moveTo(clampDefenceX(opponent.xMm), clampDefenceY(opponent.yMm),
                    headingTo(opponent.xMm, opponent.yMm),
                    0.9f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
@@ -743,7 +856,9 @@ void updateRobotGoal() {
         return;
     }
 
-    if (abs(robotPose.yMm) >= BORDER_Y || (abs(robotPose.yMm) >= GOAL_Y && abs(robotPose.xMm) >= BORDER_X)) {
+    if (abs(robotPose.yMm) >= BORDER_Y - ROBOT_RADIUS_MM ||
+        (abs(robotPose.yMm) >= GOAL_Y - ROBOT_RADIUS_MM &&
+         abs(robotPose.xMm) >= BORDER_X - ROBOT_RADIUS_MM)) {
         localState.robotGoal = RobotGoal::awayBorders; // FIRST CHECK BORDERS
         return;
     }
@@ -752,7 +867,11 @@ void updateRobotGoal() {
         const RobotGoal currentGoal = localState.robotGoal;
         const BallPossession possession = ballState.ballPossession;
 
-        if (currentGoal == RobotGoal::backOff || isBallInDefenceBox()) {
+        const bool hasBallForAttack =
+            possession == BallPossession::mePossession ||
+            possession == BallPossession::front;
+        if ((currentGoal == RobotGoal::backOff || isBallInDefenceBox()) &&
+            !hasBallForAttack) {
             localState.robotGoal = RobotGoal::backOff;
             return;
         }
@@ -822,6 +941,13 @@ void updateRobotGoal() {
                 localState.robotGoal = hideBallReached()
                     ? RobotGoal::kick
                     : RobotGoal::hideBall;
+            } else if (currentGoal == RobotGoal::getBallDribble) {
+                localState.robotGoal = isAtKickLine()
+                    ? RobotGoal::kick
+                    : isSideRoute()
+                        ? (hideBallReached() ? RobotGoal::kick
+                                             : RobotGoal::hideBall)
+                        : RobotGoal::dribbleForward;
             } else if (currentGoal == RobotGoal::kick && ball.valid &&
                        ball.distanceCm <= BALL_TARGET_DISTANCE_CM) {
                 localState.robotGoal = RobotGoal::kick;
@@ -876,6 +1002,14 @@ void updateRobotGoal() {
             localState.robotGoal = RobotGoal::searchBall;
         }
     } else if (localState.robotState == RobotState::defending) {
+        if (ballState.ballPossession == BallPossession::mePossession) {
+            float passLaneYmm;
+            if (chooseDefensivePassLane(passLaneYmm)) {
+                defensivePassTargetYmm = passLaneYmm;
+                localState.robotGoal = RobotGoal::pass;
+                return;
+            }
+        }
         if (opponent1.valid == true && opponent1State == OpponentState::shooting) {
             localState.robotGoal = RobotGoal::defendOpponent1;
         } else if (opponent2.valid == true  && opponent2State == OpponentState::shooting) {

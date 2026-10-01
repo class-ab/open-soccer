@@ -24,7 +24,7 @@ constexpr float GOAL_WIDTH_MM = 450.0f;
 constexpr float GOAL_DEPTH_MM = 74.0f; // how far the goal extends inward (visual)
 
 // Robot (configurable)
-constexpr float ROBOT_DIAMETER_MM = 180.0f; // default robot diameter (changeable)
+constexpr float ROBOT_DIAMETER_MM = 220.0f; // robot diameter
 constexpr float DRIBBLER_WIDTH_MM = 40.0f;  // frontal dribbler width
 constexpr float DRIBBLER_DEPTH_MM = 12.0f;  // how far it projects
 
