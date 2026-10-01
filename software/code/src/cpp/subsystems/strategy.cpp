@@ -66,6 +66,7 @@ constexpr float OWN_GOAL_BACK_X_MM = -989.0f;
 constexpr float SIDE_WALL_TARGET_Y_MM = 300.0f;
 constexpr float HIDE_BALL_TARGET_X_MM = 580.0f;
 constexpr float HIDE_BALL_LANE_Y_MM = 350.0f;
+constexpr float OPPONENT_FUSION_GATE_MM = 300.0f;
 
 float headingTo(float targetXmm, float targetYmm) {
     return atan2f(targetYmm - robotPose.yMm,
@@ -568,62 +569,129 @@ void move() {
 }
 
 void processOpponents() {
-    OpponentRobot opponentsLocal[2];
-    OpponentRobot opponentsRemote[2];
-    count = 0;
+    OpponentRobot opponentsLocal[3] = {};
+    OpponentRobot opponentsRemote[5] = {};
+    int localCount = 0;
+    int remoteCount = 0;
+    getOpponents(opponentsLocal, 3, localCount);
+    getRemoteOpponents(opponentsRemote, 5, remoteCount);
+    localCount = constrain(localCount, 0, 3);
+    remoteCount = constrain(remoteCount, 0, 5);
 
-    getRemoteOpponents(opponentsRemote, 2, count); // COUNT NOT USED FROM REMOTE
-    getOpponents(opponentsLocal, 2, count); // count from LOCAl opponents used instead 
-
-    // Assign first opponent if available
-    if (count >= 1) {
-        if ((opponentsLocal[0].valid == true) && (opponentsRemote[0].valid == true)) {
-            opponent1.valid = true;
-            opponent1.confidence = (opponentsLocal[0].confidence + opponentsRemote[0].confidence) / 2;
-            opponent1.xMm = (opponentsLocal[0].xMm + opponentsRemote[0].xMm) / 2;
-            opponent1.yMm = (opponentsLocal[0].yMm + opponentsRemote[0].yMm) / 2;
-            opponent1.timestampMs = 0;
-        } else if (opponentsLocal[0].valid == true) {
-            opponent1.valid = true;
-            opponent1.confidence = opponentsLocal[0].confidence;
-            opponent1.xMm = opponentsLocal[0].xMm;
-            opponent1.yMm = opponentsLocal[0].yMm;
-            opponent1.timestampMs = 0;
-        } else {
-            opponent1.valid = true;
-            opponent1.confidence = opponentsRemote[0].confidence;
-            opponent1.xMm = opponentsRemote[0].xMm;
-            opponent1.yMm = opponentsRemote[0].yMm;
-            opponent1.timestampMs = 0;
-        }        
-    } else {
-        opponent1.valid = false;
+    OpponentRobot candidates[8] = {};
+    int localCandidateIndex[3] = {-1, -1, -1};
+    bool localMatched[3] = {};
+    int candidateCount = 0;
+    for (int i = 0; i < localCount; ++i) {
+        if (!opponentsLocal[i].valid) continue;
+        localCandidateIndex[i] = candidateCount;
+        candidates[candidateCount++] = opponentsLocal[i];
     }
 
-    // Assign second opponent if available
-    if (count >= 2) {
-       if ((opponentsLocal[1].valid == true) && (opponentsRemote[1].valid == true)) {
-            opponent2.valid = true;
-            opponent2.confidence = (opponentsLocal[1].confidence + opponentsRemote[1].confidence) / 2;
-            opponent2.xMm = (opponentsLocal[1].xMm + opponentsRemote[1].xMm) / 2;
-            opponent2.yMm = (opponentsLocal[1].yMm + opponentsRemote[1].yMm) / 2;
-            opponent2.timestampMs = 0;
-        } else if (opponentsLocal[1].valid == true) {
-            opponent2.valid = true;
-            opponent2.confidence = opponentsLocal[1].confidence;
-            opponent2.xMm = opponentsLocal[1].xMm;
-            opponent2.yMm = opponentsLocal[1].yMm;
-            opponent2.timestampMs = 0;
-        } else {
-            opponent2.valid = true;
-            opponent2.confidence = opponentsRemote[1].confidence;
-            opponent2.xMm = opponentsRemote[1].xMm;
-            opponent2.yMm = opponentsRemote[1].yMm;
-            opponent2.timestampMs = 0;
-        }   
-    } else {
-        opponent2.valid = false;
+    const float fusionGateSquared = OPPONENT_FUSION_GATE_MM * OPPONENT_FUSION_GATE_MM;
+    for (int remoteIndex = 0; remoteIndex < remoteCount; ++remoteIndex) {
+        const OpponentRobot &remote = opponentsRemote[remoteIndex];
+        if (!remote.valid) continue;
+
+        int nearestLocal = -1;
+        float nearestDistanceSquared = fusionGateSquared;
+        for (int localIndex = 0; localIndex < localCount; ++localIndex) {
+            if (localCandidateIndex[localIndex] < 0 || localMatched[localIndex]) continue;
+            const float dx = opponentsLocal[localIndex].xMm - remote.xMm;
+            const float dy = opponentsLocal[localIndex].yMm - remote.yMm;
+            const float distanceSquared = dx * dx + dy * dy;
+            if (distanceSquared < nearestDistanceSquared) {
+                nearestDistanceSquared = distanceSquared;
+                nearestLocal = localIndex;
+            }
+        }
+
+        if (nearestLocal >= 0) {
+            localMatched[nearestLocal] = true;
+            OpponentRobot &fused = candidates[localCandidateIndex[nearestLocal]];
+            const float localWeight = fmaxf(0.05f, opponentsLocal[nearestLocal].confidence);
+            const float remoteWeight = fmaxf(0.05f, remote.confidence);
+            const float totalWeight = localWeight + remoteWeight;
+            fused.xMm = (fused.xMm * localWeight + remote.xMm * remoteWeight) /
+                        totalWeight;
+            fused.yMm = (fused.yMm * localWeight + remote.yMm * remoteWeight) /
+                        totalWeight;
+            fused.confidence = fmaxf(fused.confidence, remote.confidence);
+        } else if (candidateCount < 8) {
+            candidates[candidateCount++] = remote;
+        }
     }
+
+    int selected[2] = {-1, -1};
+    for (int i = 0; i < candidateCount; ++i) {
+        if (selected[0] < 0 || candidates[i].confidence > candidates[selected[0]].confidence) {
+            selected[1] = selected[0];
+            selected[0] = i;
+        } else if (selected[1] < 0 || candidates[i].confidence > candidates[selected[1]].confidence) {
+            selected[1] = i;
+        }
+    }
+
+    OpponentRobot next[2] = {};
+    const int selectedCount = (selected[0] >= 0 ? 1 : 0) + (selected[1] >= 0 ? 1 : 0);
+    if (selectedCount == 1) {
+        const OpponentRobot &candidate = candidates[selected[0]];
+        if (opponent1.valid && opponent2.valid) {
+            const float firstDx = candidate.xMm - opponent1.xMm;
+            const float firstDy = candidate.yMm - opponent1.yMm;
+            const float secondDx = candidate.xMm - opponent2.xMm;
+            const float secondDy = candidate.yMm - opponent2.yMm;
+            if (secondDx * secondDx + secondDy * secondDy <
+                firstDx * firstDx + firstDy * firstDy) {
+                next[1] = candidate;
+            } else {
+                next[0] = candidate;
+            }
+        } else if (opponent2.valid) {
+            next[1] = candidate;
+        } else {
+            next[0] = candidate;
+        }
+    } else if (selectedCount == 2) {
+        const OpponentRobot &first = candidates[selected[0]];
+        const OpponentRobot &second = candidates[selected[1]];
+        if (opponent1.valid && opponent2.valid) {
+            const float d11x = first.xMm - opponent1.xMm;
+            const float d11y = first.yMm - opponent1.yMm;
+            const float d22x = second.xMm - opponent2.xMm;
+            const float d22y = second.yMm - opponent2.yMm;
+            const float d12x = second.xMm - opponent1.xMm;
+            const float d12y = second.yMm - opponent1.yMm;
+            const float d21x = first.xMm - opponent2.xMm;
+            const float d21y = first.yMm - opponent2.yMm;
+            const float directCost = d11x * d11x + d11y * d11y + d22x * d22x + d22y * d22y;
+            const float crossedCost = d12x * d12x + d12y * d12y + d21x * d21x + d21y * d21y;
+            next[0] = crossedCost < directCost ? second : first;
+            next[1] = crossedCost < directCost ? first : second;
+        } else if (opponent1.valid || opponent2.valid) {
+            const int previousSlot = opponent1.valid ? 0 : 1;
+            const OpponentRobot &previous = previousSlot == 0 ? opponent1 : opponent2;
+            const float firstDx = first.xMm - previous.xMm;
+            const float firstDy = first.yMm - previous.yMm;
+            const float secondDx = second.xMm - previous.xMm;
+            const float secondDy = second.yMm - previous.yMm;
+            if (secondDx * secondDx + secondDy * secondDy <
+                firstDx * firstDx + firstDy * firstDy) {
+                next[previousSlot] = second;
+                next[1 - previousSlot] = first;
+            } else {
+                next[previousSlot] = first;
+                next[1 - previousSlot] = second;
+            }
+        } else {
+            next[0] = first;
+            next[1] = second;
+        }
+    }
+
+    opponent1 = next[0];
+    opponent2 = next[1];
+    count = selectedCount;
 }
 
 void updateBallState() {

@@ -120,6 +120,7 @@ ReceiveState receiveState = WAIT_HEADER;
 RobotPose robotPose = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
 FieldBall fieldBall = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
 OpponentRobot opponents[MAX_OPPONENTS] = {};
+uint16_t opponentSupport[MAX_OPPONENTS] = {};
 uint8_t opponentCount = 0;
 unsigned long opponentTimestampMs = 0;
 
@@ -399,7 +400,7 @@ bool coarseSearch(float centerX, float centerY, float halfRangeX,
 
 void finishOpponentCluster(float sumX, float sumY, float sumSquared,
                            uint16_t count, unsigned long now) {
-  if (count < OPPONENT_MIN_POINTS || opponentCount >= MAX_OPPONENTS) return;
+  if (count < OPPONENT_MIN_POINTS) return;
   const float centerX = sumX / count;
   const float centerY = sumY / count;
   const float radius = sqrtf(fmaxf(
@@ -409,14 +410,29 @@ void finishOpponentCluster(float sumX, float sumY, float sumSquared,
     return;
   }
 
-  opponents[opponentCount++] = {
+  uint8_t position = opponentCount;
+  if (opponentCount == MAX_OPPONENTS) {
+    position = MAX_OPPONENTS - 1;
+    if (count <= opponentSupport[position]) return;
+  } else {
+    ++opponentCount;
+  }
+
+  while (position > 0 && count > opponentSupport[position - 1]) {
+    opponents[position] = opponents[position - 1];
+    opponentSupport[position] = opponentSupport[position - 1];
+    --position;
+  }
+  opponents[position] = {
       true, centerX - FIELD_WIDTH_MM * 0.5f,
       centerY - FIELD_HEIGHT_MM * 0.5f,
       fminf(1.0f, count / 10.0f), now};
+  opponentSupport[position] = count;
 }
 
 void updateOpponentDetections(unsigned long now) {
   opponentCount = 0;
+  for (uint8_t i = 0; i < MAX_OPPONENTS; ++i) opponentSupport[i] = 0;
   if (!poseInitialized) return;
 
   float sumX = 0.0f;
@@ -810,6 +826,7 @@ void initLocalization() {
   lidarSpeedSampleCount = 0;
   lastLidarControlMs = millis();
   opponentCount = 0;
+  for (uint8_t i = 0; i < MAX_OPPONENTS; ++i) opponentSupport[i] = 0;
   opponentTimestampMs = 0;
   robotPose = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};
   fieldBall = {false, 0.0f, 0.0f, 0.0f, 0.0f, 0};

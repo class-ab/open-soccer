@@ -81,11 +81,16 @@ namespace {
   FieldBall remoteFieldBall = {false, 0, 0, 0, 0, 0};
   OpponentRobot remoteOpponents[5] = {};
   int remoteOpponentCount = 0;
+  unsigned long remoteOpponentReceiveMs = 0;
+  bool remoteOpponentPacketSeen = false;
+  bool remoteSupportsCompactOpponents = false;
+  unsigned long remoteCapabilityReceiveMs = 0;
 
   unsigned long lastPoseSendMs = 0;
   unsigned long lastStateSendMs = 0;
   unsigned long lastBallSendMs = 0;
   unsigned long lastOpponentsSendMs = 0;
+  unsigned long lastCapabilitySendMs = 0;
 
   // Statistics
   uint32_t packetsReceived = 0;
@@ -96,6 +101,10 @@ namespace {
   constexpr unsigned long STATE_SEND_INTERVAL_MS = 20;     // 50 Hz
   constexpr unsigned long BALL_SEND_INTERVAL_MS = 20;      // 50 Hz
   constexpr unsigned long OPPONENTS_SEND_INTERVAL_MS = 20;  // 50 Hz
+  constexpr unsigned long CAPABILITY_SEND_INTERVAL_MS = 500;
+  constexpr unsigned long CAPABILITY_TIMEOUT_MS = 1500;
+  constexpr unsigned long REMOTE_OPPONENT_TIMEOUT_MS = 500;
+  constexpr uint8_t COMPACT_OPPONENT_MARKER = 0xA2;
 }
 
 // ============================================================
@@ -223,62 +232,100 @@ static void deserializeBall(const uint8_t *buffer, int len, FieldBall &ball) {
 }
 
 static void serializeOpponents(const OpponentRobot *opponents, int count,
-                               uint8_t *buffer, int &len) {
-  int pos = 0;
-  uint8_t opponentCount = (count > 5) ? 5 : count;
+                               bool compact, uint8_t *buffer, int &len) {
+  len = 0;
+  if (buffer == nullptr) return;
 
-  // First byte: number of opponents
-  buffer[pos++] = opponentCount;
-
-  for (int i = 0; i < opponentCount; i++) {
-    RemoteOpponentPacket pkt;
-    pkt.valid = opponents[i].valid ? 1 : 0;
-    pkt.xMm = opponents[i].xMm;
-    pkt.yMm = opponents[i].yMm;
-    pkt.confidence = opponents[i].confidence;
-    pkt.timestampMs = opponents[i].timestampMs;
-
-    if (pos + sizeof(pkt) <= 31) {
-      memcpy(&buffer[pos], &pkt, sizeof(pkt));
-      pos += sizeof(pkt);
+  const int boundedCount = count < 0 ? 0 : (count > 5 ? 5 : count);
+  if (compact) {
+    buffer[len++] = COMPACT_OPPONENT_MARKER;
+    const int countPosition = len++;
+    uint8_t opponentCount = 0;
+    for (int i = 0; opponents != nullptr && i < boundedCount && opponentCount < 3; ++i) {
+      if (!opponents[i].valid) continue;
+      const int16_t xMm = static_cast<int16_t>(lroundf(opponents[i].xMm));
+      const int16_t yMm = static_cast<int16_t>(lroundf(opponents[i].yMm));
+      const uint8_t confidence = static_cast<uint8_t>(
+          lroundf(fminf(1.0f, fmaxf(0.0f, opponents[i].confidence)) * 255.0f));
+      buffer[len++] = static_cast<uint8_t>(xMm & 0xFF);
+      buffer[len++] = static_cast<uint8_t>((static_cast<uint16_t>(xMm) >> 8) & 0xFF);
+      buffer[len++] = static_cast<uint8_t>(yMm & 0xFF);
+      buffer[len++] = static_cast<uint8_t>((static_cast<uint16_t>(yMm) >> 8) & 0xFF);
+      buffer[len++] = confidence;
+      ++opponentCount;
     }
-  }
-
-  len = pos;
-}
-
-static void deserializeOpponents(const uint8_t *buffer, int len,
-                                 OpponentRobot *opponents, int maxOpponents,
-                                 int &count) {
-  count = 0;
-
-  if (len < 1) {
+    buffer[countPosition] = opponentCount;
     return;
   }
 
-  uint8_t opponentCount = buffer[0];
-  if (opponentCount > (uint8_t)maxOpponents) {
-    opponentCount = maxOpponents;
-  }
-
-  int pos = 1;
-  for (int i = 0; i < opponentCount; i++) {
-    if (pos + (int)sizeof(RemoteOpponentPacket) > len) {
+  int selected = -1;
+  for (int i = 0; opponents != nullptr && i < boundedCount; ++i) {
+    if (opponents[i].valid) {
+      selected = i;
       break;
     }
-
-    RemoteOpponentPacket pkt;
-    memcpy(&pkt, &buffer[pos], sizeof(pkt));
-    pos += sizeof(pkt);
-
-    opponents[i].valid = (pkt.valid != 0);
-    opponents[i].xMm = pkt.xMm;
-    opponents[i].yMm = pkt.yMm;
-    opponents[i].confidence = pkt.confidence;
-    opponents[i].timestampMs = pkt.timestampMs;
-
-    count++;
   }
+  buffer[len++] = selected < 0 ? 0 : 1;
+  if (selected < 0) return;
+
+  RemoteOpponentPacket packet;
+  packet.valid = 1;
+  packet.xMm = opponents[selected].xMm;
+  packet.yMm = opponents[selected].yMm;
+  packet.confidence = opponents[selected].confidence;
+  packet.timestampMs = opponents[selected].timestampMs;
+  memcpy(&buffer[len], &packet, sizeof(packet));
+  len += sizeof(packet);
+}
+
+static bool deserializeOpponents(const uint8_t *buffer, int len,
+                                 OpponentRobot *opponents, int maxOpponents,
+                                 int &count) {
+  count = 0;
+  if (buffer == nullptr || len < 1 || maxOpponents < 0 ||
+      (maxOpponents > 0 && opponents == nullptr)) return false;
+  for (int i = 0; i < maxOpponents; ++i) opponents[i] = {};
+
+  const unsigned long receivedAtMs = millis();
+  if (buffer[0] == COMPACT_OPPONENT_MARKER) {
+    if (len < 2 || buffer[1] > 3 || len < 2 + static_cast<int>(buffer[1]) * 5) {
+      return false;
+    }
+    const int opponentCount = buffer[1] < maxOpponents ? buffer[1] : maxOpponents;
+    for (int i = 0; i < opponentCount; ++i) {
+      const int pos = 2 + i * 5;
+      const uint16_t encodedX = static_cast<uint16_t>(buffer[pos]) |
+                                (static_cast<uint16_t>(buffer[pos + 1]) << 8);
+      const uint16_t encodedY = static_cast<uint16_t>(buffer[pos + 2]) |
+                                (static_cast<uint16_t>(buffer[pos + 3]) << 8);
+      opponents[i].valid = true;
+      opponents[i].xMm = static_cast<int16_t>(encodedX);
+      opponents[i].yMm = static_cast<int16_t>(encodedY);
+      opponents[i].confidence = buffer[pos + 4] / 255.0f;
+      opponents[i].timestampMs = receivedAtMs;
+      ++count;
+    }
+    return true;
+  }
+
+  const uint8_t advertisedCount = buffer[0];
+  if (advertisedCount > 5) return false;
+  const int availableCount = (len - 1) / static_cast<int>(sizeof(RemoteOpponentPacket));
+  const int completeCount = advertisedCount < availableCount
+                                ? advertisedCount
+                                : availableCount;
+  const int opponentCount = completeCount < maxOpponents
+                                ? completeCount
+                                : maxOpponents;
+  for (int i = 0; i < opponentCount; ++i) {
+    RemoteOpponentPacket packet;
+    memcpy(&packet, &buffer[1 + i * sizeof(packet)], sizeof(packet));
+    if (packet.valid == 0 || !isfinite(packet.xMm) || !isfinite(packet.yMm) ||
+        !isfinite(packet.confidence)) continue;
+    opponents[count++] = {true, packet.xMm, packet.yMm,
+                          fminf(1.0f, fmaxf(0.0f, packet.confidence)), receivedAtMs};
+  }
+  return true;
 }
 
 static void receiveData() {
@@ -317,12 +364,35 @@ static void receiveData() {
       break;
 
     case 2:  // Opponents
-      deserializeOpponents(data, dataLen, remoteOpponents, 5, remoteOpponentCount);
+      if (deserializeOpponents(data, dataLen, remoteOpponents, 5,
+                               remoteOpponentCount)) {
+        remoteOpponentReceiveMs = millis();
+        remoteOpponentPacketSeen = true;
+      }
+      break;
+
+    case 4:  // Opponent transport capabilities
+      if (dataLen >= 1 && data[0] == COMPACT_OPPONENT_MARKER) {
+        remoteSupportsCompactOpponents = true;
+        remoteCapabilityReceiveMs = millis();
+      }
       break;
   }
 }
 
 static void transmitData(unsigned long now) {
+  if (now - lastCapabilitySendMs >= CAPABILITY_SEND_INTERVAL_MS) {
+    lastCapabilitySendMs = now;
+    const uint8_t capabilityPacket[2] = {4, COMPACT_OPPONENT_MARKER};
+    radio.stopListening();
+    if (!radio.write(capabilityPacket, sizeof(capabilityPacket))) {
+      sendFailures++;
+    } else {
+      packetsSent++;
+    }
+    radio.startListening();
+  }
+
   // Send pose at 20 Hz
   if (now - lastPoseSendMs >= POSE_SEND_INTERVAL_MS) {
     lastPoseSendMs = now;
@@ -404,7 +474,10 @@ static void transmitData(unsigned long now) {
 
     uint8_t buffer[32];
     int len;
-    serializeOpponents(opponents, opponentCount, &buffer[1], len);
+    const bool useCompactFormat = remoteSupportsCompactOpponents &&
+      now - remoteCapabilityReceiveMs <= CAPABILITY_TIMEOUT_MS;
+    serializeOpponents(opponents, opponentCount, useCompactFormat,
+              &buffer[1], len);
 
     buffer[0] = 2;  // Type: Opponents
     len++;
@@ -425,6 +498,11 @@ static void transmitData(unsigned long now) {
 
 bool initCommunication() {
   Serial.println("Initializing RF24 communication...");
+
+  remoteOpponentCount = 0;
+  remoteOpponentPacketSeen = false;
+  remoteSupportsCompactOpponents = false;
+  remoteCapabilityReceiveMs = 0;
 
   if (!radio.begin()) {
     Serial.println("ERROR: nRF24L01+ not detected!");
@@ -475,10 +553,11 @@ void getRemoteFieldBall(FieldBall &out) {
 }
 
 void getRemoteOpponents(OpponentRobot *out, int maxOpponents, int &count) {
-  count = (remoteOpponentCount > maxOpponents) ? maxOpponents : remoteOpponentCount;
-  if (count > 0) {
-    memcpy(out, remoteOpponents, count * sizeof(OpponentRobot));
-  }
+  count = 0;
+  if (out == nullptr || maxOpponents <= 0 || !remoteOpponentPacketSeen ||
+      millis() - remoteOpponentReceiveMs > REMOTE_OPPONENT_TIMEOUT_MS) return;
+  count = remoteOpponentCount < maxOpponents ? remoteOpponentCount : maxOpponents;
+  if (count > 0) memcpy(out, remoteOpponents, count * sizeof(OpponentRobot));
 }
 
 void printCommunicationStats() {
