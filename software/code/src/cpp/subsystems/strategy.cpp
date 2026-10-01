@@ -15,6 +15,7 @@ const int opponentBallDistance = 30; // mm
 SIM_TLS ballLocation ballState = {false, 0, BallState::unknown};
 SIM_TLS LocalState localState = {RobotState::attacking, RobotGoal::none};
 SIM_TLS LocalState remoteState = {RobotState::damaged, RobotGoal::none};
+SIM_TLS bool restoringAsDefender = false;
 
 // Define field zones in millimeters (0,0 is center)
 // Adjust these thresholds based on actual field dimensions
@@ -47,15 +48,13 @@ constexpr float OPPONENT_GOAL_Y_MM = 0.0f;
 constexpr float GOAL_PUSH_DEPTH_MM = 100.0f;
 constexpr float ROBOT_DIAMETER_MM = 220.0f;
 constexpr float ROBOT_RADIUS_MM = ROBOT_DIAMETER_MM * 0.5f;
-constexpr float BALL_RADIUS_MM = 20.0f;
-constexpr float DEFENSIVE_PASS_LANE_Y_MM = 300.0f;
 constexpr float KICK_LINE_X_MM = 615.0f;
 constexpr float KICK_LINE_TOLERANCE_MM = 40.0f;
 constexpr float OWN_GOAL_X_MM = -989.0f;
 constexpr float OWN_GOAL_Y_MM = 0.0f;
 constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
 // The simulator holds the ball about 12.3 cm from the robot centre.
-constexpr float BALL_DRIBBLE_CAPTURE_DISTANCE_CM = 14.0f;
+constexpr float BALL_DRIBBLE_CAPTURE_DISTANCE_CM = 16.0f;
 constexpr float GOAL_SHOT_OFFSET_Y_MM = 250.0f;
 constexpr float SPIN_KICK_HEADING_TOLERANCE_DEG = 15.0f;
 constexpr float BORDER_ESCAPE_STEP_MM = 250.0f;
@@ -67,7 +66,6 @@ constexpr float OWN_GOAL_BACK_X_MM = -989.0f;
 constexpr float SIDE_WALL_TARGET_Y_MM = 300.0f;
 constexpr float HIDE_BALL_TARGET_X_MM = 580.0f;
 constexpr float HIDE_BALL_LANE_Y_MM = 350.0f;
-SIM_TLS float defensivePassTargetYmm = 0.0f;
 
 float headingTo(float targetXmm, float targetYmm) {
     return atan2f(targetYmm - robotPose.yMm,
@@ -152,73 +150,6 @@ bool isBallInDefenceBox() {
     return ball.valid && ball.xMm >= DEFENCE_BOX_MIN_X_MM &&
            ball.xMm <= DEFENCE_BOX_MAX_X_MM &&
            fabsf(ball.yMm) <= DEFENCE_BOX_MAX_ABS_Y_MM;
-}
-
-float distanceToSegmentSquared(float pointX, float pointY,
-                               float startX, float startY,
-                               float endX, float endY) {
-    const float segmentX = endX - startX;
-    const float segmentY = endY - startY;
-    const float segmentLengthSquared = segmentX * segmentX + segmentY * segmentY;
-    const float projection = segmentLengthSquared > 0.0f
-        ? constrain(((pointX - startX) * segmentX +
-                     (pointY - startY) * segmentY) / segmentLengthSquared,
-                    0.0f, 1.0f)
-        : 0.0f;
-    const float closestX = startX + projection * segmentX;
-    const float closestY = startY + projection * segmentY;
-    const float deltaX = pointX - closestX;
-    const float deltaY = pointY - closestY;
-    return deltaX * deltaX + deltaY * deltaY;
-}
-
-bool isClearOfRobot(float startX, float startY, float endX, float endY,
-                    float robotX, float robotY) {
-    const float clearance = ROBOT_RADIUS_MM + BALL_RADIUS_MM;
-    return distanceToSegmentSquared(robotX, robotY, startX, startY,
-                                    endX, endY) > clearance * clearance;
-}
-
-bool isClearOfOpponentRobots(float startX, float startY,
-                             float endX, float endY) {
-    return (!opponent1.valid ||
-            isClearOfRobot(startX, startY, endX, endY,
-                           opponent1.xMm, opponent1.yMm)) &&
-           (!opponent2.valid ||
-            isClearOfRobot(startX, startY, endX, endY,
-                           opponent2.xMm, opponent2.yMm));
-}
-
-bool isClearDefensivePassRoute(float targetYmm) {
-    if (!ball.valid || !remotePose.valid) {
-        return false;
-    }
-
-    const float targetXmm = 0.0f;
-    if (!isClearOfOpponentRobots(ball.xMm, ball.yMm,
-                                 targetXmm, targetYmm) ||
-        !isClearOfRobot(ball.xMm, ball.yMm, targetXmm, targetYmm,
-                        remotePose.xMm, remotePose.yMm)) {
-        return false;
-    }
-
-    return isClearOfOpponentRobots(targetXmm, targetYmm,
-                                   remotePose.xMm, remotePose.yMm);
-}
-
-bool chooseDefensivePassLane(float &targetYmm) {
-    const float firstLaneYmm = ball.yMm >= 0.0f
-        ? DEFENSIVE_PASS_LANE_Y_MM : -DEFENSIVE_PASS_LANE_Y_MM;
-    const float secondLaneYmm = -firstLaneYmm;
-    if (isClearDefensivePassRoute(firstLaneYmm)) {
-        targetYmm = firstLaneYmm;
-        return true;
-    }
-    if (isClearDefensivePassRoute(secondLaneYmm)) {
-        targetYmm = secondLaneYmm;
-        return true;
-    }
-    return false;
 }
 
 bool isDefensiveThreatOverHalfway() {
@@ -557,34 +488,6 @@ void move() {
                 stopMotionAndDribbler();
                 break;
             }
-            if (localState.robotState == RobotState::defending) {
-                if (!ball.valid ||
-                    ballState.ballPossession != BallPossession::mePossession) {
-                    stopMotionAndDribbler();
-                    break;
-                }
-                const bool atPassLane =
-                    fabsf(robotPose.xMm) <= POSITION_TOLERANCE_MM &&
-                    fabsf(robotPose.yMm - defensivePassTargetYmm) <=
-                        POSITION_TOLERANCE_MM;
-                const float passHeading = headingTo(remotePose.xMm,
-                                                    remotePose.yMm);
-                if (kickIssued) {
-                    stopDribbler();
-                } else {
-                    dribbleForward();
-                }
-                moveTo(0.0f, defensivePassTargetYmm, passHeading,
-                       atPassLane ? 0.0f : 0.65f, ACCEL_LIMIT,
-                       ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-                if (atPassLane && !kickIssued &&
-                    fabsf(angleError(passHeading, robotPose.headingDeg)) <=
-                        SPIN_KICK_HEADING_TOLERANCE_DEG) {
-                    kick();
-                    kickIssued = true;
-                }
-                break;
-            }
             stopDribbler();
             const float passHeading = headingTo(remotePose.xMm, remotePose.yMm);
             moveTo(robotPose.xMm, robotPose.yMm,
@@ -838,16 +741,22 @@ void updateOpponentState() {
 }
 
 void updateRobotState() {
-    // Damaged robots become defenders while the remote (non damaged) become attackers
     if (localState.robotState == RobotState::damaged) {
-        localState.robotState = RobotState::defending;
-    } else if (remoteState.robotState == RobotState::damaged) {
-        localState.robotState = RobotState::attacking;
         return;
     }
 
-    uint8_t robotNumber = (localState.robotState == RobotState::attacking) ? 1 : 2;
-    selectCurrentRobotNumber(robotNumber);
+    if (restoringAsDefender) {
+        localState.robotState = RobotState::defending;
+        if (remoteState.robotState != RobotState::damaged) {
+            restoringAsDefender = false;
+        }
+    } else if (ballState.ballPossession == BallPossession::mePossession) {
+        localState.robotState = RobotState::attacking;
+    } else if (ballState.ballPossession == BallPossession::himPossession) {
+        localState.robotState = RobotState::defending;
+    } else if (remoteState.robotState == RobotState::damaged) {
+        localState.robotState = RobotState::attacking;
+    }
 }
 
 void updateRobotGoal() {
@@ -1002,14 +911,6 @@ void updateRobotGoal() {
             localState.robotGoal = RobotGoal::searchBall;
         }
     } else if (localState.robotState == RobotState::defending) {
-        if (ballState.ballPossession == BallPossession::mePossession) {
-            float passLaneYmm;
-            if (chooseDefensivePassLane(passLaneYmm)) {
-                defensivePassTargetYmm = passLaneYmm;
-                localState.robotGoal = RobotGoal::pass;
-                return;
-            }
-        }
         if (opponent1.valid == true && opponent1State == OpponentState::shooting) {
             localState.robotGoal = RobotGoal::defendOpponent1;
         } else if (opponent2.valid == true  && opponent2State == OpponentState::shooting) {
@@ -1047,11 +948,24 @@ void selectLocalRobotRole(uint8_t robotNumber) {
         localState.robotState = RobotState::attacking;
     } else if (robotNumber == 2) {
         localState.robotState = RobotState::defending;
+    } else {
+        return;
     }
+    restoringAsDefender = false;
+    selectCurrentRobotNumber(robotNumber);
     localState.robotGoal = RobotGoal::none;
 }
 
 void markLocalRobotDamaged() {
+    restoringAsDefender = false;
     localState.robotState = RobotState::damaged;
     localState.robotGoal = RobotGoal::none;
+}
+
+void restoreLocalRobotAsDefender() {
+    if (localState.robotState == RobotState::damaged) {
+        restoringAsDefender = true;
+        localState.robotState = RobotState::defending;
+        localState.robotGoal = RobotGoal::none;
+    }
 }

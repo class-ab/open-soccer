@@ -346,8 +346,10 @@ static void transmitData(unsigned long now) {
     radio.startListening();
   }
 
-  // Send robot state at 50 Hz.
-  if (now - lastStateSendMs >= STATE_SEND_INTERVAL_MS) {
+  // Do not publish role changes while disabled; send the selected state after
+  // the robot is enabled so it cannot affect its active teammate prematurely.
+  if (robotCurrentlyRunning &&
+      now - lastStateSendMs >= STATE_SEND_INTERVAL_MS) {
     lastStateSendMs = now;
 
     LocalState localState;

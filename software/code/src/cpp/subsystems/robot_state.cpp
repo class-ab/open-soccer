@@ -83,6 +83,9 @@ void checkButtons() {
     static bool lastButton2State = false;
     if (button2State && !lastButton2State) {
         robotCurrentlyRunning = !robotCurrentlyRunning;
+        if (robotCurrentlyRunning) {
+            restoreLocalRobotAsDefender();
+        }
         Serial.println(robotCurrentlyRunning ? "Robot enabled" : "Robot disabled");
         updateDisplay();
     }

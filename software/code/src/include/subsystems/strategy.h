@@ -12,6 +12,7 @@ void updateRobotGoal();
 void updateLocalRobotMode();
 void selectLocalRobotRole(uint8_t robotNumber);
 void markLocalRobotDamaged();
+void restoreLocalRobotAsDefender();
 void move();
 
 // Opponent tracking
