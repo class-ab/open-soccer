@@ -81,6 +81,8 @@ class SerialReader:
         self.lock = threading.Lock()
         self.pose = (FIELD_WIDTH_MM / 2, FIELD_HEIGHT_MM / 2, 0.0, 0.0)
         self.lidar_speed_deg_s = None
+        self.lidar_pwm_duty_count = None
+        self.lidar_pwm_duty_percent = None
         self.points = deque(maxlen=MAX_POINTS)  # (x, y, arrival_time)
 
     @property
@@ -163,6 +165,22 @@ class SerialReader:
         raw = line.decode("ascii", errors="ignore").strip()
         if not raw:
             return
+        if raw.startswith("# lidar_pwm_duty_count "):
+            try:
+                duty_count = int(raw.rsplit(maxsplit=1)[1])
+            except (IndexError, ValueError):
+                return
+            with self.lock:
+                self.lidar_pwm_duty_count = duty_count
+            return
+        if raw.startswith("# lidar_pwm_duty_percent "):
+            try:
+                duty_percent = float(raw.rsplit(maxsplit=1)[1])
+            except (IndexError, ValueError):
+                return
+            with self.lock:
+                self.lidar_pwm_duty_percent = duty_percent
+            return
         if raw.startswith("# lidar_speed_deg_s "):
             try:
                 speed = float(raw.rsplit(maxsplit=1)[1])
@@ -187,10 +205,12 @@ class SerialReader:
         with self.lock:
             pose = self.pose
             lidar_speed_deg_s = self.lidar_speed_deg_s
+            lidar_pwm_duty_count = self.lidar_pwm_duty_count
+            lidar_pwm_duty_percent = self.lidar_pwm_duty_percent
             while self.points and now - self.points[0][2] > POINT_LIFETIME_S:
                 self.points.popleft()
             pts = [(x, y) for x, y, _ in self.points]
-        return pose, pts, lidar_speed_deg_s
+        return pose, pts, lidar_speed_deg_s, lidar_pwm_duty_count, lidar_pwm_duty_percent
 
 
 def main():
@@ -217,7 +237,7 @@ def main():
     status_text = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top")
 
     def update(_frame):
-        (x, y, heading_deg, quality), pts, lidar_speed_deg_s = reader.snapshot()
+        (x, y, heading_deg, quality), pts, lidar_speed_deg_s, pwm_count, pwm_percent = reader.snapshot()
         scan_dots.set_offsets(pts)
         robot_dot.center = (x, y)
         hx = x + 150 * math.cos(math.radians(heading_deg))
@@ -229,9 +249,14 @@ def main():
             else f"LiDAR speed: {lidar_speed_deg_s / 360.0:.2f} Hz "
                  f"({lidar_speed_deg_s:.0f} deg/s)"
         )
+        lidar_pwm = (
+            "LiDAR PWM: --"
+            if pwm_count is None or pwm_percent is None
+            else f"LiDAR PWM: {pwm_percent:.1f}% ({pwm_count}/4095)"
+        )
         status_text.set_text(
             f"pose: ({x:.0f}, {y:.0f}) mm   heading: {heading_deg:.1f} deg   "
-            f"quality: {quality:.2f}   points: {len(pts)}\n{lidar_speed}"
+            f"quality: {quality:.2f}   points: {len(pts)}\n{lidar_speed}\n{lidar_pwm}"
         )
         return scan_dots, robot_dot, heading_line, status_text
 

@@ -58,7 +58,7 @@ constexpr float BALL_TARGET_ANGLE = 5.0f;
 // #define DEBUG_LIDAR        // basic lidar info
 // #define DEBUG_FIELDBALL    // requires DEBUG_LIDAR
 // #define LOCAL_STATE
-// #define LIDAR_POSE_STREAM  // advanced lidar debug + py script
+#define LIDAR_POSE_STREAM  // advanced lidar debug + py script
 
 // IMU
 #define BNO08X_RESET -1
@@ -114,11 +114,11 @@ constexpr uint8_t BLUE_GOAL_SYNC = 0xAC; // not used currently
 // LD14P motor speed PWM control loop (closed-loop on the reported scan speed).
 constexpr uint8_t LIDAR_SPEED_CONTROL_PIN = 14;
 constexpr uint32_t LIDAR_PWM_FREQUENCY_HZ = 1000;
-// Measured working duty for this robot's LD14P is ~80% -- start near there so
-// boot doesn't have to slowly ramp up from a much lower entry point.
+// Start near the measured working duty; allow feedback to increase as needed
+// to reach the target scan speed.
 constexpr float LIDAR_PWM_ENTRY_DUTY_PERCENT = 78.0f;
 constexpr float LIDAR_PWM_MIN_DUTY_PERCENT = 45.1f;
-constexpr float LIDAR_PWM_MAX_DUTY_PERCENT = 80.0f;
+constexpr float LIDAR_PWM_MAX_DUTY_PERCENT = 100.0f;
 constexpr float LIDAR_TARGET_SPEED_DEG_S = 2880.0f;
 constexpr float LIDAR_SPEED_TOLERANCE_DEG_S = 36.0f;
 constexpr unsigned long LIDAR_CONTROL_INTERVAL_MS = 500;

@@ -55,7 +55,8 @@ constexpr float LIDAR_PWM_MIN_DUTY_PERCENT = 45.1f;
 constexpr float LIDAR_PWM_MAX_DUTY_PERCENT = 80.0f;
 constexpr float LIDAR_TARGET_SPEED_DEG_S = 2880.0f;
 constexpr float LIDAR_SPEED_TOLERANCE_DEG_S = 36.0f;
-constexpr unsigned long LIDAR_CONTROL_INTERVAL_MS = 500;
+constexpr unsigned long LIDAR_CONTROL_INTERVAL_MS = 125;
+constexpr unsigned long LIDAR_STATUS_INTERVAL_MS = 100;
 constexpr int8_t BNO08X_RESET = -1;           // -1 = no reset pin wired
 
 constexpr float YAW_SIGN = 1.0f;
@@ -602,12 +603,13 @@ bool lidarPacketSeen = false;
 uint32_t lidarSpeedSumDegS = 0;
 uint16_t lidarSpeedSampleCount = 0;
 float lidarPwmDutyPercent = LIDAR_PWM_ENTRY_DUTY_PERCENT;
+uint16_t lidarPwmDutyCount = 0;
 unsigned long lastLidarControlMs = 0;
 
 void writeLidarPwm(float dutyPercent) {
   const uint16_t pwmMax = (1U << 12) - 1;
-  const uint16_t pwmDuty = static_cast<uint16_t>(pwmMax * dutyPercent / 100.0f);
-  analogWrite(LIDAR_SPEED_CONTROL_PIN, pwmDuty);
+  lidarPwmDutyCount = static_cast<uint16_t>(pwmMax * dutyPercent / 100.0f);
+  analogWrite(LIDAR_SPEED_CONTROL_PIN, lidarPwmDutyCount);
 }
 
 void updateLidarSpeedController(unsigned long now) {
@@ -626,7 +628,7 @@ void updateLidarSpeedController(unsigned long now) {
     return;
   }
 
-  const float magnitude = fminf(0.5f, fmaxf(0.05f, fabsf(error) / 1000.0f));
+  const float magnitude = fminf(1.0f, fmaxf(0.1f, fabsf(error) / 500.0f));
   const float direction = error > 0.0f ? 1.0f : -1.0f;
   const float requestedDuty = lidarPwmDutyPercent + direction * magnitude;
   const float boundedDuty = fminf(LIDAR_PWM_MAX_DUTY_PERCENT,
@@ -650,9 +652,11 @@ void updateLidarSpeedController(unsigned long now) {
 
 void reportLidarStatus(unsigned long now) {
   static unsigned long lastReportMs = 0;
-  if (now - lastReportMs < 500) return;
+  if (now - lastReportMs < LIDAR_STATUS_INTERVAL_MS) return;
   lastReportMs = now;
 
+  Serial.print(F("# lidar_pwm_duty_count "));
+  Serial.println(lidarPwmDutyCount);
   Serial.print(F("# lidar_pwm_duty_percent "));
   Serial.println(lidarPwmDutyPercent, 2);
   if (!lidarPacketSeen) {
