@@ -54,7 +54,7 @@ constexpr float OWN_GOAL_X_MM = -989.0f;
 constexpr float OWN_GOAL_Y_MM = 0.0f;
 constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
 // The simulator holds the ball about 12.3 cm from the robot centre.
-constexpr float BALL_DRIBBLE_CAPTURE_DISTANCE_CM = 16.0f;
+constexpr float BALL_DRIBBLE_CAPTURE_DISTANCE_CM = 10.5f;
 constexpr float GOAL_SHOT_OFFSET_Y_MM = 250.0f;
 constexpr float SPIN_KICK_HEADING_TOLERANCE_DEG = 15.0f;
 constexpr float BORDER_ESCAPE_STEP_MM = 250.0f;

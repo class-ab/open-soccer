@@ -10,7 +10,7 @@ CAMERA_ROTATION_OFFSET_DEG = 90
 
 # Ball threshold (L Min, L Max, A Min, A Max, B Min, B Max)
 # BALL_THRESHOLD = (30, 65, 10, 45, 25, 50)   # competition tuning
-# BALL_THRESHOLD = (40, 75, 25, 45, 15, 45)     # home tuning
+# BALL_THRESHOLD = (17, 31, 14, 36, 14, 37)    # home tuning
 BALL_THRESHOLD = (64, 100, 14, 127, -128, 127)  # MHS tuning
 
 # Mirror / frame centre in pixels.
@@ -28,7 +28,7 @@ CENTER_Y = 254
 # is a pure radial offset (added along the ray from centre to ball), so it
 # is applied once to the final radius, never to dx/dy individually (doing
 # that would double-count it once dx and dy are combined with Pythagoras).
-ROBOT_EDGE_TO_CENTER_CM = 11.0  # 110 mm
+ROBOT_EDGE_TO_CENTER_CM = 0.0  # 110 mm
 
 # --- Speed knobs for find_blobs() -----------------------------------------
 # Restrict the search to the part of the frame that can contain the ball,
