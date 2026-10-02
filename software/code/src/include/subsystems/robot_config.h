@@ -16,7 +16,7 @@
 // SPEED LIMITS
 constexpr float ROBOT_MAX_SPEED = 1.0f;
 constexpr float ROTATION_MAX_SPEED = 0.22f;
-constexpr float POSSESSION_MAX_SPEED = 0.60f;
+constexpr float POSSESSION_MAX_SPEED = 0.50f;
 constexpr float POSSESSION_ACCEL_LIMIT = 1.00f;
 constexpr float POSSESSION_ROTATION_MAX_SPEED = 0.14f;
 constexpr float POSSESSION_ROTATION_ACCEL_LIMIT = 0.60f;
@@ -27,7 +27,7 @@ constexpr float ROBOT_LINEAR_SPEED_MM_S = 3600.0f;
 
 // Smallest normalized wheel command that reliably turns the wheels (motor
 // deadband). Raise if the robot stalls near targets, lower if it creeps/hunts.
-constexpr float MOTOR_MIN_COMMAND = 0.12f;
+constexpr float MOTOR_MIN_COMMAND = 0.20f;
 
 // ACCELERATION LIMITS (normalized units per second). Rotation must be fast:
 // a slow output slew behind the heading loop makes it overshoot and oscillate.

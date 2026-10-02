@@ -393,7 +393,7 @@ void move() {
             if (ballState.ballPossession == BallPossession::mePossession ||
                 ballState.ballPossession == BallPossession::front) {
                 moveTo(KICK_LINE_X_MM, robotPose.yMm,
-                       headingToOpponentGoal(), 0.55f, ACCEL_LIMIT,
+                      headingToOpponentGoal(), POSSESSION_MAX_SPEED, ACCEL_LIMIT,
                        ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             } else {
                 moveTo(ball.xMm, ball.yMm, headingTo(ball.xMm, ball.yMm),
@@ -440,7 +440,7 @@ void move() {
             }
             // Carry the ball to the kick line, then hold position for the shot.
             moveTo(KICK_LINE_X_MM, robotPose.yMm,
-                   headingToOpponentGoal(), 1.0f, ACCEL_LIMIT,
+                     headingToOpponentGoal(), POSSESSION_MAX_SPEED, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -465,7 +465,7 @@ void move() {
                 const float targetHeading = goalwardDistance > 0.001f
                     ? atan2f(goalwardY, goalwardX) * 180.0f / PI
                     : headingToOpponentGoal();
-                moveTo(targetXmm, targetYmm, targetHeading, 1.0f,
+                  moveTo(targetXmm, targetYmm, targetHeading, POSSESSION_MAX_SPEED,
                        ACCEL_LIMIT, ROTATION_MAX_SPEED,
                        ROTATION_ACCEL_LIMIT);
             }
