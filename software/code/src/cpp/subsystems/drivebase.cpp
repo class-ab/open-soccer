@@ -91,12 +91,19 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
   } else {
     targetSpeed = 0.0f;
   }
+  if (distanceMm > POSITION_TOLERANCE_MM && targetSpeed > 0.0f) {
+    targetSpeed = fmaxf(targetSpeed, fminf(MOTOR_MIN_COMMAND, maxSpeed));
+  }
 
   float targetVelocityX = 0.0f;
   float targetVelocityY = 0.0f;
   if (distanceMm > POSITION_TOLERANCE_MM) {
     targetVelocityX = targetSpeed * errorXmm / distanceMm;
     targetVelocityY = targetSpeed * errorYmm / distanceMm;
+  } else {
+    // Arrived: stop immediately instead of slewing down while coasting past.
+    coordinateController.velocityX = 0.0f;
+    coordinateController.velocityY = 0.0f;
   }
   slewVector(targetVelocityX, targetVelocityY, coordinateController.velocityX,
              coordinateController.velocityY, accelerationLimit * dt);
@@ -188,9 +195,15 @@ void drive(float direction_deg, float speed, float rotation) {
   float wheelScale = 1.0f;
   if (max_speed > 1.0f) {
     wheelScale = 1.0f / max_speed;
-    for (int i = 0; i < 4; i++) {
-      wheel_speeds[i] *= wheelScale;
-    }
+  } else if (speed >= MOTOR_MIN_COMMAND && max_speed > 0.02f &&
+             max_speed < MOTOR_MIN_COMMAND) {
+    // Lift weak commands above the motor deadband, keeping their direction.
+    wheelScale = MOTOR_MIN_COMMAND / max_speed;
+  } else if (max_speed <= 0.02f) {
+    wheelScale = 0.0f;
+  }
+  for (int i = 0; i < 4; i++) {
+    wheel_speeds[i] *= wheelScale;
   }
 
 #ifdef DEBUG_MOVE

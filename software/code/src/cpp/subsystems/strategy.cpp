@@ -152,10 +152,8 @@ bool isBallInDefenceBox() {
            fabsf(ball.yMm) <= DEFENCE_BOX_MAX_ABS_Y_MM;
 }
 
-bool isDefensiveThreatOverHalfway() {
-    return (ball.valid && ball.xMm < 0.0f) ||
-           (opponent1.valid && opponent1.xMm < 0.0f) ||
-           (opponent2.valid && opponent2.xMm < 0.0f);
+bool ballCrossedHalfwayIntoOwnHalf() {
+    return ball.valid && ball.xMm < 0.0f;
 }
 
 bool isSideRoute() {
@@ -227,6 +225,13 @@ void getBallBehindTarget(float &targetXmm, float &targetYmm) {
 void dribbleForward() {
     setDribblerDirectionForward();
     setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
+}
+
+float ballApproachSpeed() {
+    const float distanceScale = ball.valid
+        ? constrain(ball.distanceCm / 80.0f, 0.30f, 1.0f)
+        : 1.0f;
+    return BALL_APPROACH_MAX_SPEED * distanceScale;
 }
 
 void stopMotionAndDribbler() {
@@ -305,7 +310,8 @@ void move() {
             getBallBehindTarget(targetXmm, targetYmm);
             dribbleForward();
             moveTo(targetXmm, targetYmm,
-                   headingTo(ball.xMm, ball.yMm), 0.8f, ACCEL_LIMIT,
+                       headingTo(ball.xMm, ball.yMm), ballApproachSpeed(),
+                     BALL_APPROACH_ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
@@ -317,12 +323,14 @@ void move() {
                 break;
             }
             moveTo(ball.xMm, ball.yMm, headingTo(ball.xMm, ball.yMm),
-                   0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+                     ballApproachSpeed(), BALL_APPROACH_ACCEL_LIMIT,
+                     ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
         case RobotGoal::dribbleForward:
             if (!ball.valid) {
-                stopMotionAndDribbler();
+                dribbleForward();
+                stopAllDriveMotors();
                 break;
             }
             dribbleForward();
@@ -333,7 +341,8 @@ void move() {
                        ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             } else {
                 moveTo(ball.xMm, ball.yMm, headingTo(ball.xMm, ball.yMm),
-                       0.55f, ACCEL_LIMIT, ROTATION_MAX_SPEED,
+                       ballApproachSpeed(), BALL_APPROACH_ACCEL_LIMIT,
+                       ROTATION_MAX_SPEED,
                        ROTATION_ACCEL_LIMIT);
             }
             break;
@@ -346,7 +355,8 @@ void move() {
             // Continue through the ball in the +X (opponent-goal) direction.
             dribbleForward();
             moveTo(ball.xMm + BALL_APPROACH_OFFSET_MM, ball.yMm,
-                   headingTo(ball.xMm, ball.yMm), 0.8f, ACCEL_LIMIT,
+                     headingTo(ball.xMm, ball.yMm), ballApproachSpeed(),
+                     BALL_APPROACH_ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -362,7 +372,8 @@ void move() {
             const float targetHeading = ball.valid
                 ? headingTo(ball.xMm, ball.yMm)
                 : headingTo(opponent.xMm, opponent.yMm);
-            moveTo(opponent.xMm, opponent.yMm, targetHeading, 1.0f, ACCEL_LIMIT,
+                 moveTo(opponent.xMm, opponent.yMm, targetHeading,
+                     BALL_APPROACH_MAX_SPEED, BALL_APPROACH_ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
@@ -432,7 +443,11 @@ void move() {
 
         case RobotGoal::spinKick: {
             const float goalHeading = headingToOpponentGoal();
-            stopDribbler();
+            if (kickIssued) {
+                stopDribbler();
+            } else {
+                dribbleForward();
+            }
             if (!spinKickTracking) {
                 spinKickLastHeading = robotPose.headingDeg;
                 spinKickAccumulatedDeg = 0.0f;
@@ -488,7 +503,11 @@ void move() {
                 stopMotionAndDribbler();
                 break;
             }
-            stopDribbler();
+            if (kickIssued) {
+                stopDribbler();
+            } else {
+                dribbleForward();
+            }
             const float passHeading = headingTo(remotePose.xMm, remotePose.yMm);
             moveTo(robotPose.xMm, robotPose.yMm,
                    passHeading, 0.0f, 0.0f,
@@ -513,10 +532,11 @@ void move() {
 
         case RobotGoal::defendBall: {
             if (!ball.valid) {
-                stopMotionAndDribbler();
+                stopDribbler();
+                stopAllDriveMotors();
                 break;
             }
-            if (isDefensiveThreatOverHalfway()) {
+            if (ballCrossedHalfwayIntoOwnHalf()) {
                 dribbleForward();
             } else {
                 stopDribbler();
@@ -538,7 +558,7 @@ void move() {
                 stopMotionAndDribbler();
                 break;
             }
-            if (isDefensiveThreatOverHalfway()) {
+            if (ballCrossedHalfwayIntoOwnHalf()) {
                 dribbleForward();
             } else {
                 stopDribbler();
@@ -550,7 +570,7 @@ void move() {
         }
 
         case RobotGoal::searchBall:
-            stopDribbler();
+            dribbleForward();
             if (sqrtf(robotPose.xMm * robotPose.xMm +
                       robotPose.yMm * robotPose.yMm) > SEARCH_SPIN_RADIUS_MM) {
                 moveTo(0.0f, 0.0f, robotPose.headingDeg,
@@ -779,8 +799,7 @@ void updateRobotGoal() {
         const bool hasBallForAttack =
             possession == BallPossession::mePossession ||
             possession == BallPossession::front;
-        if ((currentGoal == RobotGoal::backOff || isBallInDefenceBox()) &&
-            !hasBallForAttack) {
+        if (isBallInDefenceBox() && !hasBallForAttack) {
             localState.robotGoal = RobotGoal::backOff;
             return;
         }

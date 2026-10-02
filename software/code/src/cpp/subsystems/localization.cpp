@@ -34,10 +34,11 @@ constexpr unsigned long RAY_WINDOW_MS = 35;
 constexpr unsigned long FIT_INTERVAL_MS = 10;
 constexpr unsigned long POSE_TIMEOUT_MS = 1200;
 constexpr unsigned long OPPONENT_TIMEOUT_MS = 500;
-constexpr unsigned long LIDAR_INTERBYTE_TIMEOUT_MS = 25;
 
-// Pose is just the last accepted lidar fit -- no velocity/dead-reckoning model,
-// no distance clamp -- wellConditioned()/MAX_ACCEPTED_COST are the only gates.
+// A fit farther than this (plus travel at max speed) from the last pose is held
+// back as an outlier; after MAX_REJECTED_FITS in a row it is accepted as a relock.
+constexpr float MAX_POSE_JUMP_MM = 150.0f;
+constexpr uint8_t MAX_REJECTED_FITS = 8;
 
 constexpr float POLE_ANGLES_DEG[4] = {-135.0f, -45.0f, 45.0f, 135.0f};
 constexpr float POLE_HALF_WIDTH_DEG = 3.4f;
@@ -129,6 +130,7 @@ float poseY = FIELD_HEIGHT_MM * 0.5f;
 float poseQuality = 0.0f;
 unsigned long lastPoseFixMs = 0;  // timestamp of last accepted fit
 unsigned long lastFitMs = 0;      // gates fit *attempt* cadence
+uint8_t rejectedFits = 0;
 unsigned long lastLidarByteMs = 0;
 unsigned long lastValidLidarPacketMs = 0;
 uint32_t validLidarPackets = 0;
@@ -503,8 +505,14 @@ void updatePoseFromLidar(unsigned long now) {
     return;
   }
 
-  // Trust the fit directly -- wellConditioned()/MAX_ACCEPTED_COST above are the
-  // quality gates; no extra distance clamp toward the previous pose.
+  const float jumpMm = hypotf(candidateX - poseX, candidateY - poseY);
+  const float maxJumpMm = MAX_POSE_JUMP_MM +
+      ROBOT_LINEAR_SPEED_MM_S * 0.001f * (now - lastPoseFixMs);
+  if (jumpMm > maxJumpMm && rejectedFits < MAX_REJECTED_FITS) {
+    ++rejectedFits;
+    return;
+  }
+  rejectedFits = 0;
   poseX = candidateX;
   poseY = candidateY;
   poseQuality += 0.25f * (quality - poseQuality);
@@ -556,6 +564,18 @@ void streamPose(unsigned long now) {
   Serial.print(' ');
   Serial.println(poseQuality, 2);
 }
+// Same "# key value" lines lidar_viewer.py parses for its speed/PWM readout.
+void streamLidarStatus(unsigned long now) {
+  static unsigned long lastStatusMs = 0;
+  if (now - lastStatusMs < 100) return;
+  lastStatusMs = now;
+  Serial.print("# lidar_pwm_duty_count ");
+  Serial.println(static_cast<int>(255.0f * lidarPwmDutyPercent / 100.0f));
+  Serial.print("# lidar_pwm_duty_percent ");
+  Serial.println(lidarPwmDutyPercent, 2);
+  Serial.print("# lidar_speed_deg_s ");
+  Serial.println(lastLidarSpeedDegS);
+}
 #endif  // LIDAR_POSE_STREAM
 
 void addPacket(const LidarPacket &packet) {
@@ -567,14 +587,6 @@ void addPacket(const LidarPacket &packet) {
   const float serialDelayMs =
       PACKET_SIZE * 10000.0f / LIDAR_UART_BAUD;
   const unsigned long packetEndMs = millis();
-
-  lastLidarSpeedDegS = packet.speed;
-  lastLidarPacketMs = packetEndMs;
-  lidarPacketSeen = true;
-  if (packet.speed > 0) {
-    lidarSpeedSumDegS += packet.speed;
-    if (lidarSpeedSampleCount < UINT16_MAX) ++lidarSpeedSampleCount;
-  }
 
 #ifdef LIDAR_POSE_STREAM
   int16_t batchCoords[POINTS_PER_PACKET * 2];
@@ -619,6 +631,18 @@ void addPacket(const LidarPacket &packet) {
 #endif
 }
 
+// Speed telemetry must not depend on the IMU gate in addPacket(), or the PWM
+// controller starves whenever the IMU is briefly stale.
+void noteLidarPacket(const LidarPacket &packet) {
+  lastLidarSpeedDegS = packet.speed;
+  lastLidarPacketMs = millis();
+  lidarPacketSeen = true;
+  if (packet.speed > 0) {
+    lidarSpeedSumDegS += packet.speed;
+    if (lidarSpeedSampleCount < UINT16_MAX) ++lidarSpeedSampleCount;
+  }
+}
+
 void writeLidarPwm(float dutyPercent) {
   // analogWriteResolution() is board-wide on Teensy, not per-pin -- stay on the
   // default 8-bit range so this doesn't reinterpret drivebase's PWM duty cycles.
@@ -641,7 +665,7 @@ void updateLidarSpeedController(unsigned long now) {
     return;
   }
 
-  const float magnitude = fminf(3.0f, fmaxf(0.05f, fabsf(error) / 1000.0f));
+  const float magnitude = fminf(1.0f, fmaxf(0.1f, fabsf(error) / 500.0f));
   const float direction = error > 0.0f ? 1.0f : -1.0f;
   const float requestedDuty = lidarPwmDutyPercent + direction * magnitude;
   const float boundedDuty = fminf(LIDAR_PWM_MAX_DUTY_PERCENT,
@@ -687,16 +711,9 @@ void consumeLidar() {
     const int incoming = LIDAR_UART.read();
     if (incoming < 0) break;
     const uint8_t value = static_cast<uint8_t>(incoming);
-    const unsigned long byteNow = millis();
-
-    // Discard partial frames after the scanner pauses or the UART drops data.
-    // A normal 47-byte frame arrives far faster than this timeout at 230400 baud.
-    if (packetIndex > 0 && byteNow - lastLidarByteMs >
-                               LIDAR_INTERBYTE_TIMEOUT_MS) {
-      packetIndex = 0;
-      receiveState = WAIT_HEADER;
-    }
-    lastLidarByteMs = byteNow;
+    // Bytes sit in the large RX buffer while the main loop is busy, so a gap
+    // between reads is not a broken frame; the CRC check handles resync.
+    lastLidarByteMs = millis();
 
     switch (receiveState) {
       case WAIT_HEADER:
@@ -731,6 +748,7 @@ void consumeLidar() {
           if (parsePacket(packetBuffer, packet)) {
             lastValidLidarPacketMs = millis();
             ++validLidarPackets;
+            noteLidarPacket(packet);
             if (isIMUHeadingFresh()) addPacket(packet);
           } else {
             ++invalidLidarPackets;
@@ -799,6 +817,7 @@ void initLocalization() {
   poseQuality = 0.0f;
   lastPoseFixMs = 0;
   lastFitMs = 0;
+  rejectedFits = 0;
   lastLidarByteMs = 0;
   lastValidLidarPacketMs = 0;
   validLidarPackets = 0;
@@ -839,6 +858,7 @@ void updateLocalization() {
     lastPoseStreamMs = now;
     streamPose(now);
   }
+  streamLidarStatus(now);
 #endif
 
 #ifdef DEBUG_LIDAR

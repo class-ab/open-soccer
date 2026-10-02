@@ -15,37 +15,44 @@
 
 // SPEED LIMITS
 constexpr float ROBOT_MAX_SPEED = 1.0f;
-constexpr float ROTATION_MAX_SPEED = 0.65f;
+constexpr float ROTATION_MAX_SPEED = 0.22f;
 constexpr float POSSESSION_MAX_SPEED = 0.60f;
-constexpr float POSSESSION_ACCEL_LIMIT = 0.50f;
-constexpr float POSSESSION_ROTATION_MAX_SPEED = 0.30f;
-constexpr float POSSESSION_ROTATION_ACCEL_LIMIT = 0.75f;
+constexpr float POSSESSION_ACCEL_LIMIT = 1.00f;
+constexpr float POSSESSION_ROTATION_MAX_SPEED = 0.14f;
+constexpr float POSSESSION_ROTATION_ACCEL_LIMIT = 0.60f;
+constexpr float BALL_APPROACH_MAX_SPEED = 0.24f;
+constexpr float BALL_APPROACH_ACCEL_LIMIT = 0.55f;
 // Calibrate against measured full-command robot speed on the actual field.
 constexpr float ROBOT_LINEAR_SPEED_MM_S = 3600.0f;
 
-// ACCELERATION LIMITS
-constexpr float ACCEL_LIMIT = 1.0f;
-constexpr float ROTATION_ACCEL_LIMIT = 2.0f;
+// Smallest normalized wheel command that reliably turns the wheels (motor
+// deadband). Raise if the robot stalls near targets, lower if it creeps/hunts.
+constexpr float MOTOR_MIN_COMMAND = 0.12f;
+
+// ACCELERATION LIMITS (normalized units per second). Rotation must be fast:
+// a slow output slew behind the heading loop makes it overshoot and oscillate.
+constexpr float ACCEL_LIMIT = 2.0f;
+constexpr float ROTATION_ACCEL_LIMIT = 0.90f;
 
 // moveTo() position-to-speed proportional gain (normalized speed / mm).
-// Gentle preset (see set list below) -- previous value was ~4x weaker than
-// even that floor and produced too little PWM to overcome motor deadband.
-constexpr float POSITION_KP = 0.00065f;
-constexpr float POSITION_TOLERANCE_MM = 10.0f;
-constexpr float HEADING_TOLERANCE_DEG = 1.0f;
+// Reaches full speed at ~600 mm; the old 0.00065 gave sub-deadband commands
+// below ~250 mm so the robot stalled short of targets.
+constexpr float POSITION_KP = 0.0016f;
+constexpr float POSITION_TOLERANCE_MM = 20.0f;
+constexpr float HEADING_TOLERANCE_DEG = 5.0f;
 
 // Heading PID output is normalized rotation command. D uses IMU yaw rate.
-constexpr float HEADING_KP = 0.010f;
-constexpr float HEADING_KI = 0.0002f;
-constexpr float HEADING_KD = 0.001f;
+// KP saturates ROTATION_MAX_SPEED at ~65 deg error.
+constexpr float HEADING_KP = 0.0035f;
+constexpr float HEADING_KI = 0.0f;
+constexpr float HEADING_KD = 0.0018f;
 // Integral is accumulated in degree-seconds and clamped before applying KI.
 constexpr float HEADING_INTEGRAL_MAX = 100.0f;
 constexpr float YAW_SIGN = 1.0f;
 
-// Example starting sets for controlled tuning (select one set at a time):
-// Gentle:     POSITION_KP 0.0007, HEADING_KP 0.0030, KI 0.0002, KD 0.0012
-// Balanced:   POSITION_KP 0.0012, HEADING_KP 0.0050, KI 0.0000, KD 0.0025
-// Responsive: POSITION_KP 0.0018, HEADING_KP 0.0100, KI 0.0005, KD 0.0015
+// Tuning order: if heading oscillates lower HEADING_KP or raise HEADING_KD;
+// if it is sluggish raise HEADING_KP. If translation overshoots lower
+// POSITION_KP; if it is sluggish raise POSITION_KP or ACCEL_LIMIT.
 
 // ball sensing
 constexpr float CAMERA_MOUNT_OFFSET_DEG = 0.0f;
@@ -58,7 +65,7 @@ constexpr float BALL_TARGET_ANGLE = 5.0f;
 // #define DEBUG_LIDAR        // basic lidar info
 // #define DEBUG_FIELDBALL    // requires DEBUG_LIDAR
 // #define LOCAL_STATE
-#define LIDAR_POSE_STREAM  // advanced lidar debug + py script
+// #define LIDAR_POSE_STREAM  // advanced lidar debug + py script
 
 // IMU
 #define BNO08X_RESET -1
@@ -79,8 +86,8 @@ constexpr int DRIBBLER_REVERSE_PIN = 17;
 constexpr int DRIBBLER_PULSE_MIN = 1000;
 constexpr int DRIBBLER_PULSE_NEUTRAL = 1500;
 constexpr int DRIBBLER_PULSE_MAX = 2000;
-constexpr int DRIBBLER_FORWARD_US = 1000;
-constexpr int DRIBBLER_REVERSE_US = 2000;
+constexpr int DRIBBLER_FORWARD_US = 2000;
+constexpr int DRIBBLER_REVERSE_US = 1000;
 constexpr int DRIBBLER_RUN_THROTTLE_US = 1200; // MAIN SPEED CHANGE THIS
 
 // kicker pins
@@ -98,7 +105,7 @@ constexpr int SCREEN_WIDTH = 128;
 constexpr int SCREEN_HEIGHT = 64;
 constexpr int OLED_RESET_PIN = -1;
 constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
-constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 80;
+constexpr unsigned long DISPLAY_UPDATE_INTERVAL_MS = 250;  // each refresh blocks ~25 ms on I2C
 
 // OpenMV 
 #define BALL_UART      Serial7
@@ -121,7 +128,7 @@ constexpr float LIDAR_PWM_MIN_DUTY_PERCENT = 45.1f;
 constexpr float LIDAR_PWM_MAX_DUTY_PERCENT = 100.0f;
 constexpr float LIDAR_TARGET_SPEED_DEG_S = 2880.0f;
 constexpr float LIDAR_SPEED_TOLERANCE_DEG_S = 36.0f;
-constexpr unsigned long LIDAR_CONTROL_INTERVAL_MS = 500;
+constexpr unsigned long LIDAR_CONTROL_INTERVAL_MS = 125;
 
 // battery
 constexpr int BATTERY_PIN = A2;

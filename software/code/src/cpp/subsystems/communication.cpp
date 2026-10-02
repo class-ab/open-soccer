@@ -92,10 +92,15 @@ namespace {
   uint32_t packetsSent = 0;
   uint32_t sendFailures = 0;
 
-  constexpr unsigned long POSE_SEND_INTERVAL_MS = 20;      // 50 Hz
-  constexpr unsigned long STATE_SEND_INTERVAL_MS = 20;     // 50 Hz
-  constexpr unsigned long BALL_SEND_INTERVAL_MS = 20;      // 50 Hz
-  constexpr unsigned long OPPONENTS_SEND_INTERVAL_MS = 20;  // 50 Hz
+  constexpr unsigned long POSE_SEND_INTERVAL_MS = 50;
+  constexpr unsigned long STATE_SEND_INTERVAL_MS = 50;
+  constexpr unsigned long BALL_SEND_INTERVAL_MS = 50;
+  constexpr unsigned long OPPONENTS_SEND_INTERVAL_MS = 50;
+  // radio.write() blocks until ACK/retries run out; pause TX after a failure so
+  // a missing teammate cannot stall the control loop.
+  constexpr unsigned long TX_FAILURE_BACKOFF_MS = 250;
+  unsigned long txBackoffUntilMs = 0;
+  bool txSentThisCall = false;
 }
 
 // ============================================================
@@ -322,8 +327,26 @@ static void receiveData() {
   }
 }
 
+static void sendPacket(const uint8_t *buffer, int len, unsigned long now) {
+  radio.stopListening();
+  const bool ok = radio.write(buffer, len);
+  radio.startListening();
+  txSentThisCall = true;
+  if (ok) {
+    packetsSent++;
+  } else {
+    sendFailures++;
+    txBackoffUntilMs = now + TX_FAILURE_BACKOFF_MS;
+  }
+}
+
 static void transmitData(unsigned long now) {
-  // Send pose at 20 Hz
+  if (now < txBackoffUntilMs) {
+    return;
+  }
+  txSentThisCall = false;
+
+  // One packet per call; other due packets go out on following loops.
   if (now - lastPoseSendMs >= POSE_SEND_INTERVAL_MS) {
     lastPoseSendMs = now;
 
@@ -337,18 +360,12 @@ static void transmitData(unsigned long now) {
     buffer[0] = 0;  // Type: Pose
     len++;
 
-    radio.stopListening();
-    if (!radio.write(buffer, len)) {
-      sendFailures++;
-    } else {
-      packetsSent++;
-    }
-    radio.startListening();
+    sendPacket(buffer, len, now);
   }
 
   // Do not publish role changes while disabled; send the selected state after
   // the robot is enabled so it cannot affect its active teammate prematurely.
-  if (robotCurrentlyRunning &&
+  if (robotCurrentlyRunning && !txSentThisCall &&
       now - lastStateSendMs >= STATE_SEND_INTERVAL_MS) {
     lastStateSendMs = now;
 
@@ -362,17 +379,10 @@ static void transmitData(unsigned long now) {
     buffer[0] = 3;  // Type: Robot state
     len++;
 
-    radio.stopListening();
-    if (!radio.write(buffer, len)) {
-      sendFailures++;
-    } else {
-      packetsSent++;
-    }
-    radio.startListening();
+    sendPacket(buffer, len, now);
   }
 
-  // Send ball at 20 Hz
-  if (now - lastBallSendMs >= BALL_SEND_INTERVAL_MS) {
+  if (!txSentThisCall && now - lastBallSendMs >= BALL_SEND_INTERVAL_MS) {
     lastBallSendMs = now;
 
     FieldBall localBall;
@@ -385,17 +395,11 @@ static void transmitData(unsigned long now) {
     buffer[0] = 1;  // Type: Ball
     len++;
 
-    radio.stopListening();
-    if (!radio.write(buffer, len)) {
-      sendFailures++;
-    } else {
-      packetsSent++;
-    }
-    radio.startListening();
+    sendPacket(buffer, len, now);
   }
 
-  // Send opponents at 10 Hz
-  if (now - lastOpponentsSendMs >= OPPONENTS_SEND_INTERVAL_MS) {
+  if (!txSentThisCall &&
+      now - lastOpponentsSendMs >= OPPONENTS_SEND_INTERVAL_MS) {
     lastOpponentsSendMs = now;
 
     OpponentRobot opponents[5];
@@ -409,13 +413,7 @@ static void transmitData(unsigned long now) {
     buffer[0] = 2;  // Type: Opponents
     len++;
 
-    radio.stopListening();
-    if (!radio.write(buffer, len)) {
-      sendFailures++;
-    } else {
-      packetsSent++;
-    }
-    radio.startListening();
+    sendPacket(buffer, len, now);
   }
 }
 
@@ -436,7 +434,7 @@ bool initCommunication() {
   radio.setDataRate(RF24_250KBPS);  // Slower rate = more reliable = better range
   radio.setChannel(76);
   radio.enableDynamicPayloads();
-
+  radio.setRetries(3, 3);  // 1 ms delay x 3 retries; default (5,15) can block ~35 ms
   // CRC configuration for reliability
   radio.setCRCLength(RF24_CRC_16);
 
