@@ -25,7 +25,7 @@ constexpr float MOTOR_MIN_COMMAND = 0.20f;
 // ACCELERATION LIMITS (normalized units per second). Rotation must be fast:
 // a slow output slew behind the heading loop makes it overshoot and oscillate.
 constexpr float ACCEL_LIMIT = 2.0f;
-constexpr float ROTATION_ACCEL_LIMIT = 0.90f;
+constexpr float ROTATION_ACCEL_LIMIT = 0.65f;
 
 // moveTo() position-to-speed proportional gain (normalized speed / mm).
 // Reaches full speed at ~600 mm; the old 0.00065 gave sub-deadband commands
@@ -34,13 +34,13 @@ constexpr float POSITION_KP = 0.0016f;
 constexpr float POSITION_TOLERANCE_MM = 20.0f;
 constexpr float HEADING_TOLERANCE_DEG = 5.0f;
 
-// Heading PID output is normalized rotation command. D uses IMU yaw rate.
+// Heading PID output is normalized rotation command. D is d(error)/dt per IMU sample.
 // KP saturates ROTATION_MAX_SPEED at ~65 deg error.
-constexpr float HEADING_KP = 0.0035f;
+constexpr float HEADING_KP = 0.005f;
 constexpr float HEADING_KI = 0.0f;
-constexpr float HEADING_KD = 0.0018f;
+constexpr float HEADING_KD = 0.001f;
 // Integral is accumulated in degree-seconds and clamped before applying KI.
-constexpr float HEADING_INTEGRAL_MAX = 100.0f;
+constexpr float HEADING_INTEGRAL_MAX = 0.20f;
 constexpr float YAW_SIGN = 1.0f;
 
 // Tuning order: if heading oscillates lower HEADING_KP or raise HEADING_KD;

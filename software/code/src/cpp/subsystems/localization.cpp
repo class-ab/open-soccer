@@ -30,7 +30,7 @@ constexpr uint8_t MAX_FIT_RAYS = 72;
 // Higher = fewer, more-independent fits (less jitter, same latency floor set by RAY_WINDOW_MS).
 constexpr uint8_t NEW_RAY_TRIGGER = 6;
 constexpr uint16_t MAX_WINDOW_RAYS = 512;
-constexpr unsigned long RAY_WINDOW_MS = 50;
+constexpr unsigned long RAY_WINDOW_MS = 35;
 constexpr unsigned long FIT_INTERVAL_MS = 10;
 constexpr unsigned long POSE_TIMEOUT_MS = 1200;
 constexpr unsigned long OPPONENT_TIMEOUT_MS = 500;
@@ -606,10 +606,8 @@ void addPacket(const LidarPacket &packet) {
     const float fraction = i / static_cast<float>(POINTS_PER_PACKET - 1);
     const float ageMs = serialDelayMs * 0.5f +
                         lidarSweepMs * (1.0f - fraction);
-    const float pointHeading =
-        headingDeg - YAW_SIGN * getIMUYawRateDegPerSec() * (ageMs / 1000.0f);
     const float worldRad =
-        (pointHeading - localAngle) * LOCAL_DEG_TO_RAD;
+        (headingDeg - localAngle) * LOCAL_DEG_TO_RAD;
     const float dx = cosf(worldRad);
     const float dy = sinf(worldRad);
     const float range = static_cast<float>(packet.distanceMm[i]);

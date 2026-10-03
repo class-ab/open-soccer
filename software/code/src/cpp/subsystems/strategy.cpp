@@ -58,12 +58,12 @@ constexpr float BACKOFF_SPEED = 0.4f;
 
 // Attacker limits (normalized speed, normalized speed per second).
 constexpr float ATTACK_ROTATION_SPEED = 0.5f;
-constexpr float ATTACK_ROTATION_ACCEL = 4.0f;
+constexpr float ATTACK_ROTATION_ACCEL = 2.5f;
 constexpr float CENTRE_SPEED = 0.4f;
 constexpr float CENTRE_ACCEL = 3.0f;
 
 // behindBall: orbit the ball at ORBIT_RADIUS_MM until the robot is behind it, in line with the goal.
-constexpr float ORBIT_RADIUS_MM = 220.0f;
+constexpr float ORBIT_RADIUS_MM = 180.0f;
 constexpr float ORBIT_SPEED = 0.33f;
 // Must exceed the centripetal rate (speed^2 * ROBOT_LINEAR_SPEED_MM_S / radius) or the orbit spirals out.
 constexpr float ORBIT_ACCEL = 8.0f;
@@ -74,12 +74,12 @@ constexpr float ORBIT_FULL_LAP_DEG = 300.0f;
 constexpr float ORBIT_BORDER_PREFERENCE_MM = 100.0f;
 
 // push: robot-to-line lateral offset (mm) to start / keep pushing.
-constexpr float PUSH_START_LATERAL_MM = 80.0f;
-constexpr float PUSH_START_DISTANCE_MM = ORBIT_RADIUS_MM + 300.0f;
+constexpr float PUSH_START_ANGLE_DEG = 45.0f;
+constexpr float PUSH_START_DISTANCE_MM = 600.0f;
 constexpr float PUSH_MIN_DISTANCE_MM = ROBOT_RADIUS_MM + 50.0f;
 constexpr float PUSH_KEEP_LATERAL_MM = 110.0f;
 constexpr float PUSH_KEEP_DISTANCE_MM = 600.0f;
-constexpr float PUSH_SPEED = 0.43f;
+constexpr float PUSH_SPEED = 1.0f;
 constexpr float PUSH_ACCEL = 12.0f;
 
 // Borders. Clearance is how far the robot centre can still travel before its edge reaches the border.
@@ -94,8 +94,8 @@ constexpr float AWAY_SPEED = 1.0f;
 constexpr float AWAY_ACCEL = 40.0f;
 
 // Defender limits.
-constexpr float DEFENDER_SPEED = 0.5f;
-constexpr float DEFENDER_ROTATION_SPEED = 0.22f;
+constexpr float DEFENDER_SPEED = 1.0f;
+constexpr float DEFENDER_ROTATION_SPEED = 0.4f;
 
 // A velocity command is issued as a moveTo toward a point this far ahead, so moveTo's
 // distance-based slowdown never limits speed.
@@ -559,10 +559,13 @@ void updateRobotGoal() {
 
     const BallLine line = ballLine();
     const bool wasPushing = currentGoal == RobotGoal::push;
+    const float behindAngleDeg =
+        atan2f(line.lateralMm, line.behindMm) * 180.0f / PI;
     const bool pushing = line.behindMm > 0.0f &&
         line.distanceMm >= PUSH_MIN_DISTANCE_MM && (wasPushing
             ? line.lateralMm <= PUSH_KEEP_LATERAL_MM && line.distanceMm <= PUSH_KEEP_DISTANCE_MM
-            : line.lateralMm <= PUSH_START_LATERAL_MM && line.distanceMm <= PUSH_START_DISTANCE_MM);
+            : behindAngleDeg <= PUSH_START_ANGLE_DEG &&
+              line.distanceMm <= PUSH_START_DISTANCE_MM);
     localState.robotGoal = pushing ? RobotGoal::push : RobotGoal::behindBall;
 }
 

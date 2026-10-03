@@ -39,7 +39,6 @@ struct CoordinateController {
   float velocityX = 0.0f;
   float velocityY = 0.0f;
   float rotation = 0.0f;
-  float headingIntegral = 0.0f;
   unsigned long lastUpdateMs = 0;
 };
 
@@ -49,24 +48,41 @@ SIM_TLS CoordinateController coordinateController;
 void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
             float maxSpeed, float accelerationLimit,
             float maxRotationSpeed, float rotationAccelerationLimit) {
-  RobotPose pose;
-  getRobotPose(pose);
-
-  unsigned long now = millis();
-  if (!pose.valid) {
-    coordinateController.initialized = false;
-    coordinateController.velocityX = 0.0f;
-    coordinateController.velocityY = 0.0f;
-    coordinateController.rotation = 0.0f;
-    currentMoveProfile.active = false;
+  if (!isIMUHeadingFresh()) {
     stopAllDriveMotors();
     return;
   }
 
+  RobotPose pose;
+  getRobotPose(pose);
+
+  unsigned long now = millis();
   float dt = coordinateController.initialized
     ? (now - coordinateController.lastUpdateMs) / 1000.0f
     : 0.0f;
   dt = constrain(dt, 0.001f, 0.05f);
+
+  // Rotation depends only on the IMU, so it keeps working without a lidar fix.
+  if (!coordinateController.initialized) {
+    resetHeadingPID();
+  }
+  desiredHeadingDeg = targetHeadingDeg;
+  maxRotationSpeed = constrain(maxRotationSpeed, 0.0f, 1.0f);
+  const float targetRotation = constrain(headingCorrection(),
+                                         -maxRotationSpeed, maxRotationSpeed);
+  rotationAccelerationLimit = fmaxf(0.0f, rotationAccelerationLimit);
+  coordinateController.rotation = slewValue(
+    targetRotation, coordinateController.rotation,
+    rotationAccelerationLimit * dt);
+
+  if (!pose.valid) {
+    coordinateController.velocityX = 0.0f;
+    coordinateController.velocityY = 0.0f;
+    drive(0.0f, 0.0f, coordinateController.rotation);
+    coordinateController.initialized = true;
+    coordinateController.lastUpdateMs = now;
+    return;
+  }
 
   float errorXmm = targetXmm - pose.xMm;
   float errorYmm = targetYmm - pose.yMm;
@@ -99,36 +115,6 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
   }
   slewVector(targetVelocityX, targetVelocityY, coordinateController.velocityX,
              coordinateController.velocityY, accelerationLimit * dt);
-
-  float headingError = angleError(targetHeadingDeg, pose.headingDeg);
-  const float yawRate = YAW_SIGN * getIMUYawRateDegPerSec();
-  maxRotationSpeed = constrain(maxRotationSpeed, 0.0f, 1.0f);
-  if (fabsf(headingError) <= HEADING_TOLERANCE_DEG) {
-    coordinateController.headingIntegral = 0.0f;
-  } else if (dt > 0.0f) {
-    coordinateController.headingIntegral = constrain(
-        coordinateController.headingIntegral + headingError * dt,
-        -HEADING_INTEGRAL_MAX, HEADING_INTEGRAL_MAX);
-  }
-  float targetRotation = headingError * HEADING_KP +
-      coordinateController.headingIntegral * HEADING_KI -
-      yawRate * HEADING_KD;
-  const float unconstrainedRotation = targetRotation;
-  targetRotation = constrain(targetRotation, -maxRotationSpeed, maxRotationSpeed);
-  if (fabsf(headingError) <= HEADING_TOLERANCE_DEG && fabsf(yawRate) <= 8.0f) {
-    targetRotation = 0.0f;
-  } else if (targetRotation != unconstrainedRotation &&
-             headingError * unconstrainedRotation > 0.0f) {
-    // Do not integrate further into the active output limit.
-    coordinateController.headingIntegral = constrain(
-        coordinateController.headingIntegral - headingError * dt,
-        -HEADING_INTEGRAL_MAX, HEADING_INTEGRAL_MAX);
-  }
-  targetRotation = constrain(targetRotation, -maxRotationSpeed, maxRotationSpeed);
-  rotationAccelerationLimit = fmaxf(0.0f, rotationAccelerationLimit);
-  coordinateController.rotation = slewValue(
-    targetRotation, coordinateController.rotation,
-    rotationAccelerationLimit * dt);
 
   float speed = clampMagnitude(coordinateController.velocityX,
                                coordinateController.velocityY, maxSpeed);
@@ -244,7 +230,6 @@ void stopAllDriveMotors() {
   coordinateController.velocityX = 0.0f;
   coordinateController.velocityY = 0.0f;
   coordinateController.rotation = 0.0f;
-  coordinateController.headingIntegral = 0.0f;
   currentMoveProfile.active = false;
 }
 

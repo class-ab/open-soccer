@@ -104,6 +104,7 @@ void loop() {
   
   if (robotCurrentlyRunning) {
     move();
+    // moveTo(0,0,0,1,1,1,1);
   } else {
     stopAllMotors();
   }

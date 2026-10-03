@@ -10,7 +10,6 @@ bool initIMU();
 void setReports();
 void updateIMU();
 float getIMUHeadingDeg();
-float getIMUYawRateDegPerSec();
 bool isIMUHeadingFresh();
 
 float quaternionToYawDegrees(float real, float i, float j, float k);
