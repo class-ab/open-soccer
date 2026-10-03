@@ -15,18 +15,13 @@
 
 // SPEED LIMITS
 constexpr float ROBOT_MAX_SPEED = 1.0f;
-constexpr float ROTATION_MAX_SPEED = 0.30f;
+constexpr float ROTATION_MAX_SPEED = 0.22f;
 constexpr float POSSESSION_MAX_SPEED = 0.30f;
 constexpr float POSSESSION_ACCEL_LIMIT = 0.60f;
 constexpr float POSSESSION_ROTATION_MAX_SPEED = 0.14f;
 constexpr float POSSESSION_ROTATION_ACCEL_LIMIT = 0.60f;
 constexpr float BALL_APPROACH_MAX_SPEED = 0.24f;
-constexpr float BALL_APPROACH_ACCEL_LIMIT = 1.4f;
-// Ball approach: fast beyond SLOW_START_CM, ramping down (quadratically) to
-// MOTOR_MIN_COMMAND at SLOW_END_CM.
-constexpr float BALL_APPROACH_FAST_SPEED = 0.60f;
-constexpr float BALL_APPROACH_SLOW_START_CM = 70.0f;
-constexpr float BALL_APPROACH_SLOW_END_CM = 15.0f;
+constexpr float BALL_APPROACH_ACCEL_LIMIT = 0.55f;
 // Ramming the ball toward the goal after getting behind it.
 constexpr float BALL_RAM_SPEED = 0.70f;
 constexpr float BALL_RAM_ACCEL_LIMIT = 1.40f;
@@ -40,7 +35,7 @@ constexpr float MOTOR_MIN_COMMAND = 0.20f;
 // ACCELERATION LIMITS (normalized units per second). Rotation must be fast:
 // a slow output slew behind the heading loop makes it overshoot and oscillate.
 constexpr float ACCEL_LIMIT = 2.0f;
-constexpr float ROTATION_ACCEL_LIMIT = 1.30f;
+constexpr float ROTATION_ACCEL_LIMIT = 0.90f;
 
 // moveTo() position-to-speed proportional gain (normalized speed / mm).
 // Reaches full speed at ~600 mm; the old 0.00065 gave sub-deadband commands
@@ -51,9 +46,9 @@ constexpr float HEADING_TOLERANCE_DEG = 5.0f;
 
 // Heading PID output is normalized rotation command. D uses IMU yaw rate.
 // KP saturates ROTATION_MAX_SPEED at ~65 deg error.
-constexpr float HEADING_KP = 0.0050f;
+constexpr float HEADING_KP = 0.0035f;
 constexpr float HEADING_KI = 0.0f;
-constexpr float HEADING_KD = 0.0025f;
+constexpr float HEADING_KD = 0.0018f;
 // Integral is accumulated in degree-seconds and clamped before applying KI.
 constexpr float HEADING_INTEGRAL_MAX = 100.0f;
 constexpr float YAW_SIGN = 1.0f;

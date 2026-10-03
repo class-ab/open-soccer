@@ -57,10 +57,15 @@ constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
 // The simulator holds the ball about 12.3 cm from the robot centre.
 constexpr float BALL_DRIBBLE_CAPTURE_DISTANCE_CM = 10.5f;
 constexpr float GOAL_SHOT_OFFSET_Y_MM = 250.0f;
-constexpr float RAM_START_LINEUP_DEG = 12.0f;
-constexpr float RAM_KEEP_LINEUP_DEG = 35.0f;
-constexpr float RAM_START_DISTANCE_CM = 30.0f;
-constexpr float RAM_STOP_DISTANCE_CM = 45.0f;
+// Ram starts when the ball is this close and within this angle of the robot-goal line.
+constexpr float RAM_START_DISTANCE_CM = 20.0f;
+constexpr float RAM_START_LINEUP_DEG = 5.0f;
+constexpr float RAM_KEEP_DISTANCE_CM = 45.0f;
+constexpr float RAM_KEEP_LINEUP_DEG = 30.0f;
+// Orbit radius around the ball; must stay inside RAM_START_DISTANCE_CM.
+constexpr float ORBIT_RADIUS_MM = 160.0f;
+constexpr float ORBIT_MAX_STEP_DEG = 45.0f;
+constexpr float ORBIT_SPEED = 0.40f;
 // How far past the ball the ram target is placed, so the robot drives through it.
 constexpr float BALL_RAM_EXTEND_MM = 400.0f;
 // The dribbler spins in reverse (bouncing the ball away) only when the ball is this far upfield.
@@ -215,36 +220,24 @@ float shotTargetY() {
     return targetYmm;
 }
 
-void getBallBehindTarget(float &targetXmm, float &targetYmm) {
-    const float goalToBallX = ball.xMm - OPPONENT_GOAL_X_MM;
-    const float goalToBallY = ball.yMm - shotTargetY();
-    const float length = sqrtf(goalToBallX * goalToBallX + goalToBallY * goalToBallY);
-    if (length <= 0.001f) {
-        targetXmm = ball.xMm - BALL_APPROACH_OFFSET_MM;
-        targetYmm = ball.yMm;
-        return;
-    }
-
-    targetXmm = ball.xMm + goalToBallX / length * BALL_APPROACH_OFFSET_MM;
-    targetYmm = ball.yMm + goalToBallY / length * BALL_APPROACH_OFFSET_MM;
+// Next point on a circle around the ball, stepped from the robot's bearing toward the
+// side of the ball directly opposite the goal.
+void getBallOrbitTarget(float &targetXmm, float &targetYmm) {
+    const float robotBearing = atan2f(robotPose.yMm - ball.yMm,
+                                      robotPose.xMm - ball.xMm) * 180.0f / PI;
+    const float behindBearing = atan2f(ball.yMm - OPPONENT_GOAL_Y_MM,
+                                       ball.xMm - OPPONENT_GOAL_X_MM) * 180.0f / PI;
+    const float step = constrain(angleError(behindBearing, robotBearing),
+                                 -ORBIT_MAX_STEP_DEG, ORBIT_MAX_STEP_DEG);
+    const float bearingRad = (robotBearing + step) * PI / 180.0f;
+    targetXmm = ball.xMm + ORBIT_RADIUS_MM * cosf(bearingRad);
+    targetYmm = ball.yMm + ORBIT_RADIUS_MM * sinf(bearingRad);
 }
 
-// True when the robot is on the opposite side of the ball from the shot target.
+// True when the robot, ball and goal centre are in line, with the ball in between.
 bool isLinedUpBehindBall(float toleranceDeg) {
-    const float robotToBall = headingTo(ball.xMm, ball.yMm);
-    const float ballToGoal = atan2f(shotTargetY() - ball.yMm,
-                                    OPPONENT_GOAL_X_MM - ball.xMm) * 180.0f / PI;
-    return fabsf(angleError(ballToGoal, robotToBall)) <= toleranceDeg;
-}
-
-// Point beyond the ball on the ball-to-goal line; driving at it rams the ball goalward.
-void getBallRamTarget(float &targetXmm, float &targetYmm) {
-    const float dx = OPPONENT_GOAL_X_MM - ball.xMm;
-    const float dy = shotTargetY() - ball.yMm;
-    const float length = sqrtf(dx * dx + dy * dy);
-    const float scale = length > 0.001f ? BALL_RAM_EXTEND_MM / length : 0.0f;
-    targetXmm = ball.xMm + dx * scale;
-    targetYmm = ball.yMm + dy * scale;
+    return fabsf(angleError(headingToOpponentGoal(),
+                            headingTo(ball.xMm, ball.yMm))) <= toleranceDeg;
 }
 
 /*
@@ -255,15 +248,13 @@ void dribbleForward() {
 */
 
 float ballApproachSpeed() {
-    if (!ball.valid) {
-        return MOTOR_MIN_COMMAND;
-    }
-    const float t = constrain(
-        (ball.distanceCm - BALL_APPROACH_SLOW_END_CM) /
-            (BALL_APPROACH_SLOW_START_CM - BALL_APPROACH_SLOW_END_CM),
-        0.0f, 1.0f);
-    return MOTOR_MIN_COMMAND +
-           (BALL_APPROACH_FAST_SPEED - MOTOR_MIN_COMMAND) * t * t;
+    const float distanceScale = ball.valid
+        ? constrain(ball.distanceCm / 80.0f, 0.30f, 1.0f)
+        : 1.0f;
+    const float requestedSpeed = BALL_APPROACH_MAX_SPEED * distanceScale;
+    const float movementFloor = fminf(MOTOR_MIN_COMMAND,
+                                      BALL_APPROACH_MAX_SPEED);
+    return fmaxf(requestedSpeed, movementFloor);
 }
 
 /* Dribbling policy disabled: the robot no longer tries to capture or carry the ball.
@@ -391,8 +382,11 @@ void move() {
         const float scale = distanceToCenter > 0.0f ? step / distanceToCenter : 0.0f;
         const float targetX = robotPose.xMm * (1.0f - scale);
         const float targetY = robotPose.yMm * (1.0f - scale);
-        const float targetHeading = ball.valid
-            ? headingTo(ball.xMm, ball.yMm) : robotPose.headingDeg;
+        const float targetHeading =
+            localState.robotState == RobotState::attacking
+                ? headingToOpponentGoal()
+                : (ball.valid ? headingTo(ball.xMm, ball.yMm)
+                              : robotPose.headingDeg);
         moveTo(targetX, targetY, targetHeading,
                0.4f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
         updateDribblerPolicy();
@@ -409,15 +403,12 @@ void move() {
                 stopMotion();
                 break;
             }
-            // Get to the goal-side of the ball, facing it; kick (ram) takes over
-            // once lined up.
+            // Face the goal and orbit the ball; kick (ram) takes over once lined up.
             float targetXmm;
             float targetYmm;
-            getBallBehindTarget(targetXmm, targetYmm);
-            moveTo(targetXmm, targetYmm,
-                       headingTo(ball.xMm, ball.yMm), ballApproachSpeed(),
-                     BALL_APPROACH_ACCEL_LIMIT,
-                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            getBallOrbitTarget(targetXmm, targetYmm);
+            moveTo(targetXmm, targetYmm, headingToOpponentGoal(), ORBIT_SPEED,
+                   ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
 
@@ -480,9 +471,7 @@ void move() {
                 stopMotion();
                 break;
             }
-            const float targetHeading = ball.valid
-                ? headingTo(ball.xMm, ball.yMm)
-                : headingTo(opponent.xMm, opponent.yMm);
+            const float targetHeading = headingToOpponentGoal();
                  moveTo(opponent.xMm, opponent.yMm, targetHeading,
                      BALL_APPROACH_MAX_SPEED, BALL_APPROACH_ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
@@ -581,22 +570,14 @@ void move() {
         }
 
         case RobotGoal::kick: {
-            // Ram: line up behind the ball, then drive through it toward the goal.
+            // Ram: lined up behind the ball, drive full speed at the goal centre.
             if (!ball.valid) {
                 stopMotion();
                 break;
             }
-            float targetXmm;
-            float targetYmm;
-            getBallRamTarget(targetXmm, targetYmm);
-            const float ramHeading = headingTo(targetXmm, targetYmm);
-            if (fabsf(angleError(ramHeading, robotPose.headingDeg)) <=
-                                   SPIN_KICK_HEADING_TOLERANCE_DEG) {
-                goalDriveStarted = true;
-            }
-            moveTo(targetXmm, targetYmm, ramHeading,
-                   goalDriveStarted ? BALL_RAM_SPEED : 0.0f,
-                   BALL_RAM_ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM, headingToOpponentGoal(),
+                   ROBOT_MAX_SPEED, ACCEL_LIMIT,
+                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
 
@@ -615,7 +596,7 @@ void move() {
 
         case RobotGoal::backOff:
                         moveTo(0.0f, 0.0f,
-                                     headingTo(OWN_GOAL_X_MM, OWN_GOAL_Y_MM),
+                                     headingToOpponentGoal(),
                    0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
 
@@ -1009,13 +990,13 @@ void updateRobotGoal() {
 
         */
 
-        // Get behind the ball, then ram it toward the goal. Ramming continues
-        // (with hysteresis) while the ball stays close and roughly ahead.
+        // Orbit the ball facing the goal; ram once the ball is close and in line.
+        // Ramming continues (with hysteresis) while the ball stays close and ahead.
         if (!ball.valid) {
             localState.robotGoal = RobotGoal::searchBall;
         } else {
             const bool keepRamming = currentGoal == RobotGoal::kick &&
-                ball.distanceCm <= RAM_STOP_DISTANCE_CM &&
+                ball.distanceCm <= RAM_KEEP_DISTANCE_CM &&
                 isLinedUpBehindBall(RAM_KEEP_LINEUP_DEG);
             const bool startRamming = ball.distanceCm <= RAM_START_DISTANCE_CM &&
                 isLinedUpBehindBall(RAM_START_LINEUP_DEG);

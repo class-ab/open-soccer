@@ -373,23 +373,24 @@ static void transmitData(unsigned long now) {
     sendPacket(buffer, len, now);
   }
 
-  // Do not publish role changes while disabled; send the selected state after
-  // the robot is enabled so it cannot affect its active teammate prematurely.
-  if (robotCurrentlyRunning && !txSentThisCall &&
-      now - lastStateSendMs >= STATE_SEND_INTERVAL_MS) {
-    lastStateSendMs = now;
-
+  if (!txSentThisCall && now - lastStateSendMs >= STATE_SEND_INTERVAL_MS) {
     LocalState localState;
     getLocalState(localState);
 
-    uint8_t buffer[32];
-    int len;
-    serializeRobotState(localState, &buffer[1], len);
+    // A stopped robot only publishes damage, not a pending role selection.
+    if (robotCurrentlyRunning ||
+        localState.robotState == RobotState::damaged) {
+      lastStateSendMs = now;
 
-    buffer[0] = 3;  // Type: Robot state
-    len++;
+      uint8_t buffer[32];
+      int len;
+      serializeRobotState(localState, &buffer[1], len);
 
-    sendPacket(buffer, len, now);
+      buffer[0] = 3;  // Type: Robot state
+      len++;
+
+      sendPacket(buffer, len, now);
+    }
   }
 
   if (!txSentThisCall && now - lastBallSendMs >= BALL_SEND_INTERVAL_MS) {
