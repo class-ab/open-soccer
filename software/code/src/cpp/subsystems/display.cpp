@@ -82,8 +82,6 @@ void updateDisplay() {
   } else {
     display.println("INVALID");
   }
-  */
-  
   display.print("RemPos: ");
   RobotPose remotePose;
   getRemoteRobotPose(remotePose);
@@ -97,8 +95,16 @@ void updateDisplay() {
   } else {
     display.println("INVALID");
   }
-  
- // get localState from strategy
+  */  
+  display.print("LclPos: ");
+  RobotPose pose;
+  getRobotPose(pose);
+  if (pose.valid) {
+    display.println("VALID");
+  } else {
+    display.println("INVALID");
+  }
+  // get localState from strategy
   LocalState localState;
   getLocalState(localState);
   std::string_view printRobotState = magic_enum::enum_name(localState.robotState);
