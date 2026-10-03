@@ -59,19 +59,37 @@ constexpr float BALL_DRIBBLE_CAPTURE_DISTANCE_CM = 10.5f;
 constexpr float GOAL_SHOT_OFFSET_Y_MM = 250.0f;
 // Ram starts when the ball is this close and within this angle of the robot-goal line.
 constexpr float RAM_START_DISTANCE_CM = 20.0f;
-constexpr float RAM_START_LINEUP_DEG = 5.0f;
+constexpr float RAM_START_LINEUP_DEG = 3.0f;
 constexpr float RAM_KEEP_DISTANCE_CM = 45.0f;
 constexpr float RAM_KEEP_LINEUP_DEG = 30.0f;
 // Orbit radius around the ball; must stay inside RAM_START_DISTANCE_CM.
 constexpr float ORBIT_RADIUS_MM = 160.0f;
 constexpr float ORBIT_MAX_STEP_DEG = 45.0f;
-constexpr float ORBIT_SPEED = 0.40f;
+constexpr float ORBIT_SPEED = 0.70f;
+constexpr float ORBIT_ACCEL_LIMIT = 4.0f;
+// Multiplies the heading error during the ram: at full speed the normal heading gain is too weak
+// to stop the robot yawing and curving the ball off the goal line.
+constexpr float RAM_HEADING_GAIN = 4.0f;
+constexpr float RAM_HEADING_ERROR_MAX_DEG = 90.0f;
 // How far past the ball the ram target is placed, so the robot drives through it.
 constexpr float BALL_RAM_EXTEND_MM = 400.0f;
 // The dribbler spins in reverse (bouncing the ball away) only when the ball is this far upfield.
 constexpr float DRIBBLER_KICK_ZONE_X_MM = 400.0f;
 constexpr float SPIN_KICK_HEADING_TOLERANCE_DEG = 15.0f;
-constexpr float BORDER_ESCAPE_STEP_MM = 250.0f;
+constexpr float BORDER_ESCAPE_STEP_MM = 400.0f;
+constexpr float BORDER_ESCAPE_SPEED = 0.90f;
+constexpr float BORDER_ESCAPE_ACCEL_LIMIT = 6.0f;
+// Escape triggers this far before the border, and holds until this much extra clearance.
+constexpr float BORDER_EARLY_MARGIN_MM = 90.0f;
+constexpr float BORDER_EXIT_MARGIN_MM = 60.0f;
+// Also trigger on where the robot will be this long from now at its commanded velocity.
+constexpr float BORDER_LOOKAHEAD_S = 0.15f;
+constexpr float ATTACKER_BORDER_ESCAPE_STEP_MM = 350.0f;
+constexpr float ATTACKER_BORDER_ESCAPE_SPEED = 0.75f;
+constexpr float ATTACKER_BORDER_ESCAPE_ACCEL_LIMIT = 4.5f;
+constexpr float ATTACKER_BORDER_EARLY_MARGIN_MM = 65.0f;
+constexpr float ATTACKER_BORDER_EXIT_MARGIN_MM = 45.0f;
+constexpr float ATTACKER_BORDER_LOOKAHEAD_S = 0.10f;
 constexpr float SEARCH_SPIN_RADIUS_MM = 75.0f;
 constexpr float SEARCH_RESUME_RADIUS_MM = 125.0f;
 constexpr float DEFENCE_BOX_MIN_X_MM = -965.0f;
@@ -118,7 +136,6 @@ bool clipDefenceAxis(float origin, float delta, float minimum, float maximum,
 void getBallDefenceTarget(float &targetXmm, float &targetYmm) {
     const float deltaX = ball.xMm - OWN_GOAL_BACK_X_MM;
     const float deltaY = ball.yMm - OWN_GOAL_Y_MM;
-    const float distance = sqrtf(deltaX * deltaX + deltaY * deltaY);
     float tMinimum = 0.0f;
     float tMaximum = 1.0f;
     const bool intersectsBox =
@@ -129,9 +146,7 @@ void getBallDefenceTarget(float &targetXmm, float &targetYmm) {
                         tMinimum, tMaximum);
 
     if (intersectsBox) {
-        const float setbackT = distance > 0.0f
-            ? BALL_APPROACH_OFFSET_MM / distance : 0.0f;
-        const float targetT = constrain(1.0f - setbackT, tMinimum, tMaximum);
+        const float targetT = tMaximum;
         targetXmm = OWN_GOAL_BACK_X_MM + targetT * deltaX;
         targetYmm = OWN_GOAL_Y_MM + targetT * deltaY;
         return;
@@ -220,15 +235,38 @@ float shotTargetY() {
     return targetYmm;
 }
 
+// +1 / -1 = counter-clockwise / clockwise orbit, latched until the goal changes.
+SIM_TLS float orbitDirection = 0.0f;
+
+float ballBearingPointDistanceToCentre(float bearingDeg) {
+    const float rad = bearingDeg * PI / 180.0f;
+    const float x = ball.xMm + ORBIT_RADIUS_MM * cosf(rad);
+    const float y = ball.yMm + ORBIT_RADIUS_MM * sinf(rad);
+    return sqrtf(x * x + y * y);
+}
+
 // Next point on a circle around the ball, stepped from the robot's bearing toward the
-// side of the ball directly opposite the goal.
+// side of the ball directly opposite the goal, going around the field-centre side.
 void getBallOrbitTarget(float &targetXmm, float &targetYmm) {
     const float robotBearing = atan2f(robotPose.yMm - ball.yMm,
                                       robotPose.xMm - ball.xMm) * 180.0f / PI;
     const float behindBearing = atan2f(ball.yMm - OPPONENT_GOAL_Y_MM,
                                        ball.xMm - OPPONENT_GOAL_X_MM) * 180.0f / PI;
-    const float step = constrain(angleError(behindBearing, robotBearing),
-                                 -ORBIT_MAX_STEP_DEG, ORBIT_MAX_STEP_DEG);
+    const float error = angleError(behindBearing, robotBearing);
+    const float sweepCcw = error >= 0.0f ? error : error + 360.0f;
+    if (orbitDirection == 0.0f) {
+        const float midCcw = robotBearing + sweepCcw * 0.5f;
+        const float midCw = robotBearing - (360.0f - sweepCcw) * 0.5f;
+        orbitDirection = ballBearingPointDistanceToCentre(midCcw) <=
+                         ballBearingPointDistanceToCentre(midCw) ? 1.0f : -1.0f;
+    }
+    float sweep = orbitDirection > 0.0f ? sweepCcw : 360.0f - sweepCcw;
+    // Overshot the latched direction: finish the short way instead of a full lap.
+    if (sweep > 300.0f) {
+        orbitDirection = -orbitDirection;
+        sweep = 360.0f - sweep;
+    }
+    const float step = orbitDirection * fminf(sweep, ORBIT_MAX_STEP_DEG);
     const float bearingRad = (robotBearing + step) * PI / 180.0f;
     targetXmm = ball.xMm + ORBIT_RADIUS_MM * cosf(bearingRad);
     targetYmm = ball.yMm + ORBIT_RADIUS_MM * sinf(bearingRad);
@@ -333,6 +371,12 @@ void updateDribblerPolicy() {
     }
 }
 
+bool isNearBorder(float xMm, float yMm, float marginMm) {
+    return fabsf(yMm) >= BORDER_Y - ROBOT_RADIUS_MM - marginMm ||
+           (fabsf(yMm) >= GOAL_Y - ROBOT_RADIUS_MM - marginMm &&
+            fabsf(xMm) >= BORDER_X - ROBOT_RADIUS_MM - marginMm);
+}
+
 void stopMotion() {
     stopAllDriveMotors();
 }
@@ -362,6 +406,7 @@ void move() {
     SIM_STATIC_TLS float spinKickAccumulatedDeg = 0.0f;
     if (localState.robotGoal != previousGoal) {
         goalDriveStarted = false;
+        orbitDirection = 0.0f;
         spinKickTracking = false;
         spinKickAccumulatedDeg = 0.0f;
         searchSettled = false;
@@ -376,19 +421,23 @@ void move() {
 
     // A border escape always takes priority over every other goal.
     if (localState.robotGoal == RobotGoal::awayBorders) {
+        const bool attacking = localState.robotState == RobotState::attacking;
         const float distanceToCenter = sqrtf(robotPose.xMm * robotPose.xMm +
                                              robotPose.yMm * robotPose.yMm);
-        const float step = fminf(distanceToCenter, BORDER_ESCAPE_STEP_MM);
+        const float step = fminf(distanceToCenter,
+            attacking ? ATTACKER_BORDER_ESCAPE_STEP_MM : BORDER_ESCAPE_STEP_MM);
         const float scale = distanceToCenter > 0.0f ? step / distanceToCenter : 0.0f;
         const float targetX = robotPose.xMm * (1.0f - scale);
         const float targetY = robotPose.yMm * (1.0f - scale);
         const float targetHeading =
-            localState.robotState == RobotState::attacking
+            attacking
                 ? headingToOpponentGoal()
                 : (ball.valid ? headingTo(ball.xMm, ball.yMm)
                               : robotPose.headingDeg);
         moveTo(targetX, targetY, targetHeading,
-               0.4f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+               attacking ? ATTACKER_BORDER_ESCAPE_SPEED : BORDER_ESCAPE_SPEED,
+               attacking ? ATTACKER_BORDER_ESCAPE_ACCEL_LIMIT : BORDER_ESCAPE_ACCEL_LIMIT,
+               ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
         updateDribblerPolicy();
         return;
     }
@@ -408,7 +457,7 @@ void move() {
             float targetYmm;
             getBallOrbitTarget(targetXmm, targetYmm);
             moveTo(targetXmm, targetYmm, headingToOpponentGoal(), ORBIT_SPEED,
-                   ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+                   ORBIT_ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
 
@@ -575,7 +624,12 @@ void move() {
                 stopMotion();
                 break;
             }
-            moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM, headingToOpponentGoal(),
+            const float headingError = angleError(headingToOpponentGoal(),
+                                                  robotPose.headingDeg);
+            const float ramHeading = robotPose.headingDeg +
+                constrain(headingError * RAM_HEADING_GAIN,
+                          -RAM_HEADING_ERROR_MAX_DEG, RAM_HEADING_ERROR_MAX_DEG);
+            moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM, ramHeading,
                    ROBOT_MAX_SPEED, ACCEL_LIMIT,
                    ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
@@ -851,9 +905,20 @@ void updateRobotGoal() {
         return;
     }
 
-    if (abs(robotPose.yMm) >= BORDER_Y - ROBOT_RADIUS_MM ||
-        (abs(robotPose.yMm) >= GOAL_Y - ROBOT_RADIUS_MM &&
-         abs(robotPose.xMm) >= BORDER_X - ROBOT_RADIUS_MM)) {
+    const bool attacking = localState.robotState == RobotState::attacking;
+    const float earlyMargin = attacking
+        ? ATTACKER_BORDER_EARLY_MARGIN_MM : BORDER_EARLY_MARGIN_MM;
+    const float exitMargin = attacking
+        ? ATTACKER_BORDER_EXIT_MARGIN_MM : BORDER_EXIT_MARGIN_MM;
+    const float margin = earlyMargin +
+        (localState.robotGoal == RobotGoal::awayBorders ? exitMargin : 0.0f);
+    const float lookaheadMm = currentMoveProfile.active
+        ? currentMoveProfile.speed * ROBOT_LINEAR_SPEED_MM_S *
+          (attacking ? ATTACKER_BORDER_LOOKAHEAD_S : BORDER_LOOKAHEAD_S) : 0.0f;
+    const float directionRad = currentMoveProfile.movementDirectionDeg * PI / 180.0f;
+    if (isNearBorder(robotPose.xMm, robotPose.yMm, margin) ||
+        isNearBorder(robotPose.xMm + lookaheadMm * cosf(directionRad),
+                     robotPose.yMm + lookaheadMm * sinf(directionRad), margin)) {
         localState.robotGoal = RobotGoal::awayBorders; // FIRST CHECK BORDERS
         return;
     }
