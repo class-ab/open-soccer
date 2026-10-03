@@ -44,16 +44,6 @@ struct CoordinateController {
 };
 
 SIM_TLS CoordinateController coordinateController;
-
-// Possession speed/rotation caps are disabled: the robot rams the ball, it no longer carries it.
-bool isBallHeld() {
-  return false;
-  /*
-  ballLocation state;
-  getBallState(state);
-  return state.ballPossession == BallPossession::mePossession;
-  */
-}
 }
 
 void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
@@ -81,11 +71,9 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
   float errorXmm = targetXmm - pose.xMm;
   float errorYmm = targetYmm - pose.yMm;
   float distanceMm = sqrtf(errorXmm * errorXmm + errorYmm * errorYmm);
-  const bool ballHeld = isBallHeld();
-  maxSpeed = constrain(maxSpeed, 0.0f,
-                       ballHeld ? POSSESSION_MAX_SPEED : ROBOT_MAX_SPEED);
-  accelerationLimit = fmaxf(0.0f, ballHeld
-      ? fminf(accelerationLimit, POSSESSION_ACCEL_LIMIT) : accelerationLimit);
+  // Only the physical normalized range applies; each call owns its own limits.
+  maxSpeed = constrain(maxSpeed, 0.0f, 1.0f);
+  accelerationLimit = fmaxf(0.0f, accelerationLimit);
 
   float targetSpeed = fminf(maxSpeed, POSITION_KP * distanceMm);
   if (accelerationLimit > 0.0f) {
@@ -114,8 +102,7 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
 
   float headingError = angleError(targetHeadingDeg, pose.headingDeg);
   const float yawRate = YAW_SIGN * getIMUYawRateDegPerSec();
-  maxRotationSpeed = constrain(maxRotationSpeed, 0.0f,
-      ballHeld ? POSSESSION_ROTATION_MAX_SPEED : ROTATION_MAX_SPEED);
+  maxRotationSpeed = constrain(maxRotationSpeed, 0.0f, 1.0f);
   if (fabsf(headingError) <= HEADING_TOLERANCE_DEG) {
     coordinateController.headingIntegral = 0.0f;
   } else if (dt > 0.0f) {
@@ -138,9 +125,7 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
         -HEADING_INTEGRAL_MAX, HEADING_INTEGRAL_MAX);
   }
   targetRotation = constrain(targetRotation, -maxRotationSpeed, maxRotationSpeed);
-  rotationAccelerationLimit = fmaxf(0.0f, ballHeld
-      ? fminf(rotationAccelerationLimit, POSSESSION_ROTATION_ACCEL_LIMIT)
-      : rotationAccelerationLimit);
+  rotationAccelerationLimit = fmaxf(0.0f, rotationAccelerationLimit);
   coordinateController.rotation = slewValue(
     targetRotation, coordinateController.rotation,
     rotationAccelerationLimit * dt);
@@ -159,12 +144,8 @@ void moveTo(float targetXmm, float targetYmm, float targetHeadingDeg,
 }
 
 void drive(float direction_deg, float speed, float rotation) {
-  const bool ballHeld = isBallHeld();
-  speed = constrain(speed, 0.0f,
-                    ballHeld ? POSSESSION_MAX_SPEED : ROBOT_MAX_SPEED);
-  rotation = constrain(rotation,
-      ballHeld ? -POSSESSION_ROTATION_MAX_SPEED : -ROTATION_MAX_SPEED,
-      ballHeld ? POSSESSION_ROTATION_MAX_SPEED : ROTATION_MAX_SPEED);
+  speed = constrain(speed, 0.0f, 1.0f);
+  rotation = constrain(rotation, -1.0f, 1.0f);
 
   float effectiveYaw = YAW_SIGN * currentYawDeg;
 

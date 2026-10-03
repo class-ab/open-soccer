@@ -53,23 +53,12 @@ enum class RobotState {
 
 enum class RobotGoal {
     none,
-    getBallPush,
-    getBallDribble,
-    getBallDribbleAway,
-    interceptBall1,
-    interceptBall2,
-    pushForward,
-    hideForward,
-    spinKick,
-    kick,
-    pass,
-    awayBorders,
     backOff,
-    defendBall,
+    behindBall,
+    push,
+    awayBorders,
     searchBall,
-    dribbleForward,
-    hideBall,
-    scoring
+    defendBall
 };
 
 struct ballLocation {

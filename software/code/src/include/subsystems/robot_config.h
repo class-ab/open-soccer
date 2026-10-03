@@ -14,17 +14,7 @@
 #endif
 
 // SPEED LIMITS
-constexpr float ROBOT_MAX_SPEED = 1.0f;
-constexpr float ROTATION_MAX_SPEED = 0.22f;
-constexpr float POSSESSION_MAX_SPEED = 0.30f;
-constexpr float POSSESSION_ACCEL_LIMIT = 0.60f;
-constexpr float POSSESSION_ROTATION_MAX_SPEED = 0.14f;
-constexpr float POSSESSION_ROTATION_ACCEL_LIMIT = 0.60f;
-constexpr float BALL_APPROACH_MAX_SPEED = 0.24f;
-constexpr float BALL_APPROACH_ACCEL_LIMIT = 0.55f;
-// Ramming the ball toward the goal after getting behind it.
-constexpr float BALL_RAM_SPEED = 0.70f;
-constexpr float BALL_RAM_ACCEL_LIMIT = 1.40f;
+// Speed and acceleration limits are passed per move()/moveTo() call (strategy.cpp).
 // Calibrate against measured full-command robot speed on the actual field.
 constexpr float ROBOT_LINEAR_SPEED_MM_S = 3600.0f;
 

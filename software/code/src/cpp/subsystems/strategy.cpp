@@ -18,12 +18,10 @@ SIM_TLS LocalState remoteState = {RobotState::damaged, RobotGoal::none};
 SIM_TLS bool remoteStateKnown = false;
 SIM_TLS bool restoringAsDefender = false;
 
-// Define field zones in millimeters (0,0 is center)
-// Adjust these thresholds based on actual field dimensions
-// Field frame: +X points toward the opponent goal; +Y is perpendicular.
-const float MIDDLE_ZONE_X = 615.0f;    // ±mm from center x
-const float MIDDLE_ZONE_Y = 500.0f;    // ±mm from center y
-const float SIDE_ZONE_Y = 800.0f;      // ±mm from center y for far sides
+// Field frame in millimeters: (0,0) is the centre, +X points toward the opponent goal.
+const float MIDDLE_ZONE_X = 615.0f;
+const float MIDDLE_ZONE_Y = 500.0f;
+const float SIDE_ZONE_Y = 800.0f;
 const float BORDER_X = 965.0f;
 const float BORDER_Y = 660.0f;
 const float GOAL_Y = 425.0f;
@@ -33,145 +31,120 @@ SIM_TLS OpponentRobot opponent1 = {false, 0.0, 0.0, 0.0, 0};
 SIM_TLS OpponentRobot opponent2 = {false, 0.0, 0.0, 0.0, 0};
 SIM_TLS int count = 0; // opponent counter
 
-// LOCAL
-SIM_TLS FieldBall ball; // get ball localisation data
-SIM_TLS RobotPose robotPose; // get robot localisation data 
-// REMOTE
+SIM_TLS FieldBall ball;
+SIM_TLS RobotPose robotPose;
 SIM_TLS FieldBall remoteBall;
 SIM_TLS RobotPose remotePose;
-// OPPONENTS
 SIM_TLS OpponentState opponent1State;
 SIM_TLS OpponentState opponent2State;
 
 namespace {
 constexpr float OPPONENT_GOAL_X_MM = 989.0f;
 constexpr float OPPONENT_GOAL_Y_MM = 0.0f;
-constexpr float GOAL_PUSH_DEPTH_MM = 100.0f;
-constexpr float ROBOT_DIAMETER_MM = 220.0f;
-constexpr float ROBOT_RADIUS_MM = ROBOT_DIAMETER_MM * 0.5f;
-constexpr float KICK_LINE_X_MM = 615.0f;
-constexpr float KICK_LINE_TOLERANCE_MM = 40.0f;
 constexpr float OWN_GOAL_X_MM = -989.0f;
 constexpr float OWN_GOAL_Y_MM = 0.0f;
-constexpr float BALL_APPROACH_OFFSET_MM = 120.0f;
+constexpr float ROBOT_RADIUS_MM = 110.0f;
 // The simulator holds the ball about 12.3 cm from the robot centre.
 constexpr float BALL_DRIBBLE_CAPTURE_DISTANCE_CM = 10.5f;
-constexpr float GOAL_SHOT_OFFSET_Y_MM = 250.0f;
-// Ram starts when the ball is this close and within this angle of the robot-goal line.
-constexpr float RAM_START_DISTANCE_CM = 20.0f;
-constexpr float RAM_START_LINEUP_DEG = 3.0f;
-constexpr float RAM_KEEP_DISTANCE_CM = 45.0f;
-constexpr float RAM_KEEP_LINEUP_DEG = 30.0f;
-// Orbit radius around the ball; must stay inside RAM_START_DISTANCE_CM.
-constexpr float ORBIT_RADIUS_MM = 160.0f;
-constexpr float ORBIT_MAX_STEP_DEG = 45.0f;
-constexpr float ORBIT_SPEED = 0.70f;
-constexpr float ORBIT_ACCEL_LIMIT = 4.0f;
-// Multiplies the heading error during the ram: at full speed the normal heading gain is too weak
-// to stop the robot yawing and curving the ball off the goal line.
-constexpr float RAM_HEADING_GAIN = 4.0f;
-constexpr float RAM_HEADING_ERROR_MAX_DEG = 90.0f;
-// How far past the ball the ram target is placed, so the robot drives through it.
-constexpr float BALL_RAM_EXTEND_MM = 400.0f;
-// The dribbler spins in reverse (bouncing the ball away) only when the ball is this far upfield.
-constexpr float DRIBBLER_KICK_ZONE_X_MM = 400.0f;
-constexpr float SPIN_KICK_HEADING_TOLERANCE_DEG = 15.0f;
-constexpr float BORDER_ESCAPE_STEP_MM = 400.0f;
-constexpr float BORDER_ESCAPE_SPEED = 0.90f;
-constexpr float BORDER_ESCAPE_ACCEL_LIMIT = 6.0f;
-// Escape triggers this far before the border, and holds until this much extra clearance.
-constexpr float BORDER_EARLY_MARGIN_MM = 90.0f;
-constexpr float BORDER_EXIT_MARGIN_MM = 60.0f;
-// Also trigger on where the robot will be this long from now at its commanded velocity.
-constexpr float BORDER_LOOKAHEAD_S = 0.15f;
-constexpr float ATTACKER_BORDER_ESCAPE_STEP_MM = 350.0f;
-constexpr float ATTACKER_BORDER_ESCAPE_SPEED = 0.75f;
-constexpr float ATTACKER_BORDER_ESCAPE_ACCEL_LIMIT = 4.5f;
-constexpr float ATTACKER_BORDER_EARLY_MARGIN_MM = 65.0f;
-constexpr float ATTACKER_BORDER_EXIT_MARGIN_MM = 45.0f;
-constexpr float ATTACKER_BORDER_LOOKAHEAD_S = 0.10f;
-constexpr float SEARCH_SPIN_RADIUS_MM = 75.0f;
-constexpr float SEARCH_RESUME_RADIUS_MM = 125.0f;
+
+// Defence box (own goal area).
 constexpr float DEFENCE_BOX_MIN_X_MM = -965.0f;
 constexpr float DEFENCE_BOX_MAX_X_MM = -615.0f;
 constexpr float DEFENCE_BOX_MAX_ABS_Y_MM = 450.0f;
-constexpr float DRIBBLER_HALF_FIELD_HYSTERESIS_MM = 75.0f;
-constexpr float OWN_GOAL_BACK_X_MM = -989.0f;
-constexpr float SIDE_WALL_TARGET_Y_MM = 300.0f;
-constexpr float HIDE_BALL_TARGET_X_MM = 580.0f;
-constexpr float HIDE_BALL_LANE_Y_MM = 350.0f;
+// backOff starts when the ball is this close to the box, and ends this much further out.
+constexpr float BACKOFF_MARGIN_MM = 100.0f;
+constexpr float BACKOFF_EXIT_MARGIN_MM = 50.0f;
+constexpr float BACKOFF_SPEED = 0.8f;
+
+// Attacker limits (normalized speed, normalized speed per second).
+constexpr float ATTACK_ROTATION_SPEED = 0.5f;
+constexpr float ATTACK_ROTATION_ACCEL = 4.0f;
+constexpr float CENTRE_SPEED = 0.8f;
+constexpr float CENTRE_ACCEL = 3.0f;
+
+// behindBall: orbit the ball at ORBIT_RADIUS_MM until the robot is behind it, in line with the goal.
+constexpr float ORBIT_RADIUS_MM = 200.0f;
+constexpr float ORBIT_SPEED = 0.65f;
+// Must exceed the centripetal rate (speed^2 * ROBOT_LINEAR_SPEED_MM_S / radius) or the orbit spirals out.
+constexpr float ORBIT_ACCEL = 8.0f;
+constexpr float ORBIT_RADIAL_GAIN = 0.01f; // per mm of radius error
+constexpr float ORBIT_RADIUS_BLEND_MM = 250.0f;
+constexpr float ORBIT_FULL_LAP_DEG = 300.0f;
+// An orbit direction is chosen by border clearance only if it beats the other by this much.
+constexpr float ORBIT_BORDER_PREFERENCE_MM = 100.0f;
+
+// push: robot-to-line lateral offset (mm) to start / keep pushing.
+constexpr float PUSH_START_LATERAL_MM = 35.0f;
+constexpr float PUSH_START_DISTANCE_MM = ORBIT_RADIUS_MM + 100.0f;
+constexpr float PUSH_KEEP_LATERAL_MM = 80.0f;
+constexpr float PUSH_KEEP_DISTANCE_MM = 600.0f;
+constexpr float PUSH_SPEED = 0.85f;
+constexpr float PUSH_ACCEL = 4.0f;
+// The push aims this far past the ball along the ball-goal line.
+constexpr float PUSH_EXTEND_MM = 400.0f;
+
+// Borders. Clearance is how far the robot centre can still travel before its edge reaches the border.
+constexpr float BORDER_ENTER_CLEARANCE_MM = 20.0f;
+constexpr float BORDER_EXIT_CLEARANCE_MM = 70.0f;
+// Targets are kept at least this far inside the border so they never trigger awayBorders.
+constexpr float BORDER_TARGET_MARGIN_MM = 40.0f;
+// Speed is limited linearly from full at BORDER_SLOW_RANGE_MM clearance down to BORDER_SLOW_SPEED at the border.
+constexpr float BORDER_SLOW_SPEED = 0.25f;
+constexpr float BORDER_SLOW_RANGE_MM = 250.0f;
+constexpr float AWAY_SPEED = 1.0f;
+constexpr float AWAY_ACCEL = 8.0f;
+
+// Defender limits.
+constexpr float DEFENDER_SPEED = 1.0f;
+constexpr float DEFENDER_ROTATION_SPEED = 0.22f;
+
+// A velocity command is issued as a moveTo toward a point this far ahead, so moveTo's
+// distance-based slowdown never limits speed.
+constexpr float CARROT_MM = 600.0f;
 
 float headingTo(float targetXmm, float targetYmm) {
     return atan2f(targetYmm - robotPose.yMm,
                   targetXmm - robotPose.xMm) * 180.0f / PI;
 }
 
-float clampDefenceX(float xMm) {
-    return constrain(xMm, DEFENCE_BOX_MIN_X_MM, DEFENCE_BOX_MAX_X_MM);
-}
-
-float clampDefenceY(float yMm) {
-    return constrain(yMm, -DEFENCE_BOX_MAX_ABS_Y_MM,
-                     DEFENCE_BOX_MAX_ABS_Y_MM);
-}
-
-bool clipDefenceAxis(float origin, float delta, float minimum, float maximum,
-                     float &tMinimum, float &tMaximum) {
-    if (fabsf(delta) < 0.0001f) {
-        return origin >= minimum && origin <= maximum;
-    }
-
-    float t1 = (minimum - origin) / delta;
-    float t2 = (maximum - origin) / delta;
-    if (t1 > t2) {
-        const float temporary = t1;
-        t1 = t2;
-        t2 = temporary;
-    }
-    tMinimum = fmaxf(tMinimum, t1);
-    tMaximum = fminf(tMaximum, t2);
-    return tMinimum <= tMaximum;
-}
-
-void getBallDefenceTarget(float &targetXmm, float &targetYmm) {
-    const float deltaX = ball.xMm - OWN_GOAL_BACK_X_MM;
-    const float deltaY = ball.yMm - OWN_GOAL_Y_MM;
-    float tMinimum = 0.0f;
-    float tMaximum = 1.0f;
-    const bool intersectsBox =
-        clipDefenceAxis(OWN_GOAL_BACK_X_MM, deltaX, DEFENCE_BOX_MIN_X_MM,
-                        DEFENCE_BOX_MAX_X_MM, tMinimum, tMaximum) &&
-        clipDefenceAxis(OWN_GOAL_Y_MM, deltaY,
-                        -DEFENCE_BOX_MAX_ABS_Y_MM, DEFENCE_BOX_MAX_ABS_Y_MM,
-                        tMinimum, tMaximum);
-
-    if (intersectsBox) {
-        const float targetT = tMaximum;
-        targetXmm = OWN_GOAL_BACK_X_MM + targetT * deltaX;
-        targetYmm = OWN_GOAL_Y_MM + targetT * deltaY;
-        return;
-    }
-
-    // If the shot line misses the box, hold the nearest legal box point to the ball.
-    targetXmm = clampDefenceX(ball.xMm);
-    targetYmm = clampDefenceY(ball.yMm);
-}
-
 float headingToOpponentGoal() {
     return headingTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM);
 }
 
-/*
-bool isAtKickLine() {
-    return robotPose.xMm >= KICK_LINE_X_MM - KICK_LINE_TOLERANCE_MM;
+float distanceToCentre() {
+    return sqrtf(robotPose.xMm * robotPose.xMm + robotPose.yMm * robotPose.yMm);
 }
-*/
 
-bool isBallInGoalPushZone() {
+// Beside the goal mouth the end wall is a border; inside the mouth the robot may enter the goal.
+float borderClearance(float xMm, float yMm) {
+    float clearance = BORDER_Y - ROBOT_RADIUS_MM - fabsf(yMm);
+    if (fabsf(yMm) > GOAL_Y - ROBOT_RADIUS_MM) {
+        clearance = fminf(clearance, BORDER_X - ROBOT_RADIUS_MM - fabsf(xMm));
+    }
+    return clearance;
+}
+
+float borderSpeedLimit() {
+    const float clearance =
+        borderClearance(robotPose.xMm, robotPose.yMm) - BORDER_ENTER_CLEARANCE_MM;
+    return constrain(BORDER_SLOW_SPEED + (1.0f - BORDER_SLOW_SPEED) *
+                     clearance / BORDER_SLOW_RANGE_MM, BORDER_SLOW_SPEED, 1.0f);
+}
+
+void clampToField(float &xMm, float &yMm) {
+    const float limitY = BORDER_Y - ROBOT_RADIUS_MM - BORDER_TARGET_MARGIN_MM;
+    const float limitX = BORDER_X - ROBOT_RADIUS_MM - BORDER_TARGET_MARGIN_MM;
+    yMm = constrain(yMm, -limitY, limitY);
+    if (fabsf(yMm) > GOAL_Y - ROBOT_RADIUS_MM) {
+        xMm = constrain(xMm, -limitX, limitX);
+    }
+}
+
+bool isBallNearDefenceBox(float marginMm) {
     return ball.valid &&
-           ball.xMm >= OPPONENT_GOAL_X_MM - GOAL_PUSH_DEPTH_MM &&
-           ball.xMm <= OPPONENT_GOAL_X_MM &&
-           fabsf(ball.yMm) <= GOAL_Y;
+           ball.xMm >= DEFENCE_BOX_MIN_X_MM - marginMm &&
+           ball.xMm <= DEFENCE_BOX_MAX_X_MM + marginMm &&
+           fabsf(ball.yMm) <= DEFENCE_BOX_MAX_ABS_Y_MM + marginMm;
 }
 
 bool isInOpponentGoalBox(const OpponentRobot &opponent) {
@@ -179,199 +152,141 @@ bool isInOpponentGoalBox(const OpponentRobot &opponent) {
            opponent.xMm <= BORDER_X && fabsf(opponent.yMm) <= GOAL_Y;
 }
 
-bool isBallInDefenceBox() {
-    return ball.valid && ball.xMm >= DEFENCE_BOX_MIN_X_MM &&
-           ball.xMm <= DEFENCE_BOX_MAX_X_MM &&
-           fabsf(ball.yMm) <= DEFENCE_BOX_MAX_ABS_Y_MM;
+// Geometry of the robot relative to the line from the ball to the goal centre.
+struct BallLine {
+    float unitX;       // ball -> goal
+    float unitY;
+    float distanceMm;  // robot to ball
+    float behindMm;    // robot distance behind the ball along the line (negative: past it)
+    float lateralMm;   // robot distance off the line
+};
+
+BallLine ballLine() {
+    const float goalX = OPPONENT_GOAL_X_MM - ball.xMm;
+    const float goalY = OPPONENT_GOAL_Y_MM - ball.yMm;
+    const float goalDistance = fmaxf(sqrtf(goalX * goalX + goalY * goalY), 1.0f);
+    const float relX = robotPose.xMm - ball.xMm;
+    const float relY = robotPose.yMm - ball.yMm;
+    BallLine line;
+    line.unitX = goalX / goalDistance;
+    line.unitY = goalY / goalDistance;
+    line.distanceMm = sqrtf(relX * relX + relY * relY);
+    line.behindMm = -(relX * line.unitX + relY * line.unitY);
+    line.lateralMm = fabsf(line.unitX * relY - line.unitY * relX);
+    return line;
 }
 
-/*
-bool isSideRoute() {
-    return (ball.valid && fabsf(ball.yMm) >= MIDDLE_ZONE_Y) ||
-           ballState.ballState == BallState::farSides ||
-           ballState.ballState == BallState::farSidesOwn;
-}
-
-float hideBallSide() {
-    if (ball.valid) {
-        return ball.yMm < 0.0f ? -1.0f : 1.0f;
+// Closest approach to a border over a sampled arc of the orbit circle.
+float orbitArcClearance(float startDeg, float sweepDeg) {
+    float worst = 1.0e6f;
+    for (int i = 1; i <= 3; i++) {
+        const float rad = (startDeg + sweepDeg * 0.25f * i) * PI / 180.0f;
+        const float x = ball.xMm + ORBIT_RADIUS_MM * cosf(rad);
+        const float y = ball.yMm + ORBIT_RADIUS_MM * sinf(rad);
+        worst = fminf(worst, fminf(BORDER_X - fabsf(x), BORDER_Y - fabsf(y)));
     }
-    return robotPose.yMm < 0.0f ? -1.0f : 1.0f;
+    return worst;
 }
 
-bool hideBallReached() {
-    const float side = hideBallSide();
-    return robotPose.xMm >= HIDE_BALL_TARGET_X_MM - POSITION_TOLERANCE_MM &&
-           fabsf(robotPose.yMm - side * HIDE_BALL_LANE_Y_MM) <= 45.0f;
-}
-
-bool isBehindBallRoute(RobotGoal goal) {
-    return goal == RobotGoal::getBallPush ||
-           goal == RobotGoal::pushForward ||
-           goal == RobotGoal::scoring;
-}
-*/
-
-float shotTargetY() {
-    const OpponentRobot *goalie = nullptr;
-    if (isInOpponentGoalBox(opponent1)) {
-        goalie = &opponent1;
-    }
-    if (isInOpponentGoalBox(opponent2) &&
-        (!goalie || opponent2.xMm > goalie->xMm)) {
-        goalie = &opponent2;
-    }
-
-    if (!goalie) {
-        return OPPONENT_GOAL_Y_MM;
-    }
-
-    float targetYmm = goalie->yMm >= 0.0f
-        ? -GOAL_SHOT_OFFSET_Y_MM : GOAL_SHOT_OFFSET_Y_MM;
-    if (fabsf(goalie->yMm) < 30.0f) {
-        targetYmm = robotPose.yMm >= 0.0f
-            ? -GOAL_SHOT_OFFSET_Y_MM : GOAL_SHOT_OFFSET_Y_MM;
-    }
-    return targetYmm;
-}
-
-// +1 / -1 = counter-clockwise / clockwise orbit, latched until the goal changes.
+// +1 / -1 = counter-clockwise / clockwise, latched until the goal changes.
 SIM_TLS float orbitDirection = 0.0f;
 
-float ballBearingPointDistanceToCentre(float bearingDeg) {
-    const float rad = bearingDeg * PI / 180.0f;
-    const float x = ball.xMm + ORBIT_RADIUS_MM * cosf(rad);
-    const float y = ball.yMm + ORBIT_RADIUS_MM * sinf(rad);
-    return sqrtf(x * x + y * y);
-}
+// Unit velocity direction that circles the ball toward the point directly behind it.
+void getOrbitDirection(float &dirX, float &dirY) {
+    const float relX = robotPose.xMm - ball.xMm;
+    const float relY = robotPose.yMm - ball.yMm;
+    const float radius = fmaxf(sqrtf(relX * relX + relY * relY), 1.0f);
+    const float radialX = relX / radius;
+    const float radialY = relY / radius;
 
-// Next point on a circle around the ball, stepped from the robot's bearing toward the
-// side of the ball directly opposite the goal, going around the field-centre side.
-void getBallOrbitTarget(float &targetXmm, float &targetYmm) {
-    const float robotBearing = atan2f(robotPose.yMm - ball.yMm,
-                                      robotPose.xMm - ball.xMm) * 180.0f / PI;
+    const float robotBearing = atan2f(relY, relX) * 180.0f / PI;
     const float behindBearing = atan2f(ball.yMm - OPPONENT_GOAL_Y_MM,
                                        ball.xMm - OPPONENT_GOAL_X_MM) * 180.0f / PI;
     const float error = angleError(behindBearing, robotBearing);
     const float sweepCcw = error >= 0.0f ? error : error + 360.0f;
+
     if (orbitDirection == 0.0f) {
-        const float midCcw = robotBearing + sweepCcw * 0.5f;
-        const float midCw = robotBearing - (360.0f - sweepCcw) * 0.5f;
-        orbitDirection = ballBearingPointDistanceToCentre(midCcw) <=
-                         ballBearingPointDistanceToCentre(midCw) ? 1.0f : -1.0f;
+        const float clearanceCcw = orbitArcClearance(robotBearing, sweepCcw);
+        const float clearanceCw = orbitArcClearance(robotBearing, sweepCcw - 360.0f);
+        if (fabsf(clearanceCcw - clearanceCw) > ORBIT_BORDER_PREFERENCE_MM) {
+            orbitDirection = clearanceCcw > clearanceCw ? 1.0f : -1.0f;
+        } else {
+            orbitDirection = sweepCcw <= 180.0f ? 1.0f : -1.0f;
+        }
     }
-    float sweep = orbitDirection > 0.0f ? sweepCcw : 360.0f - sweepCcw;
-    // Overshot the latched direction: finish the short way instead of a full lap.
-    if (sweep > 300.0f) {
+    // Overshot the latched direction: go back the short way instead of a full lap.
+    const float sweep = orbitDirection > 0.0f ? sweepCcw : 360.0f - sweepCcw;
+    if (sweep > ORBIT_FULL_LAP_DEG) {
         orbitDirection = -orbitDirection;
-        sweep = 360.0f - sweep;
     }
-    const float step = orbitDirection * fminf(sweep, ORBIT_MAX_STEP_DEG);
-    const float bearingRad = (robotBearing + step) * PI / 180.0f;
-    targetXmm = ball.xMm + ORBIT_RADIUS_MM * cosf(bearingRad);
-    targetYmm = ball.yMm + ORBIT_RADIUS_MM * sinf(bearingRad);
+
+    // Tangent keeps the robot circling; the radial term holds it on the circle.
+    const float radiusError = ORBIT_RADIUS_MM - radius;
+    const float tangentWeight =
+        constrain(1.0f - fabsf(radiusError) / ORBIT_RADIUS_BLEND_MM, 0.35f, 1.0f);
+    const float radialWeight = constrain(radiusError * ORBIT_RADIAL_GAIN, -1.5f, 1.5f);
+    float vx = orbitDirection * -radialY * tangentWeight + radialX * radialWeight;
+    float vy = orbitDirection * radialX * tangentWeight + radialY * radialWeight;
+    const float magnitude = fmaxf(sqrtf(vx * vx + vy * vy), 0.0001f);
+    dirX = vx / magnitude;
+    dirY = vy / magnitude;
 }
 
-// True when the robot, ball and goal centre are in line, with the ball in between.
-bool isLinedUpBehindBall(float toleranceDeg) {
-    return fabsf(angleError(headingToOpponentGoal(),
-                            headingTo(ball.xMm, ball.yMm))) <= toleranceDeg;
+void moveAlong(float dirX, float dirY, float speed, float accel, float headingDeg) {
+    moveTo(robotPose.xMm + dirX * CARROT_MM, robotPose.yMm + dirY * CARROT_MM,
+           headingDeg, speed, accel, ATTACK_ROTATION_SPEED, ATTACK_ROTATION_ACCEL);
 }
 
-/*
-void dribbleForward() {
-    setDribblerDirectionForward();
-    setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
-}
-*/
-
-float ballApproachSpeed() {
-    const float distanceScale = ball.valid
-        ? constrain(ball.distanceCm / 80.0f, 0.30f, 1.0f)
-        : 1.0f;
-    const float requestedSpeed = BALL_APPROACH_MAX_SPEED * distanceScale;
-    const float movementFloor = fminf(MOTOR_MIN_COMMAND,
-                                      BALL_APPROACH_MAX_SPEED);
-    return fmaxf(requestedSpeed, movementFloor);
-}
-
-/* Dribbling policy disabled: the robot no longer tries to capture or carry the ball.
-SIM_TLS bool defenderDribblerActive = false;
-
-void updateDribblerPolicy() {
-    bool shouldRun = false;
-    if (localState.robotState != RobotState::defending) {
-        defenderDribblerActive = false;
-    }
-    if (robotPose.valid && localState.robotState == RobotState::defending) {
-        if (ball.valid) {
-            if (ball.xMm < -DRIBBLER_HALF_FIELD_HYSTERESIS_MM) {
-                defenderDribblerActive = true;
-            } else if (ball.xMm > DRIBBLER_HALF_FIELD_HYSTERESIS_MM) {
-                defenderDribblerActive = false;
-            }
+// Defender target: where the ball-to-own-goal line leaves the defence box, else the nearest box point.
+void getBallDefenceTarget(float &targetXmm, float &targetYmm) {
+    const float deltaX = ball.xMm - OWN_GOAL_X_MM;
+    const float deltaY = ball.yMm - OWN_GOAL_Y_MM;
+    float tMin = 0.0f;
+    float tMax = 1.0f;
+    const float origin[2] = {OWN_GOAL_X_MM, OWN_GOAL_Y_MM};
+    const float delta[2] = {deltaX, deltaY};
+    const float lower[2] = {DEFENCE_BOX_MIN_X_MM, -DEFENCE_BOX_MAX_ABS_Y_MM};
+    const float upper[2] = {DEFENCE_BOX_MAX_X_MM, DEFENCE_BOX_MAX_ABS_Y_MM};
+    bool intersects = true;
+    for (int axis = 0; axis < 2 && intersects; axis++) {
+        if (fabsf(delta[axis]) < 0.0001f) {
+            intersects = origin[axis] >= lower[axis] && origin[axis] <= upper[axis];
+            continue;
         }
-        shouldRun = defenderDribblerActive;
-    } else if (robotPose.valid && localState.robotState == RobotState::attacking) {
-        const bool hasBall = ballState.ballPossession == BallPossession::mePossession ||
-                             ballState.ballPossession == BallPossession::front;
-        switch (localState.robotGoal) {
-            case RobotGoal::getBallPush:
-            case RobotGoal::getBallDribble:
-            case RobotGoal::getBallDribbleAway:
-            case RobotGoal::interceptBall1:
-            case RobotGoal::interceptBall2:
-            case RobotGoal::pushForward:
-            case RobotGoal::hideForward:
-            case RobotGoal::spinKick:
-            case RobotGoal::kick:
-            case RobotGoal::pass:
-            case RobotGoal::awayBorders:
-            case RobotGoal::defendBall:
-            case RobotGoal::searchBall:
-            case RobotGoal::dribbleForward:
-            case RobotGoal::hideBall:
-            case RobotGoal::scoring:
-                shouldRun = true;
-                break;
-            case RobotGoal::none:
-            case RobotGoal::backOff:
-                shouldRun = hasBall;
-                break;
+        float t1 = (lower[axis] - origin[axis]) / delta[axis];
+        float t2 = (upper[axis] - origin[axis]) / delta[axis];
+        if (t1 > t2) {
+            const float temporary = t1;
+            t1 = t2;
+            t2 = temporary;
         }
+        tMin = fmaxf(tMin, t1);
+        tMax = fminf(tMax, t2);
+        intersects = tMin <= tMax;
     }
 
-    if (shouldRun) {
-        dribbleForward();
+    if (intersects) {
+        targetXmm = OWN_GOAL_X_MM + tMax * deltaX;
+        targetYmm = OWN_GOAL_Y_MM + tMax * deltaY;
     } else {
-        stopDribbler();
+        targetXmm = constrain(ball.xMm, DEFENCE_BOX_MIN_X_MM, DEFENCE_BOX_MAX_X_MM);
+        targetYmm = constrain(ball.yMm, -DEFENCE_BOX_MAX_ABS_Y_MM, DEFENCE_BOX_MAX_ABS_Y_MM);
     }
+    clampToField(targetXmm, targetYmm);
 }
-*/
 
-// The dribbler only acts as a kicker: spun against its capture direction near the
-// opponent goal, it bounces the ball away toward the goal.
+// The dribbler only spins to capture the ball, and only while the attacker is working on it.
 void updateDribblerPolicy() {
-    const bool ramGoal = localState.robotGoal == RobotGoal::getBallPush ||
-                        localState.robotGoal == RobotGoal::kick ||
-                        localState.robotGoal == RobotGoal::scoring;
-    if (robotPose.valid && localState.robotState == RobotState::attacking &&
-        ramGoal && ball.valid && ball.xMm >= DRIBBLER_KICK_ZONE_X_MM) {
-        setDribblerDirectionReverse();
+    const bool capture = robotPose.valid &&
+        localState.robotState == RobotState::attacking &&
+        (localState.robotGoal == RobotGoal::behindBall ||
+         localState.robotGoal == RobotGoal::push);
+    if (capture) {
+        setDribblerDirectionForward();
         setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
     } else {
         stopDribbler();
     }
-}
-
-bool isNearBorder(float xMm, float yMm, float marginMm) {
-    return fabsf(yMm) >= BORDER_Y - ROBOT_RADIUS_MM - marginMm ||
-           (fabsf(yMm) >= GOAL_Y - ROBOT_RADIUS_MM - marginMm &&
-            fabsf(xMm) >= BORDER_X - ROBOT_RADIUS_MM - marginMm);
-}
-
-void stopMotion() {
-    stopAllDriveMotors();
 }
 }
 
@@ -391,261 +306,66 @@ void updateStrategy() {
 
 void move() {
     SIM_STATIC_TLS RobotGoal previousGoal = RobotGoal::none;
-    SIM_STATIC_TLS bool searchSettled = false;
-    // Latched once aligned with the goal: translation toward the goal is enabled.
-    SIM_STATIC_TLS bool goalDriveStarted = false;
-    SIM_STATIC_TLS bool spinKickTracking = false;
-    SIM_STATIC_TLS float spinKickLastHeading = 0.0f;
-    SIM_STATIC_TLS float spinKickAccumulatedDeg = 0.0f;
     if (localState.robotGoal != previousGoal) {
-        goalDriveStarted = false;
         orbitDirection = 0.0f;
-        spinKickTracking = false;
-        spinKickAccumulatedDeg = 0.0f;
-        searchSettled = false;
         previousGoal = localState.robotGoal;
     }
 
     if (!robotPose.valid) {
-        stopMotion();
+        stopAllDriveMotors();
         stopDribbler();
         return;
     }
 
-    // A border escape always takes priority over every other goal.
-    if (localState.robotGoal == RobotGoal::awayBorders) {
-        const bool attacking = localState.robotState == RobotState::attacking;
-        const float distanceToCenter = sqrtf(robotPose.xMm * robotPose.xMm +
-                                             robotPose.yMm * robotPose.yMm);
-        const float step = fminf(distanceToCenter,
-            attacking ? ATTACKER_BORDER_ESCAPE_STEP_MM : BORDER_ESCAPE_STEP_MM);
-        const float scale = distanceToCenter > 0.0f ? step / distanceToCenter : 0.0f;
-        const float targetX = robotPose.xMm * (1.0f - scale);
-        const float targetY = robotPose.yMm * (1.0f - scale);
-        const float targetHeading =
-            attacking
-                ? headingToOpponentGoal()
-                : (ball.valid ? headingTo(ball.xMm, ball.yMm)
-                              : robotPose.headingDeg);
-        moveTo(targetX, targetY, targetHeading,
-               attacking ? ATTACKER_BORDER_ESCAPE_SPEED : BORDER_ESCAPE_SPEED,
-               attacking ? ATTACKER_BORDER_ESCAPE_ACCEL_LIMIT : BORDER_ESCAPE_ACCEL_LIMIT,
-               ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-        updateDribblerPolicy();
-        return;
-    }
+    const bool attacking = localState.robotState == RobotState::attacking;
+    const float goalHeading = headingToOpponentGoal();
 
     switch (localState.robotGoal) {
         case RobotGoal::none:
-            stopMotion();
+            stopAllDriveMotors();
             break;
 
-        case RobotGoal::getBallPush: {
-            if (!ball.valid) {
-                stopMotion();
-                break;
-            }
-            // Face the goal and orbit the ball; kick (ram) takes over once lined up.
-            float targetXmm;
-            float targetYmm;
-            getBallOrbitTarget(targetXmm, targetYmm);
-            moveTo(targetXmm, targetYmm, headingToOpponentGoal(), ORBIT_SPEED,
-                   ORBIT_ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        }
-
-        // Dribbling goals are no longer selected; original code kept below.
-        case RobotGoal::getBallDribble:
-        case RobotGoal::dribbleForward:
-        case RobotGoal::getBallDribbleAway:
-        case RobotGoal::pushForward:
-        case RobotGoal::hideBall:
-            stopMotion();
-            break;
-
-        /*
-        case RobotGoal::getBallDribble:
-            if (!ball.valid) {
-                stopAllDriveMotors();
-                break;
-            }
-            moveTo(ball.xMm, ball.yMm, headingTo(ball.xMm, ball.yMm),
-                     ballApproachSpeed(), BALL_APPROACH_ACCEL_LIMIT,
-                     ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-
-        case RobotGoal::dribbleForward:
-            if (!ball.valid) {
-                stopAllDriveMotors();
-                break;
-            }
-            if (ballState.ballPossession == BallPossession::mePossession ||
-                ballState.ballPossession == BallPossession::front) {
-                moveTo(KICK_LINE_X_MM, robotPose.yMm,
-                      headingToOpponentGoal(), POSSESSION_MAX_SPEED, ACCEL_LIMIT,
-                       ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            } else {
-                moveTo(ball.xMm, ball.yMm, headingTo(ball.xMm, ball.yMm),
-                       ballApproachSpeed(), BALL_APPROACH_ACCEL_LIMIT,
-                       ROTATION_MAX_SPEED,
-                       ROTATION_ACCEL_LIMIT);
-            }
-            break;
-
-        case RobotGoal::getBallDribbleAway:
-            if (!ball.valid) {
-                stopMotion();
-                break;
-            }
-            // Continue through the ball in the +X (opponent-goal) direction.
-            moveTo(ball.xMm + BALL_APPROACH_OFFSET_MM, ball.yMm,
-                     headingTo(ball.xMm, ball.yMm), ballApproachSpeed(),
-                     BALL_APPROACH_ACCEL_LIMIT,
-                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        */
-
-        case RobotGoal::interceptBall1:
-        case RobotGoal::interceptBall2: {
-            const OpponentRobot &opponent =
-                localState.robotGoal == RobotGoal::interceptBall1 ? opponent1 : opponent2;
-            if (!opponent.valid) {
-                stopMotion();
-                break;
-            }
-            const float targetHeading = headingToOpponentGoal();
-                 moveTo(opponent.xMm, opponent.yMm, targetHeading,
-                     BALL_APPROACH_MAX_SPEED, BALL_APPROACH_ACCEL_LIMIT,
-                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        }
-
-        /*
-        case RobotGoal::pushForward:
-            if (ballState.ballPossession != BallPossession::front &&
-                ballState.ballPossession != BallPossession::mePossession) {
-                stopMotion();
-                break;
-            }
-            // Carry the ball to the kick line, then hold position for the shot.
-            moveTo(KICK_LINE_X_MM, robotPose.yMm,
-                     headingToOpponentGoal(), POSSESSION_MAX_SPEED, ACCEL_LIMIT,
-                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        */
-
-        case RobotGoal::scoring:
-            if (!ball.valid ||
-                (ballState.ballPossession != BallPossession::front &&
-                 ballState.ballPossession != BallPossession::mePossession)) {
-                stopMotion();
-                break;
-            }
-            {
-                const float goalwardX = OPPONENT_GOAL_X_MM - ball.xMm;
-                const float goalwardY = OPPONENT_GOAL_Y_MM - ball.yMm;
-                const float goalwardDistance =
-                    sqrtf(goalwardX * goalwardX + goalwardY * goalwardY);
-                const float goalwardScale = goalwardDistance > 0.001f
-                    ? BALL_APPROACH_OFFSET_MM / goalwardDistance : 0.0f;
-                const float targetXmm = OPPONENT_GOAL_X_MM +
-                                        goalwardX * goalwardScale;
-                const float targetYmm = OPPONENT_GOAL_Y_MM +
-                                        goalwardY * goalwardScale;
-                const float targetHeading = goalwardDistance > 0.001f
-                    ? atan2f(goalwardY, goalwardX) * 180.0f / PI
-                    : headingToOpponentGoal();
-                  moveTo(targetXmm, targetYmm, targetHeading, BALL_RAM_SPEED,
-                       BALL_RAM_ACCEL_LIMIT, ROTATION_MAX_SPEED,
-                       ROTATION_ACCEL_LIMIT);
-            }
-            break;
-
-        /*
-        case RobotGoal::hideBall: {
-            const float side = hideBallSide();
-            const float laneY = side * HIDE_BALL_LANE_Y_MM;
-            const bool onLane = fabsf(robotPose.yMm - laneY) <= 45.0f;
-            moveTo(onLane ? HIDE_BALL_TARGET_X_MM : robotPose.xMm,
-                   laneY, side * 90.0f,
-                   onLane ? 0.65f : 0.45f, ACCEL_LIMIT,
-                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        }
-        */
-
-        case RobotGoal::hideForward: {
-            // Travel toward the own-goal-side corner while facing 45 degrees off -X.
-            const float side = robotPose.yMm >= 0.0f ? 1.0f : -1.0f;
-            moveTo(OWN_GOAL_X_MM, side * SIDE_WALL_TARGET_Y_MM,
-                   180.0f - side * 45.0f,
-                   0.8f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        }
-
-        case RobotGoal::spinKick: {
-            const float goalHeading = headingToOpponentGoal();
-            if (!spinKickTracking) {
-                spinKickLastHeading = robotPose.headingDeg;
-                spinKickAccumulatedDeg = 0.0f;
-                spinKickTracking = true;
-            }
-            spinKickAccumulatedDeg +=
-                fabsf(angleError(robotPose.headingDeg, spinKickLastHeading));
-            spinKickLastHeading = robotPose.headingDeg;
-            if (!goalDriveStarted &&
-                ballState.ballPossession == BallPossession::mePossession &&
-                spinKickAccumulatedDeg >= 360.0f &&
-                fabsf(angleError(goalHeading, robotPose.headingDeg)) <=
-                    SPIN_KICK_HEADING_TOLERANCE_DEG) {
-                goalDriveStarted = true;
-            }
-            if (goalDriveStarted) {
-                moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM, goalHeading,
-                       BALL_RAM_SPEED, BALL_RAM_ACCEL_LIMIT, ROTATION_MAX_SPEED,
-                       ROTATION_ACCEL_LIMIT);
-            } else {
-                stopAllDriveMotors();
-                drive(0.0f, 0.0f, ROTATION_MAX_SPEED);
-            }
-            break;
-        }
-
-        case RobotGoal::kick: {
-            // Ram: lined up behind the ball, drive full speed at the goal centre.
-            if (!ball.valid) {
-                stopMotion();
-                break;
-            }
-            const float headingError = angleError(headingToOpponentGoal(),
-                                                  robotPose.headingDeg);
-            const float ramHeading = robotPose.headingDeg +
-                constrain(headingError * RAM_HEADING_GAIN,
-                          -RAM_HEADING_ERROR_MAX_DEG, RAM_HEADING_ERROR_MAX_DEG);
-            moveTo(OPPONENT_GOAL_X_MM, OPPONENT_GOAL_Y_MM, ramHeading,
-                   ROBOT_MAX_SPEED, ACCEL_LIMIT,
-                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        }
-
-        case RobotGoal::pass: {
-            if (!remotePose.valid) {
-                stopMotion();
-                break;
-            }
-            const float passHeading = headingTo(remotePose.xMm, remotePose.yMm);
-            moveTo(robotPose.xMm, robotPose.yMm,
-                   passHeading, 0.0f, 0.0f,
-                   ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            // Passing needs the kicker, which is disabled: only face the partner.
+        case RobotGoal::awayBorders: {
+            const float distance = fmaxf(distanceToCentre(), 1.0f);
+            const float heading = attacking ? goalHeading
+                : (ball.valid ? headingTo(ball.xMm, ball.yMm) : robotPose.headingDeg);
+            moveAlong(-robotPose.xMm / distance, -robotPose.yMm / distance,
+                      AWAY_SPEED, AWAY_ACCEL, heading);
             break;
         }
 
         case RobotGoal::backOff:
-                        moveTo(0.0f, 0.0f,
-                                     headingToOpponentGoal(),
-                   0.7f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+        case RobotGoal::searchBall:
+            moveTo(0.0f, 0.0f, goalHeading, fminf(BACKOFF_SPEED, borderSpeedLimit()),
+                   CENTRE_ACCEL, ATTACK_ROTATION_SPEED, ATTACK_ROTATION_ACCEL);
             break;
+
+        case RobotGoal::behindBall: {
+            if (!ball.valid) {
+                stopAllDriveMotors();
+                break;
+            }
+            float dirX;
+            float dirY;
+            getOrbitDirection(dirX, dirY);
+            moveAlong(dirX, dirY, fminf(ORBIT_SPEED, borderSpeedLimit()),
+                      ORBIT_ACCEL, goalHeading);
+            break;
+        }
+
+        case RobotGoal::push: {
+            if (!ball.valid) {
+                stopAllDriveMotors();
+                break;
+            }
+            const BallLine line = ballLine();
+            const float aimX = ball.xMm + line.unitX * PUSH_EXTEND_MM - robotPose.xMm;
+            const float aimY = ball.yMm + line.unitY * PUSH_EXTEND_MM - robotPose.yMm;
+            const float aimDistance = fmaxf(sqrtf(aimX * aimX + aimY * aimY), 1.0f);
+            moveAlong(aimX / aimDistance, aimY / aimDistance,
+                      fminf(PUSH_SPEED, borderSpeedLimit()), PUSH_ACCEL, goalHeading);
+            break;
+        }
 
         case RobotGoal::defendBall: {
             if (!ball.valid) {
@@ -655,96 +375,44 @@ void move() {
             float targetXmm;
             float targetYmm;
             getBallDefenceTarget(targetXmm, targetYmm);
-            moveTo(targetXmm, targetYmm,
-                   headingTo(ball.xMm, ball.yMm),
-                   1.0f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
+            moveTo(targetXmm, targetYmm, headingTo(ball.xMm, ball.yMm),
+                   fminf(DEFENDER_SPEED, borderSpeedLimit()), ACCEL_LIMIT,
+                   DEFENDER_ROTATION_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
-
-        case RobotGoal::searchBall: {
-            const float distanceToCenter =
-                sqrtf(robotPose.xMm * robotPose.xMm +
-                      robotPose.yMm * robotPose.yMm);
-            if (!searchSettled && distanceToCenter <= SEARCH_SPIN_RADIUS_MM) {
-                searchSettled = true;
-            } else if (searchSettled &&
-                       distanceToCenter > SEARCH_RESUME_RADIUS_MM) {
-                searchSettled = false;
-            }
-
-            if (!searchSettled) {
-                moveTo(0.0f, 0.0f, robotPose.headingDeg,
-                       0.25f, 1.0f, 0.0f, ROTATION_ACCEL_LIMIT);
-            } else {
-                stopAllDriveMotors();
-                drive(0.0f, 0.0f, 0.15f);
-            }
-            break;
-        }
-
-        case RobotGoal::awayBorders:
-            // Handled above so it cannot be pre-empted by another action.
-            break;
     }
     updateDribblerPolicy();
 }
 
 void processOpponents() {
-    OpponentRobot opponentsLocal[2];
-    OpponentRobot opponentsRemote[2];
+    OpponentRobot opponentsLocal[2] = {};
+    OpponentRobot opponentsRemote[2] = {};
     count = 0;
 
     getRemoteOpponents(opponentsRemote, 2, count); // COUNT NOT USED FROM REMOTE
-    getOpponents(opponentsLocal, 2, count); // count from LOCAl opponents used instead 
+    getOpponents(opponentsLocal, 2, count); // count from LOCAl opponents used instead
 
-    // Assign first opponent if available
-    if (count >= 1) {
-        if ((opponentsLocal[0].valid == true) && (opponentsRemote[0].valid == true)) {
-            opponent1.valid = true;
-            opponent1.confidence = (opponentsLocal[0].confidence + opponentsRemote[0].confidence) / 2;
-            opponent1.xMm = (opponentsLocal[0].xMm + opponentsRemote[0].xMm) / 2;
-            opponent1.yMm = (opponentsLocal[0].yMm + opponentsRemote[0].yMm) / 2;
-            opponent1.timestampMs = 0;
-        } else if (opponentsLocal[0].valid == true) {
-            opponent1.valid = true;
-            opponent1.confidence = opponentsLocal[0].confidence;
-            opponent1.xMm = opponentsLocal[0].xMm;
-            opponent1.yMm = opponentsLocal[0].yMm;
-            opponent1.timestampMs = 0;
+    OpponentRobot *tracked[2] = {&opponent1, &opponent2};
+    for (int i = 0; i < 2; i++) {
+        const OpponentRobot &local = opponentsLocal[i];
+        const OpponentRobot &remote = opponentsRemote[i];
+        OpponentRobot &out = *tracked[i];
+        if (count <= i || (!local.valid && !remote.valid)) {
+            out.valid = false;
+            continue;
+        }
+        out.valid = true;
+        out.timestampMs = 0;
+        if (local.valid && remote.valid) {
+            out.confidence = (local.confidence + remote.confidence) / 2;
+            out.xMm = (local.xMm + remote.xMm) / 2;
+            out.yMm = (local.yMm + remote.yMm) / 2;
         } else {
-            opponent1.valid = true;
-            opponent1.confidence = opponentsRemote[0].confidence;
-            opponent1.xMm = opponentsRemote[0].xMm;
-            opponent1.yMm = opponentsRemote[0].yMm;
-            opponent1.timestampMs = 0;
-        }        
-    } else {
-        opponent1.valid = false;
-    }
-
-    // Assign second opponent if available
-    if (count >= 2) {
-       if ((opponentsLocal[1].valid == true) && (opponentsRemote[1].valid == true)) {
-            opponent2.valid = true;
-            opponent2.confidence = (opponentsLocal[1].confidence + opponentsRemote[1].confidence) / 2;
-            opponent2.xMm = (opponentsLocal[1].xMm + opponentsRemote[1].xMm) / 2;
-            opponent2.yMm = (opponentsLocal[1].yMm + opponentsRemote[1].yMm) / 2;
-            opponent2.timestampMs = 0;
-        } else if (opponentsLocal[1].valid == true) {
-            opponent2.valid = true;
-            opponent2.confidence = opponentsLocal[1].confidence;
-            opponent2.xMm = opponentsLocal[1].xMm;
-            opponent2.yMm = opponentsLocal[1].yMm;
-            opponent2.timestampMs = 0;
-        } else {
-            opponent2.valid = true;
-            opponent2.confidence = opponentsRemote[1].confidence;
-            opponent2.xMm = opponentsRemote[1].xMm;
-            opponent2.yMm = opponentsRemote[1].yMm;
-            opponent2.timestampMs = 0;
-        }   
-    } else {
-        opponent2.valid = false;
+            const OpponentRobot &source = local.valid ? local : remote;
+            out.confidence = source.confidence;
+            out.xMm = source.xMm;
+            out.yMm = source.yMm;
+        }
     }
 }
 
@@ -822,42 +490,19 @@ void updateBallState() {
 }
 
 void updateOpponentState() {
-    if (opponent1.valid == false) {
-        opponent1State = OpponentState::damaged;
-    } else {
-        if (opponent1State == OpponentState::hidingBall) { // checks if hiding ball first
-            if (isInOpponentGoalBox(opponent1)) {
-                opponent1State = OpponentState::goalie;
-            } else if (opponent1.xMm >= -MIDDLE_ZONE_X) {
-                opponent1State = OpponentState::shooting;
-            } 
-        } else {
-            if (isInOpponentGoalBox(opponent1)) {
-                opponent1State = OpponentState::goalie;
-            } else if (opponent1.xMm >= -MIDDLE_ZONE_X) {
-                opponent1State = OpponentState::shooting;
-            } else {
-                opponent1State = OpponentState::chasingBall;
-            }
-        }
-    }
-    if (opponent2.valid == false) {
-        opponent2State = OpponentState::damaged;
-    } else {
-        if (opponent2State == OpponentState::hidingBall) {
-            if (isInOpponentGoalBox(opponent2)) {
-                opponent2State = OpponentState::goalie;
-            } else if (opponent2.xMm >= -MIDDLE_ZONE_X) {
-                opponent2State = OpponentState::shooting;
-            } 
-        } else {
-            if (isInOpponentGoalBox(opponent2)) {
-                opponent2State = OpponentState::goalie;
-            } else if (opponent2.xMm >= -MIDDLE_ZONE_X) {
-                opponent2State = OpponentState::shooting;
-            } else {
-                opponent2State = OpponentState::chasingBall;
-            }
+    const OpponentRobot *opponents[2] = {&opponent1, &opponent2};
+    OpponentState *states[2] = {&opponent1State, &opponent2State};
+    for (int i = 0; i < 2; i++) {
+        const OpponentRobot &opponent = *opponents[i];
+        OpponentState &state = *states[i];
+        if (!opponent.valid) {
+            state = OpponentState::damaged;
+        } else if (isInOpponentGoalBox(opponent)) {
+            state = OpponentState::goalie;
+        } else if (opponent.xMm >= -MIDDLE_ZONE_X) {
+            state = OpponentState::shooting;
+        } else if (state != OpponentState::hidingBall) {
+            state = OpponentState::chasingBall;
         }
     }
 }
@@ -879,177 +524,44 @@ void updateRobotState() {
 }
 
 void updateRobotGoal() {
-    if (localState.robotState == RobotState::damaged) {
-        localState.robotGoal = RobotGoal::none; // DAMAGED
+    if (localState.robotState == RobotState::damaged || !robotPose.valid) {
+        localState.robotGoal = RobotGoal::none;
         return;
     }
 
-    const bool attacking = localState.robotState == RobotState::attacking;
-    const float earlyMargin = attacking
-        ? ATTACKER_BORDER_EARLY_MARGIN_MM : BORDER_EARLY_MARGIN_MM;
-    const float exitMargin = attacking
-        ? ATTACKER_BORDER_EXIT_MARGIN_MM : BORDER_EXIT_MARGIN_MM;
-    const float margin = earlyMargin +
-        (localState.robotGoal == RobotGoal::awayBorders ? exitMargin : 0.0f);
-    const float lookaheadMm = currentMoveProfile.active
-        ? currentMoveProfile.speed * ROBOT_LINEAR_SPEED_MM_S *
-          (attacking ? ATTACKER_BORDER_LOOKAHEAD_S : BORDER_LOOKAHEAD_S) : 0.0f;
-    const float directionRad = currentMoveProfile.movementDirectionDeg * PI / 180.0f;
-    if (isNearBorder(robotPose.xMm, robotPose.yMm, margin) ||
-        isNearBorder(robotPose.xMm + lookaheadMm * cosf(directionRad),
-                     robotPose.yMm + lookaheadMm * sinf(directionRad), margin)) {
-        localState.robotGoal = RobotGoal::awayBorders; // FIRST CHECK BORDERS
+    const RobotGoal currentGoal = localState.robotGoal;
+
+    // Borders take priority over everything, and hold until the robot is clear of them.
+    const float borderThreshold = currentGoal == RobotGoal::awayBorders
+        ? BORDER_EXIT_CLEARANCE_MM : BORDER_ENTER_CLEARANCE_MM;
+    if (borderClearance(robotPose.xMm, robotPose.yMm) < borderThreshold) {
+        localState.robotGoal = RobotGoal::awayBorders;
         return;
     }
 
-    if (localState.robotState == RobotState::attacking) {
-        const RobotGoal currentGoal = localState.robotGoal;
-        const BallPossession possession = ballState.ballPossession;
-
-        const bool hasBallForAttack =
-            possession == BallPossession::mePossession ||
-            possession == BallPossession::front;
-        if (isBallInDefenceBox() && !hasBallForAttack) {
-            localState.robotGoal = RobotGoal::backOff;
-            return;
-        }
-
-        if (possession == BallPossession::himPossession) {
-            localState.robotGoal = RobotGoal::defendBall;
-            return;
-        }
-        if (possession == BallPossession::theirPossession1) {
-            localState.robotGoal = RobotGoal::interceptBall1;
-            return;
-        }
-        if (possession == BallPossession::theirPossession2) {
-            localState.robotGoal = RobotGoal::interceptBall2;
-            return;
-        }
-
-        if (currentGoal == RobotGoal::scoring) {
-            if (ball.valid &&
-                (possession == BallPossession::mePossession ||
-                 possession == BallPossession::front)) {
-                localState.robotGoal = RobotGoal::scoring;
-                return;
-            }
-        }
-
-        if (isBallInGoalPushZone() &&
-            (possession == BallPossession::mePossession ||
-             possession == BallPossession::front)) {
-            localState.robotGoal = RobotGoal::scoring;
-            return;
-        }
-
-        /*
-        // The behind-ball route has its own translation stage. Side-zone
-        // handling does not redirect this route into hideBall.
-        const bool behindRoute = isBehindBallRoute(currentGoal);
-        if (behindRoute && currentGoal != RobotGoal::scoring &&
-            ((possession == BallPossession::front) ||
-             (possession == BallPossession::mePossession))) {
-            localState.robotGoal = isAtKickLine()
-                ? RobotGoal::kick : RobotGoal::dribbleForward;
-            return;
-        }
-
-        if (possession == BallPossession::mePossession) {
-            if (currentGoal == RobotGoal::hideBall) {
-                localState.robotGoal = hideBallReached()
-                    ? RobotGoal::kick
-                    : RobotGoal::hideBall;
-            } else if (currentGoal == RobotGoal::kick && ball.valid &&
-                       ball.distanceCm <= BALL_TARGET_DISTANCE_CM) {
-                localState.robotGoal = RobotGoal::kick;
-            } else if (isAtKickLine()) {
-                localState.robotGoal = RobotGoal::kick;
-            } else if (isSideRoute()) {
-                localState.robotGoal = hideBallReached()
-                    ? RobotGoal::kick
-                    : RobotGoal::hideBall;
-            } else {
-                localState.robotGoal = RobotGoal::dribbleForward;
-            }
-            return;
-        }
-
-        if (possession == BallPossession::front) {
-            if (currentGoal == RobotGoal::hideBall) {
-                localState.robotGoal = hideBallReached()
-                    ? RobotGoal::kick
-                    : RobotGoal::hideBall;
-            } else if (currentGoal == RobotGoal::getBallDribble) {
-                localState.robotGoal = isAtKickLine()
-                    ? RobotGoal::kick
-                    : isSideRoute()
-                        ? (hideBallReached() ? RobotGoal::kick
-                                             : RobotGoal::hideBall)
-                        : RobotGoal::dribbleForward;
-            } else if (currentGoal == RobotGoal::kick && ball.valid &&
-                       ball.distanceCm <= BALL_TARGET_DISTANCE_CM) {
-                localState.robotGoal = RobotGoal::kick;
-            } else if (isAtKickLine()) {
-                localState.robotGoal = RobotGoal::kick;
-            } else if (currentGoal == RobotGoal::dribbleForward ||
-                       currentGoal == RobotGoal::pushForward) {
-                localState.robotGoal = RobotGoal::dribbleForward;
-            } else {
-                // Front means the ball has reached the dribbler; keep
-                // collecting until the localized possession state confirms it.
-                localState.robotGoal = RobotGoal::getBallDribble;
-            }
-            return;
-        }
-
-        if (currentGoal == RobotGoal::kick) {
-            // Ball has been kicked or lost.
-            if (ball.valid) {
-                localState.robotGoal = ball.xMm > 0.0f
-                    ? RobotGoal::getBallPush : RobotGoal::getBallDribble;
-            } else {
-                localState.robotGoal = RobotGoal::searchBall;
-            }
-            return;
-        }
-        if (currentGoal == RobotGoal::hideBall && ball.valid &&
-            ball.distanceCm <= BALL_TARGET_DISTANCE_CM) {
-            localState.robotGoal = RobotGoal::hideBall;
-            return;
-        }
-        if (currentGoal == RobotGoal::pushForward) {
-            if (ball.valid) {
-                localState.robotGoal = ball.xMm > 0.0f
-                    ? RobotGoal::getBallPush : RobotGoal::getBallDribble;
-            } else {
-                localState.robotGoal = RobotGoal::searchBall;
-            }
-            return;
-        }
-        if (currentGoal == RobotGoal::dribbleForward && ball.valid) {
-            localState.robotGoal = RobotGoal::getBallDribble;
-            return;
-        }
-
-        */
-
-        // Orbit the ball facing the goal; ram once the ball is close and in line.
-        // Ramming continues (with hysteresis) while the ball stays close and ahead.
-        if (!ball.valid) {
-            localState.robotGoal = RobotGoal::searchBall;
-        } else {
-            const bool keepRamming = currentGoal == RobotGoal::kick &&
-                ball.distanceCm <= RAM_KEEP_DISTANCE_CM &&
-                isLinedUpBehindBall(RAM_KEEP_LINEUP_DEG);
-            const bool startRamming = ball.distanceCm <= RAM_START_DISTANCE_CM &&
-                isLinedUpBehindBall(RAM_START_LINEUP_DEG);
-            localState.robotGoal = (keepRamming || startRamming)
-                ? RobotGoal::kick : RobotGoal::getBallPush;
-        }
-    } else if (localState.robotState == RobotState::defending) {
+    if (localState.robotState == RobotState::defending) {
         localState.robotGoal = RobotGoal::defendBall;
+        return;
     }
+
+    if (!ball.valid) {
+        localState.robotGoal = RobotGoal::searchBall;
+        return;
+    }
+
+    const bool wasBackOff = currentGoal == RobotGoal::backOff;
+    if (isBallNearDefenceBox(BACKOFF_MARGIN_MM +
+                             (wasBackOff ? BACKOFF_EXIT_MARGIN_MM : 0.0f))) {
+        localState.robotGoal = RobotGoal::backOff;
+        return;
+    }
+
+    const BallLine line = ballLine();
+    const bool wasPushing = currentGoal == RobotGoal::push;
+    const bool pushing = line.behindMm > 0.0f && (wasPushing
+        ? line.lateralMm <= PUSH_KEEP_LATERAL_MM && line.distanceMm <= PUSH_KEEP_DISTANCE_MM
+        : line.lateralMm <= PUSH_START_LATERAL_MM && line.distanceMm <= PUSH_START_DISTANCE_MM);
+    localState.robotGoal = pushing ? RobotGoal::push : RobotGoal::behindBall;
 }
 
 void updateLocalRobotMode() {
