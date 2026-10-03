@@ -304,19 +304,14 @@ void updateDribblerPolicy() {
         defenderDribblerActive = false;
     }
     if (robotPose.valid && localState.robotState == RobotState::defending) {
-        const bool defendingOpponent =
-            localState.robotGoal == RobotGoal::defendOpponent1 ||
-            localState.robotGoal == RobotGoal::defendOpponent2;
-        if (defendingOpponent) {
-            defenderDribblerActive = false;
-        } else if (ball.valid) {
+        if (ball.valid) {
             if (ball.xMm < -DRIBBLER_HALF_FIELD_HYSTERESIS_MM) {
                 defenderDribblerActive = true;
             } else if (ball.xMm > DRIBBLER_HALF_FIELD_HYSTERESIS_MM) {
                 defenderDribblerActive = false;
             }
         }
-        shouldRun = defenderDribblerActive && !defendingOpponent;
+        shouldRun = defenderDribblerActive;
     } else if (robotPose.valid && localState.robotState == RobotState::attacking) {
         const bool hasBall = ballState.ballPossession == BallPossession::mePossession ||
                              ballState.ballPossession == BallPossession::front;
@@ -333,8 +328,6 @@ void updateDribblerPolicy() {
             case RobotGoal::pass:
             case RobotGoal::awayBorders:
             case RobotGoal::defendBall:
-            case RobotGoal::defendOpponent1:
-            case RobotGoal::defendOpponent2:
             case RobotGoal::searchBall:
             case RobotGoal::dribbleForward:
             case RobotGoal::hideBall:
@@ -665,20 +658,6 @@ void move() {
             moveTo(targetXmm, targetYmm,
                    headingTo(ball.xMm, ball.yMm),
                    1.0f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
-            break;
-        }
-
-        case RobotGoal::defendOpponent1:
-        case RobotGoal::defendOpponent2: {
-            const OpponentRobot &opponent =
-                localState.robotGoal == RobotGoal::defendOpponent1 ? opponent1 : opponent2;
-            if (!opponent.valid) {
-                stopMotion();
-                break;
-            }
-            moveTo(clampDefenceX(opponent.xMm), clampDefenceY(opponent.yMm),
-                   headingTo(opponent.xMm, opponent.yMm),
-                   0.9f, ACCEL_LIMIT, ROTATION_MAX_SPEED, ROTATION_ACCEL_LIMIT);
             break;
         }
 
@@ -1069,13 +1048,7 @@ void updateRobotGoal() {
                 ? RobotGoal::kick : RobotGoal::getBallPush;
         }
     } else if (localState.robotState == RobotState::defending) {
-        if (opponent1.valid == true && opponent1State == OpponentState::shooting) {
-            localState.robotGoal = RobotGoal::defendOpponent1;
-        } else if (opponent2.valid == true  && opponent2State == OpponentState::shooting) {
-            localState.robotGoal = RobotGoal::defendOpponent2;
-        } else {
-            localState.robotGoal = RobotGoal::defendBall;
-        }
+        localState.robotGoal = RobotGoal::defendBall;
     }
 }
 

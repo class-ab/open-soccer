@@ -66,8 +66,6 @@ enum class RobotGoal {
     awayBorders,
     backOff,
     defendBall,
-    defendOpponent1,
-    defendOpponent2,
     searchBall,
     dribbleForward,
     hideBall,
