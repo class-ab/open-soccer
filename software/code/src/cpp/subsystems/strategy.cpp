@@ -76,6 +76,7 @@ constexpr float ORBIT_BORDER_PREFERENCE_MM = 100.0f;
 // push: robot-to-line lateral offset (mm) to start / keep pushing.
 constexpr float PUSH_START_LATERAL_MM = 35.0f;
 constexpr float PUSH_START_DISTANCE_MM = ORBIT_RADIUS_MM + 100.0f;
+constexpr float PUSH_MIN_DISTANCE_MM = ROBOT_RADIUS_MM + 50.0f;
 constexpr float PUSH_KEEP_LATERAL_MM = 80.0f;
 constexpr float PUSH_KEEP_DISTANCE_MM = 600.0f;
 constexpr float PUSH_SPEED = 0.85f;
@@ -140,11 +141,12 @@ void clampToField(float &xMm, float &yMm) {
     }
 }
 
-bool isBallNearDefenceBox(float marginMm) {
+bool isBallInBackOffZone(float frontExpansionMm, float negativeYExpansionMm) {
     return ball.valid &&
-           ball.xMm >= DEFENCE_BOX_MIN_X_MM - marginMm &&
-           ball.xMm <= DEFENCE_BOX_MAX_X_MM + marginMm &&
-           fabsf(ball.yMm) <= DEFENCE_BOX_MAX_ABS_Y_MM + marginMm;
+           ball.xMm >= DEFENCE_BOX_MIN_X_MM &&
+           ball.xMm <= DEFENCE_BOX_MAX_X_MM + frontExpansionMm &&
+           ball.yMm >= -DEFENCE_BOX_MAX_ABS_Y_MM - negativeYExpansionMm &&
+           ball.yMm <= DEFENCE_BOX_MAX_ABS_Y_MM;
 }
 
 bool isInOpponentGoalBox(const OpponentRobot &opponent) {
@@ -550,17 +552,19 @@ void updateRobotGoal() {
     }
 
     const bool wasBackOff = currentGoal == RobotGoal::backOff;
-    if (isBallNearDefenceBox(BACKOFF_MARGIN_MM +
-                             (wasBackOff ? BACKOFF_EXIT_MARGIN_MM : 0.0f))) {
+    const float backOffExpansion = BACKOFF_MARGIN_MM +
+        (wasBackOff ? BACKOFF_EXIT_MARGIN_MM : 0.0f);
+    if (isBallInBackOffZone(backOffExpansion, backOffExpansion)) {
         localState.robotGoal = RobotGoal::backOff;
         return;
     }
 
     const BallLine line = ballLine();
     const bool wasPushing = currentGoal == RobotGoal::push;
-    const bool pushing = line.behindMm > 0.0f && (wasPushing
-        ? line.lateralMm <= PUSH_KEEP_LATERAL_MM && line.distanceMm <= PUSH_KEEP_DISTANCE_MM
-        : line.lateralMm <= PUSH_START_LATERAL_MM && line.distanceMm <= PUSH_START_DISTANCE_MM);
+    const bool pushing = line.behindMm > 0.0f &&
+        line.distanceMm >= PUSH_MIN_DISTANCE_MM && (wasPushing
+            ? line.lateralMm <= PUSH_KEEP_LATERAL_MM && line.distanceMm <= PUSH_KEEP_DISTANCE_MM
+            : line.lateralMm <= PUSH_START_LATERAL_MM && line.distanceMm <= PUSH_START_DISTANCE_MM);
     localState.robotGoal = pushing ? RobotGoal::push : RobotGoal::behindBall;
 }
 
