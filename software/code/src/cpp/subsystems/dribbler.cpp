@@ -3,6 +3,7 @@
 
 #include "include/subsystems/dribbler.h"
 #include "include/subsystems/robot_config.h"
+#include "include/subsystems/communication.h"
 
 static Servo escThrottle;
 static Servo escReverse;
@@ -42,27 +43,56 @@ void stopDribbler() {
 }
 
 void initKicker() {
+  pinMode(kicker, OUTPUT);
+  pinMode(charge, OUTPUT);
   digitalWrite(kicker, LOW);
-  digitalWrite(charge, HIGH);
+  digitalWrite(charge, LOW);
 }
 
+// Kickers are dead on both robots: charge and kick outputs are held LOW permanently.
 void kick() {
+  digitalWrite(kicker, LOW);
+  digitalWrite(charge, LOW);
+  kicking = false;
+  /*
+  if (getCurrentRobotNumber() == 2) {
+    digitalWrite(kicker, LOW);
+    digitalWrite(charge, LOW);
+    kicking = false;
+    return;
+  }
   digitalWrite(charge, LOW);
   t0 = millis();
   kicking = true;
+  */
 }
 
 void updateKicker() {
-  if (!kicking) return;
+  digitalWrite(kicker, LOW);
+  digitalWrite(charge, LOW);
+  kicking = false;
+  /*
+  if (getCurrentRobotNumber() == 2) {
+    digitalWrite(kicker, LOW);
+    digitalWrite(charge, LOW);
+    kicking = false;
+    return;
+  }
+
+  if (!kicking) {
+    digitalWrite(charge, HIGH);
+    return;
+  }
   unsigned long t = millis() - t0;
 
-  if (t >= 60) { // delay 60 - 40 = 20
+  if (t >= 50) {
     digitalWrite(kicker, LOW); 
     digitalWrite(charge, HIGH); 
     kicking = false; 
-  } else if (t >= 40) { // delay 40 - 20 = 20
+  } else if (t >= 32) {
     digitalWrite(kicker, LOW);
-  } else if (t >= 20) { // delay 20
+  } else if (t >= 20) {
     digitalWrite(kicker, HIGH);
   }
+  */
 }

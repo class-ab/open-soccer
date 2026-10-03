@@ -77,7 +77,8 @@ namespace {
 
   // Cached remote data
   RobotPose remoteRobotPose = {false, 0, 0, 0, 0, 0};
-  LocalState remoteRobotState = {RobotState::damaged, RobotGoal::none};
+  LocalState remoteRobotState = {RobotState::attacking, RobotGoal::none};
+  bool remoteRobotStateReceived = false;
   FieldBall remoteFieldBall = {false, 0, 0, 0, 0, 0};
   OpponentRobot remoteOpponents[5] = {};
   int remoteOpponentCount = 0;
@@ -178,23 +179,30 @@ static void serializeRobotState(const LocalState &state, uint8_t *buffer,
   len = sizeof(pkt);
 }
 
-static void deserializeRobotState(const uint8_t *buffer, int len,
+static bool deserializeRobotState(const uint8_t *buffer, int len,
                                   LocalState &state) {
-  if (len < (int)sizeof(RemoteRobotStatePacket)) {
-    state.robotState = RobotState::damaged;
-    return;
+  if (len != (int)sizeof(RemoteRobotStatePacket)) {
+    return false;
   }
 
   RemoteRobotStatePacket pkt;
   memcpy(&pkt, buffer, sizeof(pkt));
 
-  if (pkt.damaged != 0) {
+  if (pkt.damaged > 1) {
+    return false;
+  }
+
+  if (pkt.damaged != 0 &&
+      pkt.state == static_cast<uint8_t>(RobotState::damaged)) {
     state.robotState = RobotState::damaged;
-  } else if (pkt.state <= static_cast<uint8_t>(RobotState::damaged)) {
+  } else if (pkt.damaged == 0 &&
+             pkt.state < static_cast<uint8_t>(RobotState::damaged)) {
     state.robotState = static_cast<RobotState>(pkt.state);
   } else {
-    state.robotState = RobotState::damaged;
+    return false;
   }
+
+  return true;
 }
 
 static void serializeBall(const FieldBall &ball, uint8_t *buffer, int &len) {
@@ -314,7 +322,9 @@ static void receiveData() {
       break;
 
     case 3:  // Robot state
-      deserializeRobotState(data, dataLen, remoteRobotState);
+      if (deserializeRobotState(data, dataLen, remoteRobotState)) {
+        remoteRobotStateReceived = true;
+      }
       break;
 
     case 1:  // Ball
@@ -464,8 +474,9 @@ void getRemoteRobotPose(RobotPose &out) {
   out = remoteRobotPose;
 }
 
-void getRemoteRobotState(LocalState &out) {
+bool getRemoteRobotState(LocalState &out) {
   out = remoteRobotState;
+  return remoteRobotStateReceived;
 }
 
 void getRemoteFieldBall(FieldBall &out) {

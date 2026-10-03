@@ -45,10 +45,14 @@ struct CoordinateController {
 
 SIM_TLS CoordinateController coordinateController;
 
+// Possession speed/rotation caps are disabled: the robot rams the ball, it no longer carries it.
 bool isBallHeld() {
+  return false;
+  /*
   ballLocation state;
   getBallState(state);
   return state.ballPossession == BallPossession::mePossession;
+  */
 }
 }
 

@@ -3,6 +3,7 @@
 #include "include/subsystems/communication.h"
 #include "include/subsystems/display.h"
 #include "include/subsystems/strategy.h"
+#include "include/subsystems/dribbler.h"
 
 SIM_TLS BallPacket latestBallPacket = {false, 0.0f, 0.0f, 0};
 SIM_TLS unsigned long lastBallPacketMs = 0;
@@ -94,7 +95,7 @@ void checkButtons() {
     static bool lastButton3State = false;
     if (button3State && !lastButton3State) {
         markLocalRobotDamaged();
-        Serial.println("Local robot DAMAGED");
+        Serial.println("Robot marked damaged");
         updateDisplay();
     }
     lastButton3State = button3State;
