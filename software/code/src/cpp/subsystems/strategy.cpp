@@ -54,17 +54,17 @@ constexpr float DEFENCE_BOX_MAX_ABS_Y_MM = 450.0f;
 // backOff starts when the ball is this close to the box, and ends this much further out.
 constexpr float BACKOFF_MARGIN_MM = 100.0f;
 constexpr float BACKOFF_EXIT_MARGIN_MM = 50.0f;
-constexpr float BACKOFF_SPEED = 0.8f;
+constexpr float BACKOFF_SPEED = 0.4f;
 
 // Attacker limits (normalized speed, normalized speed per second).
 constexpr float ATTACK_ROTATION_SPEED = 0.5f;
 constexpr float ATTACK_ROTATION_ACCEL = 4.0f;
-constexpr float CENTRE_SPEED = 0.8f;
+constexpr float CENTRE_SPEED = 0.4f;
 constexpr float CENTRE_ACCEL = 3.0f;
 
 // behindBall: orbit the ball at ORBIT_RADIUS_MM until the robot is behind it, in line with the goal.
-constexpr float ORBIT_RADIUS_MM = 200.0f;
-constexpr float ORBIT_SPEED = 0.65f;
+constexpr float ORBIT_RADIUS_MM = 220.0f;
+constexpr float ORBIT_SPEED = 0.33f;
 // Must exceed the centripetal rate (speed^2 * ROBOT_LINEAR_SPEED_MM_S / radius) or the orbit spirals out.
 constexpr float ORBIT_ACCEL = 8.0f;
 constexpr float ORBIT_RADIAL_GAIN = 0.01f; // per mm of radius error
@@ -74,29 +74,27 @@ constexpr float ORBIT_FULL_LAP_DEG = 300.0f;
 constexpr float ORBIT_BORDER_PREFERENCE_MM = 100.0f;
 
 // push: robot-to-line lateral offset (mm) to start / keep pushing.
-constexpr float PUSH_START_LATERAL_MM = 35.0f;
-constexpr float PUSH_START_DISTANCE_MM = ORBIT_RADIUS_MM + 100.0f;
+constexpr float PUSH_START_LATERAL_MM = 80.0f;
+constexpr float PUSH_START_DISTANCE_MM = ORBIT_RADIUS_MM + 300.0f;
 constexpr float PUSH_MIN_DISTANCE_MM = ROBOT_RADIUS_MM + 50.0f;
-constexpr float PUSH_KEEP_LATERAL_MM = 80.0f;
+constexpr float PUSH_KEEP_LATERAL_MM = 110.0f;
 constexpr float PUSH_KEEP_DISTANCE_MM = 600.0f;
-constexpr float PUSH_SPEED = 0.85f;
-constexpr float PUSH_ACCEL = 4.0f;
-// The push aims this far past the ball along the ball-goal line.
-constexpr float PUSH_EXTEND_MM = 400.0f;
+constexpr float PUSH_SPEED = 0.43f;
+constexpr float PUSH_ACCEL = 12.0f;
 
 // Borders. Clearance is how far the robot centre can still travel before its edge reaches the border.
 constexpr float BORDER_ENTER_CLEARANCE_MM = 20.0f;
 constexpr float BORDER_EXIT_CLEARANCE_MM = 70.0f;
 // Targets are kept at least this far inside the border so they never trigger awayBorders.
 constexpr float BORDER_TARGET_MARGIN_MM = 40.0f;
-// Speed is limited linearly from full at BORDER_SLOW_RANGE_MM clearance down to BORDER_SLOW_SPEED at the border.
-constexpr float BORDER_SLOW_SPEED = 0.25f;
-constexpr float BORDER_SLOW_RANGE_MM = 250.0f;
+// Slow down over a wider approach zone while keeping the command above the motor deadband.
+constexpr float BORDER_SLOW_SPEED = MOTOR_MIN_COMMAND;
+constexpr float BORDER_SLOW_RANGE_MM = 500.0f;
 constexpr float AWAY_SPEED = 1.0f;
-constexpr float AWAY_ACCEL = 8.0f;
+constexpr float AWAY_ACCEL = 40.0f;
 
 // Defender limits.
-constexpr float DEFENDER_SPEED = 1.0f;
+constexpr float DEFENDER_SPEED = 0.5f;
 constexpr float DEFENDER_ROTATION_SPEED = 0.22f;
 
 // A velocity command is issued as a moveTo toward a point this far ahead, so moveTo's
@@ -277,13 +275,14 @@ void getBallDefenceTarget(float &targetXmm, float &targetYmm) {
     clampToField(targetXmm, targetYmm);
 }
 
-// The dribbler only spins to capture the ball, and only while the attacker is working on it.
 void updateDribblerPolicy() {
-    const bool capture = robotPose.valid &&
-        localState.robotState == RobotState::attacking &&
-        (localState.robotGoal == RobotGoal::behindBall ||
-         localState.robotGoal == RobotGoal::push);
-    if (capture) {
+    const bool attackingWithValidPose = robotPose.valid &&
+        localState.robotState == RobotState::attacking;
+    if (attackingWithValidPose && localState.robotGoal == RobotGoal::push) {
+        setDribblerDirectionReverse();
+        setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
+    } else if (attackingWithValidPose &&
+               localState.robotGoal == RobotGoal::behindBall) {
         setDribblerDirectionForward();
         setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
     } else {
@@ -360,9 +359,8 @@ void move() {
                 stopAllDriveMotors();
                 break;
             }
-            const BallLine line = ballLine();
-            const float aimX = ball.xMm + line.unitX * PUSH_EXTEND_MM - robotPose.xMm;
-            const float aimY = ball.yMm + line.unitY * PUSH_EXTEND_MM - robotPose.yMm;
+            const float aimX = OPPONENT_GOAL_X_MM - robotPose.xMm;
+            const float aimY = OPPONENT_GOAL_Y_MM - robotPose.yMm;
             const float aimDistance = fmaxf(sqrtf(aimX * aimX + aimY * aimY), 1.0f);
             moveAlong(aimX / aimDistance, aimY / aimDistance,
                       fminf(PUSH_SPEED, borderSpeedLimit()), PUSH_ACCEL, goalHeading);
