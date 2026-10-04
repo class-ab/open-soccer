@@ -54,7 +54,7 @@ constexpr float BALL_TARGET_DISTANCE_CM = 15.0f;
 constexpr float BALL_TARGET_ANGLE = 6.0f;
 
 // #define DEBUG_MOVE
-// #define DEBUG_BALL_LINK
+#define DEBUG_BALL_LINK
 // #define DEBUG_LIDAR        // basic lidar info
 // #define DEBUG_FIELDBALL    // requires DEBUG_LIDAR
 // #define LOCAL_STATE

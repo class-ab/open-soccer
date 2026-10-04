@@ -11,17 +11,19 @@ CAMERA_ROTATION_OFFSET_DEG = 90
 # Ball threshold (L Min, L Max, A Min, A Max, B Min, B Max)
 # BALL_THRESHOLD = (30, 65, 10, 45, 25, 50)   # competition tuning
 # BALL_THRESHOLD = (17, 31, 14, 36, 14, 37)    # home tuning
-BALL_THRESHOLD = (64, 100, 14, 127, -128, 127)  # MHS tuning
+# BALL_THRESHOLD = (64, 100, 14, 127, -128, 127)  # MHS tuning
+
+BALL_THRESHOLD = (35, 100, 18, 127, 9, 127)  # BLACK BOT 2nd TUNE
 
 # Mirror / frame centre in pixels.
 # !! These were calibrated at HVGA. At VGA the centre and the
 # !! pixels_to_cm_* polynomials below need to be re-measured.
 
-# CENTER_X = 336  # WHITE BOT
-# CENTER_Y = 268
+CENTER_X = 336  # WHITE BOT
+CENTER_Y = 268
 
-CENTER_X = 298  # BLACK BOT
-CENTER_Y = 254
+# CENTER_X = 298  # BLACK BOT
+# CENTER_Y = 237
 
 # Your tape-measure "0 cm" during calibration was the physical edge of the
 # robot, not the camera's optical centre -- the two are 110 mm apart. This
