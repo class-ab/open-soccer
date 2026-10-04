@@ -74,7 +74,7 @@ constexpr float ORBIT_FULL_LAP_DEG = 300.0f;
 constexpr float ORBIT_BORDER_PREFERENCE_MM = 100.0f;
 
 // push: robot-to-line lateral offset (mm) to start / keep pushing.
-constexpr float PUSH_START_ANGLE_DEG = 45.0f;
+constexpr float PUSH_START_ANGLE_DEG = 55.0f;
 constexpr float PUSH_START_DISTANCE_MM = 600.0f;
 constexpr float PUSH_MIN_DISTANCE_MM = ROBOT_RADIUS_MM + 50.0f;
 constexpr float PUSH_KEEP_LATERAL_MM = 110.0f;
@@ -83,19 +83,20 @@ constexpr float PUSH_SPEED = 1.0f;
 constexpr float PUSH_ACCEL = 12.0f;
 
 // Borders. Clearance is how far the robot centre can still travel before its edge reaches the border.
-constexpr float BORDER_ENTER_CLEARANCE_MM = 20.0f;
+constexpr float BORDER_ENTER_CLEARANCE_MM = 0.0f;
 constexpr float BORDER_EXIT_CLEARANCE_MM = 70.0f;
 // Targets are kept at least this far inside the border so they never trigger awayBorders.
 constexpr float BORDER_TARGET_MARGIN_MM = 40.0f;
 // Slow down over a wider approach zone while keeping the command above the motor deadband.
 constexpr float BORDER_SLOW_SPEED = MOTOR_MIN_COMMAND;
 constexpr float BORDER_SLOW_RANGE_MM = 500.0f;
+constexpr float BORDER_BRAKING_ACCEL = 8.0f;
 constexpr float AWAY_SPEED = 1.0f;
 constexpr float AWAY_ACCEL = 40.0f;
 
 // Defender limits.
-constexpr float DEFENDER_SPEED = 1.0f;
-constexpr float DEFENDER_ROTATION_SPEED = 0.4f;
+constexpr float DEFENDER_SPEED = 0.7f;
+constexpr float DEFENDER_ROTATION_SPEED = 0.3f;
 
 // A velocity command is issued as a moveTo toward a point this far ahead, so moveTo's
 // distance-based slowdown never limits speed.
@@ -128,6 +129,15 @@ float borderSpeedLimit() {
         borderClearance(robotPose.xMm, robotPose.yMm) - BORDER_ENTER_CLEARANCE_MM;
     return constrain(BORDER_SLOW_SPEED + (1.0f - BORDER_SLOW_SPEED) *
                      clearance / BORDER_SLOW_RANGE_MM, BORDER_SLOW_SPEED, 1.0f);
+}
+
+float borderStoppingDistance() {
+    if (!currentMoveProfile.active) {
+        return 0.0f;
+    }
+    const float speed = constrain(currentMoveProfile.speed, 0.0f, 1.0f);
+    return speed * speed * ROBOT_LINEAR_SPEED_MM_S /
+           (2.0f * BORDER_BRAKING_ACCEL);
 }
 
 void clampToField(float &xMm, float &yMm) {
@@ -278,12 +288,11 @@ void getBallDefenceTarget(float &targetXmm, float &targetYmm) {
 void updateDribblerPolicy() {
     const bool attackingWithValidPose = robotPose.valid &&
         localState.robotState == RobotState::attacking;
-    if (attackingWithValidPose && localState.robotGoal == RobotGoal::push) {
+    const bool activeAttackerGoal = localState.robotGoal == RobotGoal::awayBorders ||
+        localState.robotGoal == RobotGoal::push ||
+        localState.robotGoal == RobotGoal::behindBall;
+    if (attackingWithValidPose && activeAttackerGoal) {
         setDribblerDirectionReverse();
-        setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
-    } else if (attackingWithValidPose &&
-               localState.robotGoal == RobotGoal::behindBall) {
-        setDribblerDirectionForward();
         setDribblerThrottle(DRIBBLER_RUN_THROTTLE_US);
     } else {
         stopDribbler();
@@ -533,7 +542,8 @@ void updateRobotGoal() {
 
     // Borders take priority over everything, and hold until the robot is clear of them.
     const float borderThreshold = currentGoal == RobotGoal::awayBorders
-        ? BORDER_EXIT_CLEARANCE_MM : BORDER_ENTER_CLEARANCE_MM;
+        ? BORDER_EXIT_CLEARANCE_MM
+        : BORDER_ENTER_CLEARANCE_MM + borderStoppingDistance();
     if (borderClearance(robotPose.xMm, robotPose.yMm) < borderThreshold) {
         localState.robotGoal = RobotGoal::awayBorders;
         return;
